@@ -3,7 +3,8 @@ import {Button} from "@/components/ui/button";
 
 const HeroSection = () => {
     return (
-        <section className="relative overflow-hidden flex items-center min-h-screen home-hero-section">
+        <section id={"home-hero-section"}
+                 className="relative overflow-hidden flex items-center min-h-screen">
             <div className="max-w-6xl mx-auto px-6 text-center text-white">
                 <h2 className="font-display text-6xl md:text-8xl font-bold mb-6 animate-fade-in">
                     Where Creative<br/>

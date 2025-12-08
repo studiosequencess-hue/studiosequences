@@ -1,34 +1,47 @@
-import React from 'react';
-import Link from 'next/link';
+import React from 'react'
+import Link from 'next/link'
+import { IoGlobeOutline, IoSearch } from 'react-icons/io5'
+import { Button } from '@/components/ui/button'
+import { BsBriefcaseFill } from 'react-icons/bs'
 
 const Header = () => {
-    return (
-        <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 border-b border-b-black/10 backdrop-blur-[20px] bg-white/90">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-                <div className="flex items-center space-x-8">
-                    <Link href={"/"}>
-                        <h1 className="font-display text-2xl font-bold text-primary-dark">Studio Sequence</h1>
-                    </Link>
-                    <div className="hidden md:flex space-x-6">
-                        <Link href="/" className="text-primary-dark hover:text-accent-terracotta transition-colors">Discover</Link>
-                        <Link href="/" className="text-primary-dark hover:text-accent-terracotta transition-colors">Companies</Link>
-                    </div>
-                </div>
+  return (
+    <nav className="text-primary-light fixed top-0 right-0 left-0 z-50 border-b border-white/25 backdrop-blur-[20px]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link href={'/'}>
+            <h1 className="font-display text-2xl font-bold">Studio Sequence</h1>
+          </Link>
+          <div className="hidden gap-6 md:flex">
+            <Link
+              href="/"
+              className="hover:border-primary-light border-b-primary-dark flex h-full items-center gap-1.5 border-b px-2 py-4 transition-colors"
+            >
+              <IoGlobeOutline />
+              Discover
+            </Link>
+            <Link
+              href="/"
+              className="hover:border-primary-light border-b-primary-dark flex h-full items-center gap-1.5 border-b px-2 py-4 transition-colors"
+            >
+              <BsBriefcaseFill />
+              Companies
+            </Link>
+          </div>
+          <div className="flex w-44 cursor-pointer items-center rounded-lg bg-white/15 p-2 transition-colors">
+            <IoSearch />
+          </div>
+        </div>
 
-                <div className="flex items-center space-x-4">
-                    <button id="searchToggle" className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </button>
-                    <button className="bg-primary-dark text-primary-light px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all">
-                        Sign In
-                    </button>
-                </div>
-            </div>
-        </nav>
-    );
-};
+        <div className="flex items-center space-x-4">
+          <Button variant={'secondary'}>Sign In</Button>
+          <Button variant={'link'} className={'text-primary-light'}>
+            Sign Up
+          </Button>
+        </div>
+      </div>
+    </nav>
+  )
+}
 
-export default Header;
+export default Header

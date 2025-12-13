@@ -46,7 +46,9 @@ const ImagePreviewDialog = () => {
         showCloseButton={false}
       >
         <div
-          className={'flex flex-1 items-center justify-center p-4'}
+          className={
+            'flex flex-1 items-center justify-center p-4 backdrop-blur-xs'
+          }
           onClick={closePreview}
         >
           <div className={'relative h-96 w-96'}>

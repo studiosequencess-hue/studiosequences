@@ -1,39 +1,40 @@
-"use client";
+'use client'
 
-import Image from "next/image";
-import {useState} from "react";
-import type {ComponentProps} from "react";
-import {cn} from "@/lib/utils";
+import Image from 'next/image'
+import { useState } from 'react'
+import type { ComponentProps } from 'react'
+import { cn } from '@/lib/utils'
 
-type NextImageProps = ComponentProps<typeof Image>;
+type NextImageProps = ComponentProps<typeof Image>
 
 type SafeImageProps = NextImageProps & {
-    className: string;
-    imageClassName?: string;
-    fallbackSrc?: string;
-};
+  className: string
+  imageClassName?: string
+  fallbackSrc?: string
+}
 
 export default function SafeImage({
-                                      src,
-                                      fallbackSrc = "/placeholder.png",
-                                      onError,
-                                      ...props
-                                  }: SafeImageProps) {
-    const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
+  src,
+  fallbackSrc = '/placeholder.png',
+  onError,
+  ...props
+}: SafeImageProps) {
+  const [imgSrc, setImgSrc] = useState(src || fallbackSrc)
 
-    return (
-        <div className={cn("relative", props.className)}>
-            <Image
-                {...props}
-                src={imgSrc}
-                alt={props.alt || "no-image"}
-                fill
-                className={cn("object-cover", props.imageClassName)}
-                onError={(e) => {
-                    setImgSrc(fallbackSrc);
-                    onError?.(e); // still allow custom onError if passed
-                }}
-            />
-        </div>
-    );
+  return (
+    <div className={cn('relative', props.className)}>
+      <Image
+        {...props}
+        src={imgSrc}
+        alt={props.alt || 'no-image'}
+        fill
+        className={cn('object-cover', props.imageClassName)}
+        onError={(e) => {
+          setImgSrc(fallbackSrc)
+          onError?.(e) // still allow custom onError if passed
+        }}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      />
+    </div>
+  )
 }

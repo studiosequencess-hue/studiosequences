@@ -45,7 +45,7 @@
     --color-primary-light: var(--primary-light);
     --color-accent-terracotta: var(--accent-terracotta);
     --color-accent-sage: var(--accent-sage);
-
+    --color-accent-blue: var(--accent-blue);
 }
 
 :root {
@@ -86,6 +86,7 @@
     --primary-light: #faf9f7;
     --accent-terracotta: #c4a484;
     --accent-sage: #a8b5a0;
+    --accent-blue: #5eb1fa;
     --text-muted: #6b7280;
     --font-inter: 'Inter', sans-serif;
 }

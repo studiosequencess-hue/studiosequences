@@ -1,14 +1,31 @@
+'use client'
+
 import React from 'react'
 import { cn, shuffleArray } from '@/lib/utils'
 import SafeImage from '@/components/partials/safe-image'
+import { UserImage } from '@/lib/models'
+import { useImagePreviewStore } from '@/store'
+import Loader from '@/components/partials/loader'
+
+type LayoutItem = {
+  i: number
+  x: number
+  y: number
+  w: number
+  h: number
+  minW: number
+  minH: number
+}
+
+type Layout = LayoutItem[]
 
 const generateLayout = (
   MAX_ROWS: number,
   MAX_COLS: number,
   LARGE_ITEMS: number,
-) => {
+): { layout: Layout; count: number } => {
   const TOTAL_ITEMS = LARGE_ITEMS + (MAX_COLS * MAX_ROWS - LARGE_ITEMS * 4)
-  const layout = []
+  const layout: Layout = []
 
   const occupied = Array(MAX_ROWS)
     .fill(0)
@@ -42,7 +59,7 @@ const generateLayout = (
     const x = fixedXCoords[i]
     const y = selectedYCoords[i]
 
-    const item = {
+    const item: LayoutItem = {
       i: ++itemCounter,
       x,
       y,
@@ -83,7 +100,7 @@ const generateLayout = (
   // Sort the final layout by index 'i' for consistent rendering order (1, 2, 3...)
   layout.sort((a, b) => Number(a.i) - Number(b.i))
 
-  return { layout, itemsPlacedCount: layout.length }
+  return { layout, count: layout.length }
 }
 
 const GridItem = ({
@@ -123,7 +140,7 @@ type Props = {
   cols: number
   largeImagesCount: number
   rowHeight: number
-  images: string[]
+  images: UserImage[]
   gap?: {
     x?: number
     y?: number
@@ -131,14 +148,25 @@ type Props = {
 }
 
 const ImagesGridGallery: React.FC<Props> = (props) => {
-  const { layout } = React.useMemo(
-    () => generateLayout(props.rows, props.cols, props.largeImagesCount),
-    [props.rows, props.cols, props.largeImagesCount],
-  )
+  const { showPreview } = useImagePreviewStore()
+  const [loading, setLoading] = React.useState(true)
+  const [layout, setLayout] = React.useState<Layout | null>(null)
 
   const totalHeightPx = props.rows * props.rowHeight
   const gapX = props.gap?.x || 0
   const gapY = props.gap?.y || 0
+
+  React.useEffect(() => {
+    setLoading(true)
+    const { layout: newLayout } = generateLayout(
+      props.rows,
+      props.cols,
+      props.largeImagesCount,
+    )
+
+    setLayout(newLayout)
+    setLoading(false)
+  }, [props.rows, props.cols, props.largeImagesCount])
 
   return (
     <div className="h-fit">
@@ -152,29 +180,38 @@ const ImagesGridGallery: React.FC<Props> = (props) => {
           columnGap: `${gapX}px`,
         }}
       >
-        {layout.map((item, itemIndex) => {
-          const colStart = item.x + 1
-          const colSpan = item.w
-          const rowStart = item.y + 1
-          const rowSpan = item.h
+        {loading ? (
+          <Loader />
+        ) : (
+          layout?.map((item, itemIndex) => {
+            const colStart = item.x + 1
+            const colSpan = item.w
+            const rowStart = item.y + 1
+            const rowSpan = item.h
 
-          return (
-            <div
-              key={`grid-item-${itemIndex}`}
-              style={{
-                gridColumn: `${colStart} / span ${colSpan}`,
-                gridRow: `${rowStart} / span ${rowSpan}`,
-              }}
-            >
-              <GridItem
-                src={props.images[itemIndex % props.images.length]}
-                index={itemIndex}
-                w={item.w}
-                h={item.h}
-              />
-            </div>
-          )
-        })}
+            const imageItem = props.images[itemIndex % props.images.length]
+
+            return (
+              <div
+                key={`grid-item-${itemIndex}`}
+                style={{
+                  gridColumn: `${colStart} / span ${colSpan}`,
+                  gridRow: `${rowStart} / span ${rowSpan}`,
+                }}
+                onClick={() => {
+                  showPreview(imageItem)
+                }}
+              >
+                <GridItem
+                  src={imageItem.url}
+                  index={itemIndex}
+                  w={item.w}
+                  h={item.h}
+                />
+              </div>
+            )
+          })
+        )}
       </div>
     </div>
   )

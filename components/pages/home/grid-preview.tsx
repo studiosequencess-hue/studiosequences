@@ -1,12 +1,15 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import GalleryDiscoverContent from '@/components/pages/home/gallery-discover-content'
-import GalleryLatestContent from '@/components/pages/home/gallery-latest-content'
 import Loader from '@/components/partials/loader'
+import ImagePreviewDialog from '@/components/pages/home/image-preview-dialog'
+import GalleryLatestContent from '@/components/pages/home/gallery-latest-content'
 
 const GridPreview = () => {
   return (
     <div className={'py-8'}>
+      <ImagePreviewDialog />
+
       <Tabs defaultValue="discover">
         <TabsList className={'mx-auto w-fit gap-3'}>
           <TabsTrigger value="discover">Discover</TabsTrigger>

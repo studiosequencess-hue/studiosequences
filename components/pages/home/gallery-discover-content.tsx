@@ -1,11 +1,20 @@
 import React from 'react'
 import { PLACEHOLDER_IMAGES } from '@/lib/defaults'
 import ImagesGridGallery from '@/components/partials/images-grid-gallery'
+import { UserImage } from '@/lib/models'
 
-const GalleryDiscoverContent = async () => {
+const GalleryDiscoverContent: React.FC = async () => {
   const [images] = await Promise.all([
-    new Promise<string[]>((resolve) =>
-      setTimeout(() => resolve(PLACEHOLDER_IMAGES), 2000),
+    new Promise<UserImage[]>((resolve) =>
+      setTimeout(
+        () =>
+          resolve(
+            PLACEHOLDER_IMAGES.map((url) => ({
+              url,
+            })),
+          ),
+        2000,
+      ),
     ),
   ])
 

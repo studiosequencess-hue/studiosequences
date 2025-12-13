@@ -6,7 +6,7 @@ import { BsBriefcaseFill } from 'react-icons/bs'
 
 const Header = () => {
   return (
-    <nav className="text-primary-light fixed top-0 right-0 left-0 z-50 border-b border-white/25 backdrop-blur-[20px]">
+    <nav className="text-primary-light border-b border-white/25 backdrop-blur-[20px]">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href={'/'}>

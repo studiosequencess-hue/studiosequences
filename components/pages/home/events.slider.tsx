@@ -47,7 +47,7 @@ const EventsSlider = () => {
   }
 
   return (
-    <div className={'relative px-4'}>
+    <div className={'relative'}>
       <ScrollArea
         ref={wrapperRef}
         className={'w-full'}
@@ -74,7 +74,7 @@ const EventsSlider = () => {
         size={'icon'}
         variant={'outline'}
         className={
-          'absolute top-1/2 left-5 h-fit w-fit -translate-y-1/2 p-1 transition-opacity duration-300'
+          'absolute top-1/2 left-2 h-fit w-fit -translate-y-1/2 p-1 transition-opacity duration-300'
         }
         onClick={() => handleScroll(ScrollDirection.Left)}
         style={{
@@ -88,7 +88,7 @@ const EventsSlider = () => {
         size={'icon'}
         variant={'outline'}
         className={
-          'absolute top-1/2 right-5 h-fit w-fit -translate-y-1/2 p-1 transition-opacity duration-300'
+          'absolute top-1/2 right-2 h-fit w-fit -translate-y-1/2 p-1 transition-opacity duration-300'
         }
         onClick={() => handleScroll(ScrollDirection.Right)}
         style={{

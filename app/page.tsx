@@ -8,7 +8,7 @@ import GridPreview from '@/components/pages/home/grid-preview'
 
 export default function Home() {
   return (
-    <div className={'flex min-h-screen flex-col pt-16'}>
+    <div className={'flex min-h-screen flex-col pt-4'}>
       <EventsSlider />
       <GridPreview />
       {/*<HeroSection />*/}

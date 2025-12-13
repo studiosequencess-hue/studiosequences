@@ -24,6 +24,8 @@ import { format } from 'date-fns'
 import { FaBookmark, FaComment, FaHeart } from 'react-icons/fa6'
 import { BiRepost } from 'react-icons/bi'
 import HoverComponent from '@/components/partials/hover-card'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
 
 const ImagePreviewDialog = () => {
   const { open, image, closePreview } = useImagePreviewStore()
@@ -161,6 +163,20 @@ const ImagePreviewDialog = () => {
               content={'Copy Link'}
             />
           </div>
+          {/*Comments*/}
+          <ScrollArea className={'mt-4 w-full flex-1'}>
+            <div
+              className={'flex h-64 flex-col items-center justify-center gap-3'}
+            >
+              <h1 className={'text-base/none'}>Nothing yet here</h1>
+              <p className={'text-muted-foreground text-xs/none'}>
+                Make your own comment
+              </p>
+              <Button size={'sm'} variant={'default'} className={'mt-2'}>
+                Comment
+              </Button>
+            </div>
+          </ScrollArea>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,7 +1,6 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import GalleryDiscoverContent from '@/components/pages/home/gallery-discover-content'
-import Loader from '@/components/partials/loader'
 import ImagePreviewDialog from '@/components/pages/home/image-preview-dialog'
 import GalleryLatestContent from '@/components/pages/home/gallery-latest-content'
 
@@ -17,9 +16,7 @@ const GridPreview = () => {
           <TabsTrigger value="latest">Latest</TabsTrigger>
         </TabsList>
         <TabsContent value="discover">
-          <React.Suspense fallback={<Loader />}>
-            <GalleryDiscoverContent />
-          </React.Suspense>
+          <GalleryDiscoverContent />
         </TabsContent>
         <TabsContent value="following">
           <div className={'flex h-44 w-full items-center justify-center'}>
@@ -27,9 +24,7 @@ const GridPreview = () => {
           </div>
         </TabsContent>
         <TabsContent value="latest">
-          <React.Suspense fallback={<Loader />}>
-            <GalleryLatestContent />
-          </React.Suspense>
+          <GalleryLatestContent />
         </TabsContent>
       </Tabs>
     </div>

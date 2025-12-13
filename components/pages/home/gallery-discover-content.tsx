@@ -1,10 +1,22 @@
+'use client'
+
 import React from 'react'
 import { PLACEHOLDER_IMAGES } from '@/lib/defaults'
 import ImagesGridGallery from '@/components/partials/images-grid-gallery'
 import { UserImage } from '@/lib/models'
+import { useImagePreviewStore } from '@/store'
+import Loader from '@/components/partials/loader'
 
-const GalleryDiscoverContent: React.FC = async () => {
-  const [images] = await Promise.all([
+const GalleryDiscoverContent: React.FC = () => {
+  const {
+    loadingDiscoverImages,
+    setLoadingDiscoverImages,
+    discoverImages,
+    setDiscoverImages,
+  } = useImagePreviewStore()
+
+  React.useEffect(() => {
+    setLoadingDiscoverImages(true)
     new Promise<UserImage[]>((resolve) =>
       setTimeout(
         () =>
@@ -15,12 +27,16 @@ const GalleryDiscoverContent: React.FC = async () => {
           ),
         2000,
       ),
-    ),
-  ])
+    )
+      .then(setDiscoverImages)
+      .finally(() => setLoadingDiscoverImages(false))
+  }, [])
+
+  if (loadingDiscoverImages) return <Loader />
 
   return (
     <ImagesGridGallery
-      images={images}
+      images={discoverImages}
       rows={8}
       cols={10}
       largeImagesCount={5}

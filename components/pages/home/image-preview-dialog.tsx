@@ -14,8 +14,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { BsThreeDots } from 'react-icons/bs'
@@ -49,7 +47,7 @@ const ImagePreviewDialog = () => {
       >
         <div
           className={
-            'flex flex-1 items-center justify-center p-4 backdrop-blur-xs'
+            'relative flex flex-1 items-center justify-center p-4 backdrop-blur-xs'
           }
           onClick={closePreview}
         >

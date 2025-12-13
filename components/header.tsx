@@ -34,10 +34,14 @@ const Header = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button variant={'secondary'}>Sign In</Button>
-          <Button variant={'link'} className={'text-primary-light'}>
-            Sign Up
-          </Button>
+          <Link href={'/login'}>
+            <Button variant={'secondary'}>Sign In</Button>
+          </Link>
+          <Link href={'/signup'}>
+            <Button variant={'link'} className={'text-primary-light'}>
+              Sign Up
+            </Button>
+          </Link>
         </div>
       </div>
     </nav>

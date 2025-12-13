@@ -21,11 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} relative bg-black antialiased`}>
+      <body className={`${inter.className} bg-background relative antialiased`}>
         <Header />
-        <main className={'flex h-full w-full flex-grow flex-col'}>
-          {children}
-        </main>
+        <main className={'flex h-full w-full flex-1 flex-col'}>{children}</main>
         <Footer />
       </body>
     </html>

@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
+import { Toaster } from '@/components/ui/sonner'
+import AuthProvider from '@/components/auth-provider'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -22,9 +24,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-background relative antialiased`}>
-        <Header />
-        <main className={'flex h-full w-full flex-1 flex-col'}>{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main className={'flex h-full w-full flex-1 flex-col'}>
+            {children}
+          </main>
+          <Footer />
+
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   )

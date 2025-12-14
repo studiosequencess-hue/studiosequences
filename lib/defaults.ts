@@ -1,3 +1,5 @@
+import { User } from '@/lib/models'
+
 export const PLACEHOLDER_IMAGES: string[] = [
   'https://images.unsplash.com/photo-1765476608471-c30c09564def?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   'https://images.unsplash.com/photo-1765211003552-06fbd8265e6a?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -20,3 +22,18 @@ export const PLACEHOLDER_IMAGES: string[] = [
   'https://images.unsplash.com/photo-1764957080240-3a9a230c8718?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   'https://images.unsplash.com/photo-1764416755978-8031e644fd34?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 ]
+
+export const AUTH_CHECK_EVENT_ID = 'custom:auth-check'
+
+export const DEFAULT_USER: User = {
+  id: '',
+  email: '',
+  confirmed_at: null,
+  created_at: null,
+  email_confirmed_at: null,
+  is_anonymous: false,
+  phone: '',
+  last_sign_in_at: null,
+  phone_confirmed_at: null,
+  updated_at: null,
+}

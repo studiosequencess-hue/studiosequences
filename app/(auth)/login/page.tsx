@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -29,6 +29,11 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
+import { useAuthStore } from '@/store'
+import { signInWithEmailPassword } from '@/lib/actions.auth'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { Spinner } from '@/components/ui/spinner'
 
 const formSchema = z.object({
   email: z.email(),
@@ -44,8 +49,23 @@ const LoginPage = () => {
     },
   })
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+  const { setLoading, loading, setUser } = useAuthStore()
+  const router = useRouter()
+
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true)
+
+    const response = await signInWithEmailPassword(values)
+
+    if (response.status == 'success') {
+      setUser(response.data)
+      toast.success(response.message)
+      router.push('/')
+    } else {
+      toast.error(response.message)
+    }
+
+    setLoading(false)
   }
 
   return (
@@ -62,7 +82,7 @@ const LoginPage = () => {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit)}
-                className="space-y-8"
+                className="flex flex-col gap-4"
               >
                 <FormField
                   control={form.control}
@@ -98,13 +118,20 @@ const LoginPage = () => {
                     </FormItem>
                   )}
                 />
-                <Field>
-                  <Button variant="secondary" type="submit">
-                    Login
+                <Field className={'mt-4'}>
+                  <Button variant="secondary" type="submit" disabled={loading}>
+                    {loading ? (
+                      <div className={'flex items-center gap-2'}>
+                        <Spinner />
+                        <span>Processing...</span>
+                      </div>
+                    ) : (
+                      'Login'
+                    )}
                   </Button>
-                  <Button variant="ghost" type="button">
-                    Login with Google
-                  </Button>
+                  {/*<Button variant="ghost" type="button">*/}
+                  {/*  Login with Google*/}
+                  {/*</Button>*/}
                   <FieldDescription className="text-center">
                     <span>Don&apos;t have an account? </span>
                     <Link

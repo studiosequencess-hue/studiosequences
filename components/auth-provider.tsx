@@ -18,7 +18,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
     setLoading(true)
     getUser()
       .then((response) => {
-        console.log('getUser', response)
+        // console.log('getUser', response)
         if (response.status == 'success') {
           setUser(response.data || null)
         } else {

@@ -1,9 +1,16 @@
 'use server'
 
 import { createClient } from '@/lib/supabase.server'
-import { ServerResponse, SignInData, SignUpData, User } from '@/lib/models'
-import { DEFAULT_USER } from '@/lib/defaults'
+import {
+  ServerResponse,
+  SignInData,
+  SignUpData,
+  User,
+  UserInfo,
+} from '@/lib/models'
+import { DEFAULT_USER, DEFAULT_USER_INFO } from '@/lib/defaults'
 import deepmerge from 'deepmerge'
+import { QueryData } from '@supabase/supabase-js'
 
 export async function getUser(): Promise<ServerResponse<User>> {
   try {
@@ -49,7 +56,12 @@ export async function signInWithEmailPassword(
       }
     }
 
-    return getUser()
+    const response = await getUser()
+
+    return {
+      ...response,
+      message: 'Successfully signed in.',
+    }
   } catch (e) {
     console.log('signInWithEmailPassword', e)
     return {
@@ -65,7 +77,7 @@ export async function signUpWithEmailPassword(
   try {
     const supabase = await createClient()
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: signUpData.email,
       password: signUpData.password,
     })
@@ -76,6 +88,17 @@ export async function signUpWithEmailPassword(
         message: error.message,
       }
     }
+
+    await saveUserInfo(
+      deepmerge(DEFAULT_USER_INFO, {
+        id: data.user?.id || '',
+        email: data.user?.email || '',
+        username: signUpData.username,
+        first_name: signUpData.first_name,
+        last_name: signUpData.last_name,
+        pronoun: signUpData.pronoun,
+      }),
+    )
 
     return {
       status: 'success',
@@ -108,6 +131,38 @@ export async function signOut(): Promise<ServerResponse<boolean>> {
       status: 'success',
       message: 'Successfully signed out.',
       data: true,
+    }
+  } catch (e) {
+    console.log('signOut', e)
+    return {
+      status: 'error',
+      message: 'Failed to sign in user. Please try again later.',
+    }
+  }
+}
+
+export async function saveUserInfo(
+  userInfo: UserInfo,
+): Promise<ServerResponse<UserInfo>> {
+  try {
+    const supabase = await createClient()
+
+    const { error } = await supabase.from('users').insert({
+      ...userInfo,
+    })
+
+    if (error) {
+      console.log('saveUserInfo error', error)
+      return {
+        status: 'error',
+        message: 'Failed to save user info.',
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully signed out.',
+      data: userInfo,
     }
   } catch (e) {
     console.log('signOut', e)

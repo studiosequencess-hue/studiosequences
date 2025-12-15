@@ -42,3 +42,8 @@ next-env.d.ts
 
 # jetbrains
 .idea
+/lib/generated/prisma
+
+/lib/generated/prisma
+
+/lib/generated/prisma

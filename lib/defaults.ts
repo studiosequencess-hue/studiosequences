@@ -1,4 +1,4 @@
-import { User } from '@/lib/models'
+import { User, UserInfo } from '@/lib/models'
 
 export const PLACEHOLDER_IMAGES: string[] = [
   'https://images.unsplash.com/photo-1765476608471-c30c09564def?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -25,15 +25,26 @@ export const PLACEHOLDER_IMAGES: string[] = [
 
 export const AUTH_CHECK_EVENT_ID = 'custom:auth-check'
 
-export const DEFAULT_USER: User = {
+export const DEFAULT_USER_INFO: UserInfo = {
   id: '',
+  role: 'user',
+  avatar: '',
+  background_bottom: '',
+  background_top: '',
+  is_open_to_work: false,
+  is_verified: false,
+  location: '',
+  occupation: '',
+  pronoun: '',
+  username: '',
+  first_name: '',
+  last_name: '',
   email: '',
-  confirmed_at: null,
-  created_at: null,
-  email_confirmed_at: null,
+}
+
+export const DEFAULT_USER: User = {
   is_anonymous: false,
   phone: '',
-  last_sign_in_at: null,
-  phone_confirmed_at: null,
-  updated_at: null,
+  created_at: '',
+  ...DEFAULT_USER_INFO,
 }

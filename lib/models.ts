@@ -67,8 +67,13 @@ export type User = Pick<
 //   user_id: string
 // }
 
-export type SignInData = {
+export type SignInEmailData = {
   email: string
+  password: string
+}
+
+export type SignInUsernameData = {
+  username: string
   password: string
 }
 

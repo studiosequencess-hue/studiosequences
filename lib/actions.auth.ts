@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase.server'
 import {
   ServerResponse,
-  SignInData,
+  SignInEmailData,
+  SignInUsernameData,
   SignUpData,
   User,
   UserInfo,
@@ -38,14 +39,84 @@ export async function getUser(): Promise<ServerResponse<User>> {
   }
 }
 
+export async function getUserByUsername(
+  username: string,
+): Promise<ServerResponse<UserInfo>> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+
+    if (error || !data || data.length == 0) {
+      return {
+        status: 'error',
+        message: 'No such user found.',
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully fetched user.',
+      data: deepmerge(DEFAULT_USER_INFO, data[0]),
+    }
+  } catch (e) {
+    console.log('getUser', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch user. Please try again later.',
+    }
+  }
+}
+
 export async function signInWithEmailPassword(
-  signInData: SignInData,
+  signInData: SignInEmailData,
 ): Promise<ServerResponse<User>> {
   try {
     const supabase = await createClient()
 
     const { error } = await supabase.auth.signInWithPassword({
       email: signInData.email,
+      password: signInData.password,
+    })
+
+    if (error) {
+      return {
+        status: 'error',
+        message: error.message,
+      }
+    }
+
+    const response = await getUser()
+
+    return {
+      ...response,
+      message: 'Successfully signed in.',
+    }
+  } catch (e) {
+    console.log('signInWithEmailPassword', e)
+    return {
+      status: 'error',
+      message: 'Failed to sign in user. Please try again later.',
+    }
+  }
+}
+
+export async function signInWithUsernamePassword(
+  signInData: SignInUsernameData,
+): Promise<ServerResponse<User>> {
+  try {
+    const supabase = await createClient()
+
+    const userResponse = await getUserByUsername(signInData.username)
+
+    if (userResponse.status == 'error') {
+      return userResponse
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: userResponse.data.email,
       password: signInData.password,
     })
 

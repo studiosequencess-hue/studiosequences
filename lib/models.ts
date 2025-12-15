@@ -77,6 +77,14 @@ export type SignInUsernameData = {
   password: string
 }
 
+export type PasswordResetRequestData = {
+  email: string
+}
+
+export type PasswordResetData = {
+  password: string
+}
+
 export type SignUpData = {
   first_name: string
   last_name: string

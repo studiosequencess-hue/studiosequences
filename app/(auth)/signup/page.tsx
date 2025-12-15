@@ -125,6 +125,7 @@ const SignupPage = () => {
 
   React.useEffect(() => {
     router.prefetch('/login')
+    router.prefetch('/forgot-password')
   }, [router])
 
   return (
@@ -306,6 +307,14 @@ const SignupPage = () => {
                   />
                 </div>
                 <Field className={'mt-4'}>
+                  <Link
+                    href={'/forgot-password'}
+                    className={
+                      'w-fit! self-end pr-2 text-xs/none underline-offset-4 hover:underline'
+                    }
+                  >
+                    Forgot password
+                  </Link>
                   <Button variant="secondary" type="submit" disabled={loading}>
                     {loading ? (
                       <div className={'flex items-center gap-2'}>

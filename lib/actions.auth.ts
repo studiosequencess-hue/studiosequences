@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase.server'
 import {
+  PasswordResetData,
+  PasswordResetRequestData,
   ServerResponse,
   SignInEmailData,
   SignInUsernameData,
@@ -12,6 +14,7 @@ import {
 import { DEFAULT_USER, DEFAULT_USER_INFO } from '@/lib/defaults'
 import deepmerge from 'deepmerge'
 import { QueryData } from '@supabase/supabase-js'
+import { getBaseURL } from '@/lib/utils'
 
 export async function getUser(): Promise<ServerResponse<User>> {
   try {
@@ -208,6 +211,77 @@ export async function signOut(): Promise<ServerResponse<boolean>> {
     return {
       status: 'error',
       message: 'Failed to sign in user. Please try again later.',
+    }
+  }
+}
+
+export async function sendPasswordResetRequest(
+  passwordResetData: PasswordResetRequestData,
+): Promise<ServerResponse<boolean>> {
+  try {
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      passwordResetData.email,
+      {
+        redirectTo: `${getBaseURL()}/reset-password`,
+      },
+    )
+
+    if (error) {
+      return {
+        status: 'error',
+        message: error.message,
+      }
+    }
+
+    return {
+      status: 'success',
+      message:
+        'Successfully sent password reset email. Please check your inbox.',
+      data: true,
+    }
+  } catch (e) {
+    console.log('sendPasswordResetRequest', e)
+    return {
+      status: 'error',
+      message: 'Failed to send password reset email. Please try again later.',
+    }
+  }
+}
+
+export async function resetPassword(
+  passwordResetData: PasswordResetData,
+): Promise<ServerResponse<User>> {
+  try {
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.updateUser({
+      password: passwordResetData.password,
+    })
+
+    if (error) {
+      return {
+        status: 'error',
+        message: error.message,
+      }
+    }
+
+    const userResponse = await getUser()
+    if (userResponse.status == 'error') {
+      return userResponse
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully reset password.',
+      data: userResponse.data,
+    }
+  } catch (e) {
+    console.log('sendPasswordResetRequest', e)
+    return {
+      status: 'error',
+      message: 'Failed to reset password. Please try again later.',
     }
   }
 }

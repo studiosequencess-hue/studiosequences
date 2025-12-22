@@ -38,34 +38,7 @@ export type User = Pick<
 > &
   UserInfo
 
-// export type User = {
-//   id: string
-//   email: string
-//   role: 'user' | 'company' | 'admin'
-//   email_confirmed_at: Date | null
-//   phone: string
-//   phone_confirmed_at: Date | null
-//   confirmed_at: Date | null
-//   last_sign_in_at: Date | null
-//   created_at: Date | null
-//   updated_at: Date | null
-//   is_anonymous: boolean
-//   avatar: string
-//   pronoun: string
-//   background_top: string
-//   background_bottom: string
-//   occupation: string
-//   is_open_to_work: boolean
-//   location: string
-//   socials: UserSocial[]
-// }
-//
-// export type UserSocial = {
-//   id: string
-//   name: string
-//   url: string
-//   user_id: string
-// }
+export type UserSocial = Tables<'user_socials'>
 
 export type SignInEmailData = {
   email: string

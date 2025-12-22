@@ -14,10 +14,20 @@ import { MdNotifications } from 'react-icons/md'
 import { BsBriefcaseFill } from 'react-icons/bs'
 import HoverCard from '@/components/partials/hover-card'
 import { AiFillHome } from 'react-icons/ai'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 const HeaderContentAuthenticated = () => {
-  const { loading, setLoading, setUser } = useAuthStore()
+  const { user, setLoading, setUser } = useAuthStore()
   const router = useRouter()
+  const [dropdownOpen, setDropdownOpen] = React.useState(false)
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -129,16 +139,27 @@ const HeaderContentAuthenticated = () => {
             'group relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full'
           }
         />
-        <Button size={'sm'} variant={'secondary'} onClick={handleSignOut}>
-          {loading ? (
-            <div className={'flex items-center gap-2'}>
-              <Spinner />
-              <span>Processing...</span>
-            </div>
-          ) : (
-            'Sign Out'
-          )}
-        </Button>
+
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger>
+            <Avatar>
+              <AvatarImage src={user?.avatar || ''} />
+              <AvatarFallback>{'P'}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side={'bottom'} align={'end'}>
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                handleSignOut()
+                setDropdownOpen(false)
+              }}
+            >
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )

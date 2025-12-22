@@ -1,8 +1,8 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import GalleryDiscoverContent from '@/components/pages/home/gallery-discover-content'
-import ImagePreviewDialog from '@/components/pages/home/image-preview-dialog'
-import GalleryLatestContent from '@/components/pages/home/gallery-latest-content'
+import GalleryDiscoverContent from '@/components/pages/home/sections/gallery-discover-content'
+import ImagePreviewDialog from '@/components/pages/home/sections/image-preview-dialog'
+import GalleryLatestContent from '@/components/pages/home/sections/gallery-latest-content'
 
 const GridPreview = () => {
   return (

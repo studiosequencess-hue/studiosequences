@@ -18,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -45,6 +44,10 @@ const HeaderContentAuthenticated = () => {
     setLoading(false)
   }
 
+  React.useEffect(() => {
+    router.prefetch('/')
+  }, [])
+
   return (
     <div className="flex h-full w-full items-center justify-between px-12">
       <div className="flex h-full items-center gap-8">
@@ -57,38 +60,36 @@ const HeaderContentAuthenticated = () => {
       </div>
 
       <div className={'flex items-center gap-2'}>
-        <Link href={'/'}>
-          <HoverCard
-            trigger={
-              <AiFillHome
-                size={20}
-                className={
-                  'text-foreground group-hover:text-foreground/80 transition-colors'
-                }
-              />
-            }
-            content={'Home'}
-            triggerClassName={
-              'group relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full'
-            }
-          />
-        </Link>
-        <Link href={'/'}>
-          <HoverCard
-            trigger={
-              <BsBriefcaseFill
-                size={20}
-                className={
-                  'text-foreground group-hover:text-foreground/80 transition-colors'
-                }
-              />
-            }
-            content={'Jobs'}
-            triggerClassName={
-              'group relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full'
-            }
-          />
-        </Link>
+        <HoverCard
+          trigger={
+            <AiFillHome
+              size={20}
+              className={
+                'text-foreground group-hover:text-foreground/80 transition-colors'
+              }
+              onClick={() => router.push('/')}
+            />
+          }
+          content={'Home'}
+          triggerClassName={
+            'group relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full'
+          }
+        />
+        <HoverCard
+          trigger={
+            <BsBriefcaseFill
+              size={20}
+              className={
+                'text-foreground group-hover:text-foreground/80 transition-colors'
+              }
+              onClick={() => router.push('/')}
+            />
+          }
+          content={'Jobs'}
+          triggerClassName={
+            'group relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full'
+          }
+        />
         <HoverCard
           trigger={
             <div
@@ -148,7 +149,9 @@ const HeaderContentAuthenticated = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent side={'bottom'} align={'end'}>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuItem>
+              <Link href={'/profile'}>Profile</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={() => {

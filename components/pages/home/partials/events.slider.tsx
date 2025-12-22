@@ -11,13 +11,40 @@ enum ScrollDirection {
   Right = 1,
 }
 
+type ShowScrollButtonsType = {
+  left: boolean
+  right: boolean
+}
+
 const EventsSlider = () => {
   const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const eventsCount = 20
+  const eventsCount = 10
   const eventWidth = 150
   const eventGapWidth = 10
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
-  const [canScrollRight, setCanScrollRight] = React.useState(true)
+  const [showScrollButtons, setShowScrollButtons] =
+    React.useState<ShowScrollButtonsType>({
+      left: false,
+      right: false,
+    })
+
+  const initScroll = () => {
+    const scrollArea = wrapperRef.current
+
+    if (scrollArea) {
+      const viewport = scrollArea.querySelector(
+        '[data-radix-scroll-area-viewport]',
+      )
+
+      if (viewport) {
+        const { scrollLeft, scrollWidth, clientWidth } = viewport
+
+        setShowScrollButtons({
+          left: scrollLeft > 0,
+          right: scrollLeft + clientWidth < scrollWidth - 1,
+        })
+      }
+    }
+  }
 
   const handleScroll = (dir: ScrollDirection) => {
     const scrollArea = wrapperRef.current
@@ -30,34 +57,35 @@ const EventsSlider = () => {
       if (viewport) {
         const { scrollLeft, scrollWidth, clientWidth } = viewport
 
-        const newScrollLeft = scrollLeft + (eventWidth + eventGapWidth) * dir
+        const newScrollLeft = Math.max(
+          scrollLeft + (eventWidth + eventGapWidth) * dir,
+          0,
+        )
 
         viewport.scrollTo({
           left: newScrollLeft,
           behavior: 'smooth',
         })
 
-        const isAtStart = newScrollLeft <= 5
-        const isAtEnd = scrollWidth - newScrollLeft - clientWidth <= 5
-
-        setCanScrollLeft(!isAtStart)
-        setCanScrollRight(!isAtEnd)
+        setShowScrollButtons({
+          left: newScrollLeft > 0,
+          right: newScrollLeft + clientWidth < scrollWidth - 1,
+        })
       }
     }
   }
 
+  React.useEffect(() => {
+    initScroll()
+  }, [])
   return (
-    <div className={'relative'}>
-      <ScrollArea
-        ref={wrapperRef}
-        className={'w-full'}
-        style={{
-          height: `${eventWidth}px`,
-        }}
-      >
+    <div className={'relative w-full p-4'}>
+      <ScrollArea ref={wrapperRef} className={'w-full'}>
         <div
-          className={'flex items-center'}
-          style={{ gap: `${eventGapWidth}px` }}
+          className={'flex items-center overflow-x-auto'}
+          style={{
+            gap: `${eventGapWidth}px`,
+          }}
         >
           {new Array(eventsCount).fill(0).map((_, i) => (
             <Skeleton
@@ -67,7 +95,6 @@ const EventsSlider = () => {
             />
           ))}
         </div>
-        {/*<ScrollBar orientation={'horizontal'} />*/}
       </ScrollArea>
 
       <Button
@@ -78,7 +105,7 @@ const EventsSlider = () => {
         }
         onClick={() => handleScroll(ScrollDirection.Left)}
         style={{
-          opacity: canScrollLeft ? 1 : 0,
+          display: showScrollButtons.left ? 'block' : 'none',
         }}
       >
         <FaChevronLeft />
@@ -92,7 +119,7 @@ const EventsSlider = () => {
         }
         onClick={() => handleScroll(ScrollDirection.Right)}
         style={{
-          opacity: canScrollRight ? 1 : 0,
+          display: showScrollButtons.right ? 'block' : 'none',
         }}
       >
         <FaChevronRight />

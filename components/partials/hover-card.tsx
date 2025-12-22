@@ -20,7 +20,7 @@ type Props = {
 
 const HoverComponent: React.FC<Props> = (props) => {
   return (
-    <HoverCard>
+    <HoverCard openDelay={250}>
       <HoverCardTrigger
         className={cn(
           'flex cursor-pointer items-center justify-center text-sm/none',

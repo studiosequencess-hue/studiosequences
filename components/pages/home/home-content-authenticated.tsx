@@ -1,8 +1,13 @@
 import React from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import StoriesSlider from '@/components/pages/home/partials/stories.slider'
 import FollowSuggestionsBlock from '@/components/pages/home/partials/follow.suggestions.block'
 import LatestNewsBlock from '@/components/pages/home/partials/latest.news.block'
 import UpcomingEventsBlock from '@/components/pages/home/partials/upcoming.events.block'
+import TabPosts from '@/components/pages/home/sections/tab.posts'
+import TabPortfolio from '@/components/pages/home/sections/tab.portfolio'
+import TabBookmarks from '@/components/pages/home/sections/tab.bookmarks'
+import TabAbout from '@/components/pages/home/sections/tab.about'
 
 const HomeContentAuthenticated = () => {
   return (
@@ -26,6 +31,27 @@ const HomeContentAuthenticated = () => {
       </div>
       <div className={'flex min-w-0 flex-col'}>
         <StoriesSlider />
+
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className={'mx-auto flex w-fit gap-0 *:w-fit *:px-4'}>
+            <TabsTrigger value="posts">POSTS</TabsTrigger>
+            <TabsTrigger value="portfolio">PORTFOLIO</TabsTrigger>
+            <TabsTrigger value="bookmarks">BOOKMARKS</TabsTrigger>
+            <TabsTrigger value="about">ABOUT</TabsTrigger>
+          </TabsList>
+          <TabsContent value="posts">
+            <TabPosts />
+          </TabsContent>
+          <TabsContent value="portfolio">
+            <TabPortfolio />
+          </TabsContent>
+          <TabsContent value="bookmarks">
+            <TabBookmarks />
+          </TabsContent>
+          <TabsContent value="about">
+            <TabAbout />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

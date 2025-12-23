@@ -12,7 +12,7 @@ const Loader: React.FC<Props> = (props) => {
     <div
       className={cn(
         'flex h-44 w-full items-center justify-center',
-        props.spinnerClassName,
+        props.wrapperClassName,
       )}
     >
       <Spinner className={cn(props.spinnerClassName)} />

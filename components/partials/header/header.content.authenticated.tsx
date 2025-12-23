@@ -149,8 +149,8 @@ const HeaderContentAuthenticated = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent side={'bottom'} align={'end'}>
-            <DropdownMenuItem>
-              <Link href={'/profile'}>Profile</Link>
+            <DropdownMenuItem onSelect={() => router.push('/profile')}>
+              Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

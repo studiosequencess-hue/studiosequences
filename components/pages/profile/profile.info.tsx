@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { HiBadgeCheck, HiOutlineBadgeCheck } from 'react-icons/hi'
 import HoverCard from '@/components/partials/hover-card'
 import EditDisplayName from '@/components/pages/profile/edit.display.name'
+import EditPronoun from '@/components/pages/profile/edit.pronoun'
 
 type Props = {
   user: User
@@ -42,9 +43,14 @@ const ProfileInfo: React.FC<Props> = ({ user, setUser }) => {
               setEditingValue(state ? EditingValue.DisplayName : null)
             }
           />
-          <span className={'self-end text-sm/none capitalize'}>
-            ({user.pronoun?.trim() || 'No pronoun'})
-          </span>
+          <EditPronoun
+            user={user}
+            setUser={setUser}
+            show={editingValue == EditingValue.Pronoun}
+            setShow={(state) =>
+              setEditingValue(state ? EditingValue.Pronoun : null)
+            }
+          />
 
           <HoverCard
             trigger={

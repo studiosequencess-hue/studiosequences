@@ -11,7 +11,17 @@ type Props = {
   user: User
 }
 
+enum EditingValue {
+  DisplayName,
+  Pronoun,
+  AccountVerification,
+}
+
 const ProfileInfo: React.FC<Props> = ({ user }) => {
+  const [editingValue, setEditingValue] = React.useState<EditingValue | null>(
+    null,
+  )
+
   return (
     <div className={'relative flex flex-col'}>
       <div
@@ -32,7 +42,7 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
 
           <HoverCard
             trigger={
-              <span className={'text-3xl/none'}>
+              <span className={'text-xl/none'}>
                 {user.is_verified ? (
                   <HiBadgeCheck className={'text-accent-blue'} />
                 ) : (
@@ -57,7 +67,7 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
       />
       <Avatar className={'absolute top-44 left-20 h-40 w-40 -translate-y-1/2'}>
         <AvatarImage src={user.avatar || ''} />
-        <AvatarFallback className={'text-2xl/none'}>P</AvatarFallback>
+        <AvatarFallback className={'text-5xl/none'}>P</AvatarFallback>
       </Avatar>
     </div>
   )

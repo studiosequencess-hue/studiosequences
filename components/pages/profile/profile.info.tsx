@@ -6,9 +6,11 @@ import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { HiBadgeCheck, HiOutlineBadgeCheck } from 'react-icons/hi'
 import HoverCard from '@/components/partials/hover-card'
+import EditDisplayName from '@/components/pages/profile/edit.display.name'
 
 type Props = {
   user: User
+  setUser: (user: User) => void
 }
 
 enum EditingValue {
@@ -17,7 +19,7 @@ enum EditingValue {
   AccountVerification,
 }
 
-const ProfileInfo: React.FC<Props> = ({ user }) => {
+const ProfileInfo: React.FC<Props> = ({ user, setUser }) => {
   const [editingValue, setEditingValue] = React.useState<EditingValue | null>(
     null,
   )
@@ -32,10 +34,14 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
         )}
       >
         <div className={'flex items-center gap-2'}>
-          <span className={'text-xl/none capitalize'}>
-            {[user.first_name, user.last_name].join(' ').toLowerCase().trim() ||
-              'No name'}
-          </span>
+          <EditDisplayName
+            user={user}
+            setUser={setUser}
+            show={editingValue == EditingValue.DisplayName}
+            setShow={(state) =>
+              setEditingValue(state ? EditingValue.DisplayName : null)
+            }
+          />
           <span className={'self-end text-sm/none capitalize'}>
             ({user.pronoun?.trim() || 'No pronoun'})
           </span>

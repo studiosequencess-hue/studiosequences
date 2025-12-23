@@ -12,57 +12,39 @@ import {
   UserInfo,
 } from '@/lib/models'
 import { DEFAULT_USER, DEFAULT_USER_INFO } from '@/lib/defaults'
-import deepmerge from 'deepmerge'
-import { QueryData } from '@supabase/supabase-js'
+import lodash from 'lodash'
 import { getBaseURL } from '@/lib/utils'
+import { getUserById, getUserByUsername } from '@/lib/actions.user'
 
 export async function getUser(): Promise<ServerResponse<User>> {
   try {
     const supabase = await createClient()
-    const { data, error } = await supabase.auth.getUser()
+    const currentUserResponse = await supabase.auth.getUser()
 
-    if (error) {
+    if (currentUserResponse.error) {
       return {
         status: 'error',
-        message: error.message,
+        message: currentUserResponse.error.message,
+      }
+    }
+
+    const userInfoResponse = await getUserById(currentUserResponse.data.user.id)
+
+    if (userInfoResponse.status === 'error') {
+      return {
+        status: 'error',
+        message: userInfoResponse.message,
       }
     }
 
     return {
       status: 'success',
       message: 'Successfully fetched user.',
-      data: deepmerge(DEFAULT_USER, data.user),
-    }
-  } catch (e) {
-    console.log('getUser', e)
-    return {
-      status: 'error',
-      message: 'Failed to fetch user. Please try again later.',
-    }
-  }
-}
-
-export async function getUserByUsername(
-  username: string,
-): Promise<ServerResponse<UserInfo>> {
-  try {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', username)
-
-    if (error || !data || data.length == 0) {
-      return {
-        status: 'error',
-        message: 'No such user found.',
-      }
-    }
-
-    return {
-      status: 'success',
-      message: 'Successfully fetched user.',
-      data: deepmerge(DEFAULT_USER_INFO, data[0]),
+      data: lodash.merge(
+        DEFAULT_USER,
+        currentUserResponse.data.user,
+        userInfoResponse.data,
+      ),
     }
   } catch (e) {
     console.log('getUser', e)
@@ -164,7 +146,7 @@ export async function signUpWithEmailPassword(
     }
 
     await saveUserInfo(
-      deepmerge(DEFAULT_USER_INFO, {
+      lodash.merge(DEFAULT_USER_INFO, {
         id: data.user?.id || '',
         email: data.user?.email || '',
         username: signUpData.username,

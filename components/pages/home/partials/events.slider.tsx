@@ -18,7 +18,7 @@ type ShowScrollButtonsType = {
 
 const EventsSlider = () => {
   const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const eventsCount = 10
+  const eventsCount = 20
   const eventWidth = 150
   const eventGapWidth = 10
   const [showScrollButtons, setShowScrollButtons] =

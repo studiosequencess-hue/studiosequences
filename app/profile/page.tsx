@@ -7,7 +7,7 @@ import Loader from '@/components/partials/loader'
 import EmptyPage from '@/components/empty.page'
 
 const ProfilePage = () => {
-  const { user, loading } = useAuthStore()
+  const { user, setUser, loading } = useAuthStore()
 
   if (loading) return <Loader wrapperClassName={'min-h-screen'} />
   if (!user)
@@ -20,7 +20,7 @@ const ProfilePage = () => {
 
   return (
     <div className={'flex grow flex-col'}>
-      <ProfileInfo user={user} />
+      <ProfileInfo user={user} setUser={setUser} />
     </div>
   )
 }

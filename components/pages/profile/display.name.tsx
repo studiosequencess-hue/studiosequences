@@ -89,7 +89,7 @@ const DisplayName = () => {
       <PopoverTrigger asChild disabled={!user || loading}>
         <span
           className={
-            'hover:text-foreground/80 text-foreground cursor-pointer pt-2 text-xl/none capitalize'
+            'hover:text-foreground/80 text-foreground cursor-pointer text-xl/none capitalize'
           }
         >
           {[user?.first_name, user?.last_name].join(' ').toLowerCase().trim() ||

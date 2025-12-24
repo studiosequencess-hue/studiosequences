@@ -78,7 +78,7 @@ const Pronoun = () => {
       <PopoverTrigger asChild>
         <span
           className={
-            'hover:text-foreground/80 text-foreground cursor-pointer self-end pt-2 text-sm/none capitalize'
+            'hover:text-foreground/80 text-foreground cursor-pointer self-end text-sm/none capitalize'
           }
         >
           ({user?.pronoun?.trim() || 'No pronoun'})

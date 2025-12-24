@@ -1,13 +1,13 @@
 import React from 'react'
 import { User } from '@/lib/models'
 import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { HiBadgeCheck, HiOutlineBadgeCheck } from 'react-icons/hi'
 import HoverCard from '@/components/partials/hover-card'
 import DisplayName from '@/components/pages/profile/display.name'
 import Pronoun from '@/components/pages/profile/pronoun'
 import BackgroundTop from '@/components/pages/profile/background.top'
 import BackgroundBottom from '@/components/pages/profile/background.bottom'
+import ProfileAvatar from '@/components/pages/profile/profile.avatar'
 
 type Props = {
   user: User
@@ -47,12 +47,7 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
       <div className={cn('bg-primary-dark/60 relative h-66 w-full')}>
         <BackgroundBottom />
       </div>
-      <Avatar
-        className={'absolute top-44 left-20 z-20 h-40 w-40 -translate-y-1/2'}
-      >
-        <AvatarImage src={user.avatar || ''} />
-        <AvatarFallback className={'text-5xl/none'}>P</AvatarFallback>
-      </Avatar>
+      <ProfileAvatar />
     </div>
   )
 }

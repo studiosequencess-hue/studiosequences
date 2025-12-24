@@ -7,6 +7,7 @@ import HoverCard from '@/components/partials/hover-card'
 import DisplayName from '@/components/pages/profile/display.name'
 import Pronoun from '@/components/pages/profile/pronoun'
 import BackgroundTop from '@/components/pages/profile/background.top'
+import BackgroundBottom from '@/components/pages/profile/background.bottom'
 
 type Props = {
   user: User
@@ -43,13 +44,9 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
           />
         </div>
       </div>
-      <div
-        className={cn(
-          'bg-primary-dark/60 h-66 w-full',
-          user.background_bottom &&
-            'bg-[url(${user.background_top}) center center / cover no-repeat]',
-        )}
-      />
+      <div className={cn('bg-primary-dark/60 relative h-66 w-full')}>
+        <BackgroundBottom />
+      </div>
       <Avatar
         className={'absolute top-44 left-20 z-20 h-40 w-40 -translate-y-1/2'}
       >

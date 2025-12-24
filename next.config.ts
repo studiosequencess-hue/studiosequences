@@ -1,4 +1,4 @@
-import type {NextConfig} from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -10,8 +10,14 @@ const nextConfig: NextConfig = {
         pathname: '/**',
         port: '',
       },
+      {
+        hostname: 'vwuypgdyrwfqhkvzrtst.supabase.co',
+        protocol: 'https',
+        pathname: '/**',
+        port: '',
+      },
     ],
   },
 }
 
-export default nextConfig;
+export default nextConfig

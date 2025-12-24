@@ -26,3 +26,11 @@ export function getBaseURL() {
   url = url.endsWith('/') ? url : `${url}/`
   return url.slice(0, -1)
 }
+
+export const getPathFromPublicUrl = (
+  url: string,
+  bucketName: string,
+): string | null => {
+  const parts = url.split(`${bucketName}/`)
+  return parts.length > 1 ? parts[1] : null
+}

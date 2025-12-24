@@ -23,11 +23,6 @@ export type Tables<T extends keyof Database['public']['Tables']> =
 
 export type UserInfo = Tables<'users'>
 
-export enum UserRole {
-  User = 'user',
-  Admin = 'admin',
-}
-
 export type User = Pick<
   SupabaseUser,
   | 'id'

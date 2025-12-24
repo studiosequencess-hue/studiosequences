@@ -17,8 +17,10 @@ const Error: React.FC<ErrorProps> = (props) => {
   return (
     <Empty className={'min-h-screen'}>
       <EmptyHeader>
-        <EmptyTitle>{props.title}</EmptyTitle>
-        <EmptyDescription>{props.description}</EmptyDescription>
+        <EmptyTitle className={'capitalize'}>{props.title}</EmptyTitle>
+        <EmptyDescription className={'capitalize'}>
+          {props.description}
+        </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Link href={'/'}>

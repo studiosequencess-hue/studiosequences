@@ -26,54 +26,39 @@ import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 
-type Props = {
-  user: User
-  setUser: (user: User) => void
-  show: boolean
-  setShow: (show: boolean) => void
-}
-
 const formSchema = z.object({
-  first_name: z
-    .string()
-    .min(1, {
-      error: 'Too short',
-    })
-    .max(255, {
-      error: 'Too long',
-    }),
-  last_name: z.string().max(255, {
+  pronoun: z.string().max(50, {
     error: 'Too long',
   }),
 })
 
-const EditDisplayName: React.FC<Props> = ({ user, setUser, show, setShow }) => {
+const Pronoun = () => {
+  const { user, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: user.first_name || '',
-      last_name: user.last_name || '',
+      pronoun: user?.pronoun || '',
     },
   })
+  const [open, setOpen] = React.useState<boolean>(false)
   const [updating, setUpdating] = React.useState<boolean>(false)
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user || loading) return
     setUpdating(true)
 
     const response = await updateUserInfo({
       user_id: user.id,
-      first_name: values.first_name,
-      last_name: values.last_name,
+      pronoun: values.pronoun,
     })
 
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
         ...user,
-        first_name: values.first_name,
-        last_name: values.last_name,
+        pronoun: values.pronoun,
       })
-      setShow(false)
+      setOpen(false)
     } else {
       toast.error(response.message)
     }
@@ -82,21 +67,21 @@ const EditDisplayName: React.FC<Props> = ({ user, setUser, show, setShow }) => {
   }
 
   React.useEffect(() => {
+    if (!user || loading) return
+
     form.reset()
-    form.setValue('first_name', user.first_name || '')
-    form.setValue('last_name', user.last_name || '')
-  }, [form, user, show])
+    form.setValue('pronoun', user.pronoun || '')
+  }, [form, user, loading])
 
   return (
-    <Popover open={show} onOpenChange={setShow}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <span
           className={
-            'hover:text-foreground/80 text-foreground cursor-pointer text-xl/none capitalize'
+            'hover:text-foreground/80 text-foreground cursor-pointer self-end pt-2 text-sm/none capitalize'
           }
         >
-          {[user.first_name, user.last_name].join(' ').toLowerCase().trim() ||
-            'No name'}
+          ({user?.pronoun?.trim() || 'No pronoun'})
         </span>
       </PopoverTrigger>
       <PopoverContent align={'start'} sideOffset={20} className={'w-fit'}>
@@ -108,29 +93,11 @@ const EditDisplayName: React.FC<Props> = ({ user, setUser, show, setShow }) => {
             <div className={'flex w-full items-start gap-4'}>
               <FormField
                 control={form.control}
-                name="first_name"
+                name="pronoun"
                 render={({ field }) => (
                   <FormItem className={'w-40'}>
                     <FormLabel className={'text-xs/none'}>
-                      First Name<sup>*</sup>
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage className={'text-xs/none'} />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="last_name"
-                render={({ field }) => (
-                  <FormItem className={'w-40'}>
-                    <FormLabel className={'text-xs/none'}>
-                      Last Name{' '}
-                      <span className={'text-muted-foreground'}>
-                        (optional)
-                      </span>
+                      Pronoun<sup>*</sup>
                     </FormLabel>
                     <FormControl>
                       <Input {...field} />
@@ -156,4 +123,4 @@ const EditDisplayName: React.FC<Props> = ({ user, setUser, show, setShow }) => {
   )
 }
 
-export default EditDisplayName
+export default Pronoun

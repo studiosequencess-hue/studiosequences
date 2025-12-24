@@ -1,9 +1,10 @@
 'use server'
 
 import { createClient } from '@/lib/supabase.server'
-import { ServerResponse, User, UserInfo, UserRole } from '@/lib/models'
+import { ServerResponse, User, UserInfo } from '@/lib/models'
 import { DEFAULT_USER_INFO } from '@/lib/defaults'
 import deepmerge from 'deepmerge'
+import { UserRole } from '@/lib/constants'
 
 export async function getUserById(
   id: User['id'],

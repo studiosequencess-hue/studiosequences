@@ -1,11 +1,10 @@
 'use client'
 
 import React from 'react'
-import { createClient } from '@/lib/supabase.client'
 import { useAuthStore } from '@/store'
 import { getUser } from '@/lib/actions.auth'
 import debounce from 'debounce'
-import { AUTH_CHECK_EVENT_ID } from '@/lib/defaults'
+import { AUTH_CHECK_EVENT_ID } from '@/lib/constants'
 
 type Props = {
   children: React.ReactNode

@@ -39,11 +39,11 @@ export const DEFAULT_USER_INFO: UserInfo = {
   first_name: '',
   last_name: '',
   email: '',
+  contact: '',
 }
 
 export const DEFAULT_USER: User = {
   is_anonymous: false,
-  phone: '',
   created_at: '',
   ...DEFAULT_USER_INFO,
 }

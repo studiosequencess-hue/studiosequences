@@ -60,7 +60,7 @@ const formSchema = z
       error: 'Too long',
     }),
     email: z.email(),
-    phone: z.string().max(255, {
+    contact: z.string().max(255, {
       error: 'Too long',
     }),
     password: z
@@ -99,7 +99,7 @@ const SignupPage = () => {
       last_name: '',
       pronoun: '',
       email: '',
-      phone: '',
+      contact: '',
       password: '',
       confirmPassword: '',
     },
@@ -247,13 +247,13 @@ const SignupPage = () => {
                   />
                   <FormField
                     control={form.control}
-                    name="phone"
+                    name="contact"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel
                           className={'flex items-center justify-between'}
                         >
-                          <span>Phone </span>
+                          <span>Contact </span>
                           <span className={'text-muted-foreground'}>
                             (optional)
                           </span>

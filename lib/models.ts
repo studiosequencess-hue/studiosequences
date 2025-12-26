@@ -27,7 +27,6 @@ export type User = Pick<
   SupabaseUser,
   | 'id'
   | 'email'
-  | 'phone'
   | 'is_anonymous'
   | 'created_at'
   | 'updated_at'
@@ -64,6 +63,6 @@ export type SignUpData = {
   pronoun: string
   username: string
   email: string
-  phone: string
+  contact: string
   password: string
 }

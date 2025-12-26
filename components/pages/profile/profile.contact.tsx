@@ -6,7 +6,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { User } from '@/lib/models'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -24,28 +23,20 @@ import { Spinner } from '@/components/ui/spinner'
 import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
+import { Textarea } from '@/components/ui/textarea'
 
 const formSchema = z.object({
-  first_name: z
-    .string()
-    .min(1, {
-      error: 'Too short',
-    })
-    .max(255, {
-      error: 'Too long',
-    }),
-  last_name: z.string().max(255, {
+  contact: z.string().max(255, {
     error: 'Too long',
   }),
 })
 
-const DisplayName = () => {
+const ProfileContact = () => {
   const { user, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: user?.first_name || '',
-      last_name: user?.last_name || '',
+      contact: user?.contact || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
@@ -57,16 +48,14 @@ const DisplayName = () => {
 
     const response = await updateUserInfo({
       user_id: user.id,
-      first_name: values.first_name,
-      last_name: values.last_name,
+      contact: values.contact,
     })
 
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
         ...user,
-        first_name: values.first_name,
-        last_name: values.last_name,
+        contact: values.contact,
       })
       setOpen(false)
     } else {
@@ -80,8 +69,7 @@ const DisplayName = () => {
     if (!user || loading) return
 
     form.reset()
-    form.setValue('first_name', user.first_name || '')
-    form.setValue('last_name', user.last_name || '')
+    form.setValue('contact', user.contact || '')
   }, [form, user, loading])
 
   return (
@@ -89,11 +77,10 @@ const DisplayName = () => {
       <PopoverTrigger asChild disabled={!user || loading}>
         <span
           className={
-            'hover:text-foreground/80 text-foreground cursor-pointer text-xl/none capitalize'
+            'hover:text-foreground/80 text-foreground cursor-pointer text-sm/none capitalize'
           }
         >
-          {[user?.first_name, user?.last_name].join(' ').toLowerCase().trim() ||
-            'No name'}
+          {[user?.contact].join(' ').toLowerCase().trim() || 'No contact'}
         </span>
       </PopoverTrigger>
       <PopoverContent align={'start'} sideOffset={20} className={'w-fit'}>
@@ -105,32 +92,12 @@ const DisplayName = () => {
             <div className={'flex w-full items-start gap-4'}>
               <FormField
                 control={form.control}
-                name="first_name"
+                name="contact"
                 render={({ field }) => (
-                  <FormItem className={'w-40'}>
-                    <FormLabel className={'text-xs/none'}>
-                      First Name<sup>*</sup>
-                    </FormLabel>
+                  <FormItem className={'w-72'}>
+                    <FormLabel className={'text-xs/none'}>Contact</FormLabel>
                     <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage className={'text-xs/none'} />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="last_name"
-                render={({ field }) => (
-                  <FormItem className={'w-40'}>
-                    <FormLabel className={'text-xs/none'}>
-                      Last Name{' '}
-                      <span className={'text-muted-foreground'}>
-                        (optional)
-                      </span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} />
+                      <Textarea {...field} />
                     </FormControl>
                     <FormMessage className={'text-xs/none'} />
                   </FormItem>
@@ -153,4 +120,4 @@ const DisplayName = () => {
   )
 }
 
-export default DisplayName
+export default ProfileContact

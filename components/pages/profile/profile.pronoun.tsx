@@ -32,7 +32,7 @@ const formSchema = z.object({
   }),
 })
 
-const Pronoun = () => {
+const ProfilePronoun = () => {
   const { user, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -123,4 +123,4 @@ const Pronoun = () => {
   )
 }
 
-export default Pronoun
+export default ProfilePronoun

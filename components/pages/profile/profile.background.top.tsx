@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 
-const BackgroundBottom = () => {
+const ProfileBackgroundTop = () => {
   const { user, setUser } = useAuthStore()
   const ref = React.useRef<HTMLInputElement>(null)
   const [editing, setEditing] = React.useState<boolean>(false)
@@ -28,7 +28,7 @@ const BackgroundBottom = () => {
       file: file,
       path: StoragePath.User,
       user_id: user.id,
-      basename: 'background-bottom',
+      basename: 'background-top',
     })
 
     if (uploadResponse.status == 'error') {
@@ -38,7 +38,7 @@ const BackgroundBottom = () => {
 
       const updateInfoResponse = await updateUserInfo({
         user_id: user.id,
-        background_bottom: `${url}?t=${new Date().getTime()}`,
+        background_top: `${url}?t=${new Date().getTime()}`,
       })
 
       if (updateInfoResponse.status == 'error') {
@@ -47,7 +47,7 @@ const BackgroundBottom = () => {
         toast.success(updateInfoResponse.message)
         setUser({
           ...user,
-          background_bottom: url,
+          background_top: url,
         })
       }
     }
@@ -62,7 +62,7 @@ const BackgroundBottom = () => {
   const handleDelete = async () => {
     if (editing) return
     if (!user) return
-    if (!user.background_bottom) return
+    if (!user.background_top) return
 
     setEditing(true)
 
@@ -70,11 +70,11 @@ const BackgroundBottom = () => {
       deleteFile({
         user_id: user.id,
         bucket: StorageBucketType.Images,
-        publicUrl: user.background_bottom,
+        publicUrl: user.background_top,
       }),
       updateUserInfo({
         user_id: user.id,
-        background_bottom: '',
+        background_top: '',
       }),
     ])
 
@@ -91,7 +91,7 @@ const BackgroundBottom = () => {
       toast.success('Background deleted successfully')
       setUser({
         ...user,
-        background_bottom: '',
+        background_top: '',
       })
     }
 
@@ -100,11 +100,11 @@ const BackgroundBottom = () => {
 
   return (
     <div className={'absolute inset-0 h-full w-full grow'}>
-      {user?.background_bottom && (
+      {user?.background_top && (
         <div className={'absolute inset-0'}>
           <Image
-            src={user.background_bottom}
-            alt={'background-image-bottom'}
+            src={user.background_top}
+            alt={'background-image-top'}
             layout="fill"
             objectFit="cover"
             unoptimized
@@ -114,7 +114,7 @@ const BackgroundBottom = () => {
       )}
       <div
         className={cn(
-          'group bg-background/35 absolute inset-0 z-10 flex cursor-pointer items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
+          'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
           editing && 'opacity-100',
         )}
       >
@@ -136,7 +136,7 @@ const BackgroundBottom = () => {
               change
             </Button>
 
-            {user?.background_bottom && (
+            {user?.background_top && (
               <Button
                 size={'sm'}
                 variant={'destructive'}
@@ -161,4 +161,4 @@ const BackgroundBottom = () => {
   )
 }
 
-export default BackgroundBottom
+export default ProfileBackgroundTop

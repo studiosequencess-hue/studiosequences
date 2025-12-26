@@ -153,6 +153,7 @@ export async function signUpWithEmailPassword(
         first_name: signUpData.first_name,
         last_name: signUpData.last_name,
         pronoun: signUpData.pronoun,
+        contact: signUpData.contact,
       }),
     )
 

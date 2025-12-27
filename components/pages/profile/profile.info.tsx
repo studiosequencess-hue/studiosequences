@@ -47,7 +47,7 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
       </div>
       <div
         className={cn(
-          'bg-primary-dark/60 relative z-0 min-h-66 w-full pt-22 pl-20',
+          'bg-primary-dark/60 relative z-0 min-h-66 w-full pt-24 pl-24',
         )}
       >
         <ProfileExtraInfo />

@@ -107,6 +107,16 @@ const ProfileAvatar = () => {
       <AvatarImage src={user?.avatar || ''} />
       <AvatarFallback className={'text-5xl/none'}>P</AvatarFallback>
 
+      {user?.is_open_to_work && (
+        <div
+          className={
+            'bg-accent-blue absolute bottom-0 flex w-full translate-x-7 -translate-y-5 -rotate-30 items-center justify-center py-2 text-xs/none'
+          }
+        >
+          Open To Work
+        </div>
+      )}
+
       <div
         className={cn(
           'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',

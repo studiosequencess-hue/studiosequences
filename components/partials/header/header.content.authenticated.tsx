@@ -82,7 +82,7 @@ const HeaderContentAuthenticated = () => {
               className={
                 'text-foreground group-hover:text-foreground/80 transition-colors'
               }
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/jobs')}
             />
           }
           content={'Jobs'}

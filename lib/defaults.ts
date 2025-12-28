@@ -40,6 +40,10 @@ export const DEFAULT_USER_INFO: UserInfo = {
   last_name: '',
   email: '',
   contact: '',
+  instagram: '',
+  twitter: '',
+  linkedin: '',
+  facebook: '',
 }
 
 export const DEFAULT_USER: User = {

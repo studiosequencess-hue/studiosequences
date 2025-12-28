@@ -1,7 +1,8 @@
 import React from 'react'
+import ProfileActivities from '@/components/pages/profile/profile.activities'
 
 const TabPosts = () => {
-  return <div>posts</div>
+  return <ProfileActivities />
 }
 
 export default TabPosts

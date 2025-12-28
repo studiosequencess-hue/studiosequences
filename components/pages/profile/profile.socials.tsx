@@ -25,6 +25,11 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { Textarea } from '@/components/ui/textarea'
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from 'react-icons/fa6'
+import Link from 'next/link'
+
+type Props = {
+  editable: boolean
+}
 
 const formSchema = z.object({
   instagram: z.string().max(255, {
@@ -41,7 +46,7 @@ const formSchema = z.object({
   }),
 })
 
-const ProfileSocials = () => {
+const ProfileSocials: React.FC<Props> = ({ editable }) => {
   const { user, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,6 +62,7 @@ const ProfileSocials = () => {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user || loading) return
+    if (!editable) return
     setUpdating(true)
 
     const response = await updateUserInfo({
@@ -93,6 +99,29 @@ const ProfileSocials = () => {
     form.setValue('twitter', user.twitter || '')
     form.setValue('facebook', user.facebook || '')
   }, [form, user, loading])
+
+  if (!editable) {
+    return (
+      <div
+        className={
+          'text-foreground flex items-center gap-1.5 text-lg/none capitalize'
+        }
+      >
+        <Link href={user?.instagram || ''}>
+          <FaInstagram />
+        </Link>
+        <Link href={user?.twitter || ''}>
+          <FaTwitter />
+        </Link>
+        <Link href={user?.facebook || ''}>
+          <FaFacebook />
+        </Link>
+        <Link href={user?.linkedin || ''}>
+          <FaLinkedin />
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -173,7 +202,9 @@ const ProfileSocials = () => {
               variant={'secondary'}
               type="submit"
               className={'flex w-24 items-center justify-center self-end'}
-              disabled={!form.formState.isValid || updating}
+              disabled={
+                !form.formState.isValid || !form.formState.isDirty || updating
+              }
             >
               {updating ? <Spinner /> : 'Update'}
             </Button>

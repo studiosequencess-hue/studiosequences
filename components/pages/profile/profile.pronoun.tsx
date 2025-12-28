@@ -26,13 +26,17 @@ import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 
+type Props = {
+  editable: boolean
+}
+
 const formSchema = z.object({
   pronoun: z.string().max(50, {
     error: 'Too long',
   }),
 })
 
-const ProfilePronoun = () => {
+const ProfilePronoun: React.FC<Props> = ({ editable }) => {
   const { user, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,6 +49,7 @@ const ProfilePronoun = () => {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user || loading) return
+    if (!editable) return
     setUpdating(true)
 
     const response = await updateUserInfo({
@@ -72,6 +77,14 @@ const ProfilePronoun = () => {
     form.reset()
     form.setValue('pronoun', user.pronoun || '')
   }, [form, user, loading])
+
+  if (!editable) {
+    return (
+      <span className={'text-foreground self-end text-sm/none capitalize'}>
+        ({user?.pronoun?.trim() || 'No pronoun'})
+      </span>
+    )
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

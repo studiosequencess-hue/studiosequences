@@ -7,13 +7,18 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { Label } from '@/components/ui/label'
 
-const ProfileOpenToWork = () => {
+type Props = {
+  editable: boolean
+}
+
+const ProfileOpenToWork: React.FC<Props> = ({ editable }) => {
   const { user, setUser, loading } = useAuthStore()
   const [updating, setUpdating] = React.useState<boolean>(false)
 
   const handleSubmit = async (value: boolean) => {
     if (!user || loading) return
     if (updating) return
+    if (!editable) return
     setUpdating(true)
 
     setUser({
@@ -34,6 +39,8 @@ const ProfileOpenToWork = () => {
 
     setUpdating(false)
   }
+
+  if (!editable) return null
 
   return (
     <div className="flex items-center gap-2">

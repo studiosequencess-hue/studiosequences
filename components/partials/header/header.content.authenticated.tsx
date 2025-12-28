@@ -149,7 +149,10 @@ const HeaderContentAuthenticated = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent side={'bottom'} align={'end'}>
-            <DropdownMenuItem onSelect={() => router.push('/profile')}>
+            <DropdownMenuItem
+              disabled={!user}
+              onSelect={() => user && router.push(`/users/${user.id}`)}
+            >
               Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />

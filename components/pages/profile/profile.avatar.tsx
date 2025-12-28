@@ -12,7 +12,11 @@ import { cn } from '@/lib/utils'
 import InputFile from '@/components/partials/input-file'
 import { Spinner } from '@/components/ui/spinner'
 
-const ProfileAvatar = () => {
+type Props = {
+  editable: boolean
+}
+
+const ProfileAvatar: React.FC<Props> = ({ editable }) => {
   const { user, setUser } = useAuthStore()
   const ref = React.useRef<HTMLInputElement>(null)
   const [editing, setEditing] = React.useState<boolean>(false)
@@ -20,6 +24,7 @@ const ProfileAvatar = () => {
   const handleFileUpload = async (file: File) => {
     if (editing) return
     if (!user) return
+    if (!editable) return
 
     setEditing(true)
 
@@ -63,6 +68,7 @@ const ProfileAvatar = () => {
     if (editing) return
     if (!user) return
     if (!user.avatar) return
+    if (!editable) return
 
     setEditing(true)
 
@@ -117,54 +123,56 @@ const ProfileAvatar = () => {
         </div>
       )}
 
-      <div
-        className={cn(
-          'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
-          editing && 'opacity-100',
-        )}
-      >
-        {editing ? (
-          <Spinner
-            className={cn('absolute top-1/2 left-1/2 size-6 -translate-1/2')}
-          />
-        ) : (
-          <div
-            className={
-              'absolute inset-0 hidden flex-col items-center justify-center gap-2 group-hover:flex'
-            }
-          >
-            <Button
-              size={'sm'}
-              variant={'secondary'}
-              onClick={() => {
-                if (!ref.current) return
-
-                ref.current.click()
-              }}
+      {editable && (
+        <div
+          className={cn(
+            'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
+            editing && 'opacity-100',
+          )}
+        >
+          {editing ? (
+            <Spinner
+              className={cn('absolute top-1/2 left-1/2 size-6 -translate-1/2')}
+            />
+          ) : (
+            <div
+              className={
+                'absolute inset-0 hidden flex-col items-center justify-center gap-2 group-hover:flex'
+              }
             >
-              change
-            </Button>
-
-            {user?.avatar && (
               <Button
                 size={'sm'}
-                variant={'destructive'}
-                onClick={handleDelete}
+                variant={'secondary'}
+                onClick={() => {
+                  if (!ref.current) return
+
+                  ref.current.click()
+                }}
               >
-                delete
+                change
               </Button>
-            )}
-          </div>
-        )}
-        <InputFile
-          ref={ref}
-          accept={'image/*'}
-          disabled={editing}
-          className={'hidden'}
-          multiple={false}
-          onFileUpload={handleFileUpload}
-        />
-      </div>
+
+              {user?.avatar && (
+                <Button
+                  size={'sm'}
+                  variant={'destructive'}
+                  onClick={handleDelete}
+                >
+                  delete
+                </Button>
+              )}
+            </div>
+          )}
+          <InputFile
+            ref={ref}
+            accept={'image/*'}
+            disabled={editing}
+            className={'hidden'}
+            multiple={false}
+            onFileUpload={handleFileUpload}
+          />
+        </div>
+      )}
     </Avatar>
   )
 }

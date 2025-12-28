@@ -12,9 +12,10 @@ import ProfileExtraInfo from '@/components/pages/profile/profile.extra.info'
 
 type Props = {
   user: User
+  editable: boolean
 }
 
-const ProfileInfo: React.FC<Props> = ({ user }) => {
+const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
   return (
     <div className={'relative flex flex-col'}>
       <div
@@ -22,10 +23,10 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
           'bg-primary-dark relative flex h-44 w-full items-end px-64 py-4',
         )}
       >
-        <ProfileBackgroundTop />
+        <ProfileBackgroundTop editable={editable} />
         <div className={'z-20 flex items-center gap-2'}>
-          <ProfileDisplayName />
-          <ProfilePronoun />
+          <ProfileDisplayName editable={editable} />
+          <ProfilePronoun editable={editable} />
 
           <HoverCard
             trigger={
@@ -50,10 +51,10 @@ const ProfileInfo: React.FC<Props> = ({ user }) => {
           'bg-primary-dark/60 relative z-0 min-h-66 w-full pt-24 pl-24',
         )}
       >
-        <ProfileExtraInfo />
-        <ProfileBackgroundBottom />
+        <ProfileExtraInfo editable={editable} />
+        <ProfileBackgroundBottom editable={editable} />
       </div>
-      <ProfileAvatar />
+      <ProfileAvatar editable={editable} />
     </div>
   )
 }

@@ -25,6 +25,10 @@ import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 
+type Props = {
+  editable: boolean
+}
+
 const formSchema = z.object({
   first_name: z
     .string()
@@ -39,7 +43,7 @@ const formSchema = z.object({
   }),
 })
 
-const ProfileDisplayName = () => {
+const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
   const { user, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,6 +57,7 @@ const ProfileDisplayName = () => {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user || loading) return
+    if (!editable) return
     setUpdating(true)
 
     const response = await updateUserInfo({
@@ -83,6 +88,15 @@ const ProfileDisplayName = () => {
     form.setValue('first_name', user.first_name || '')
     form.setValue('last_name', user.last_name || '')
   }, [form, user, loading])
+
+  if (!editable) {
+    return (
+      <span className={'text-foreground text-xl/none capitalize'}>
+        {[user?.first_name, user?.last_name].join(' ').toLowerCase().trim() ||
+          'No name'}
+      </span>
+    )
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

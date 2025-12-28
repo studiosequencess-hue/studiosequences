@@ -12,7 +12,11 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 
-const ProfileBackgroundTop = () => {
+type Props = {
+  editable: boolean
+}
+
+const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
   const { user, setUser } = useAuthStore()
   const ref = React.useRef<HTMLInputElement>(null)
   const [editing, setEditing] = React.useState<boolean>(false)
@@ -20,6 +24,7 @@ const ProfileBackgroundTop = () => {
   const handleFileUpload = async (file: File) => {
     if (editing) return
     if (!user) return
+    if (!editable) return
 
     setEditing(true)
 
@@ -112,51 +117,53 @@ const ProfileBackgroundTop = () => {
           <div className={'bg-background absolute inset-0 z-0 opacity-40'} />
         </div>
       )}
-      <div
-        className={cn(
-          'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
-          editing && 'opacity-100',
-        )}
-      >
-        {editing ? (
-          <Spinner
-            className={cn('absolute top-1/2 left-1/2 size-6 -translate-1/2')}
-          />
-        ) : (
-          <div className={'hidden items-center gap-2 group-hover:flex'}>
-            <Button
-              size={'sm'}
-              variant={'secondary'}
-              onClick={() => {
-                if (!ref.current) return
-
-                ref.current.click()
-              }}
-            >
-              change
-            </Button>
-
-            {user?.background_top && (
+      {editable && (
+        <div
+          className={cn(
+            'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
+            editing && 'opacity-100',
+          )}
+        >
+          {editing ? (
+            <Spinner
+              className={cn('absolute top-1/2 left-1/2 size-6 -translate-1/2')}
+            />
+          ) : (
+            <div className={'hidden items-center gap-2 group-hover:flex'}>
               <Button
                 size={'sm'}
-                variant={'destructive'}
-                onClick={handleDelete}
-              >
-                delete
-              </Button>
-            )}
-          </div>
-        )}
+                variant={'secondary'}
+                onClick={() => {
+                  if (!ref.current) return
 
-        <InputFile
-          ref={ref}
-          accept={'image/*'}
-          disabled={editing}
-          className={'hidden'}
-          multiple={false}
-          onFileUpload={handleFileUpload}
-        />
-      </div>
+                  ref.current.click()
+                }}
+              >
+                change
+              </Button>
+
+              {user?.background_top && (
+                <Button
+                  size={'sm'}
+                  variant={'destructive'}
+                  onClick={handleDelete}
+                >
+                  delete
+                </Button>
+              )}
+            </div>
+          )}
+
+          <InputFile
+            ref={ref}
+            accept={'image/*'}
+            disabled={editing}
+            className={'hidden'}
+            multiple={false}
+            onFileUpload={handleFileUpload}
+          />
+        </div>
+      )}
     </div>
   )
 }

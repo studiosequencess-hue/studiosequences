@@ -3,8 +3,12 @@ import ProfileInfo from '@/components/pages/profile/profile.info'
 import EmptyPage from '@/components/empty.page'
 import { getUser } from '@/lib/actions.auth'
 
-const ProfilePage = async () => {
-  const userResponse = await getUser()
+type Props = {
+  params: Promise<{ id: string }>
+}
+
+const ProfilePage: React.FC<Props> = async (props) => {
+  const [userResponse, { id }] = await Promise.all([getUser(), props.params])
 
   if (userResponse.status == 'error') {
     return (
@@ -17,7 +21,10 @@ const ProfilePage = async () => {
 
   return (
     <div className={'flex grow flex-col'}>
-      <ProfileInfo user={userResponse.data} />
+      <ProfileInfo
+        user={userResponse.data}
+        editable={id === userResponse.data.id}
+      />
     </div>
   )
 }

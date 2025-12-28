@@ -25,13 +25,17 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { Textarea } from '@/components/ui/textarea'
 
+type Props = {
+  editable: boolean
+}
+
 const formSchema = z.object({
   location: z.string().max(255, {
     error: 'Too long',
   }),
 })
 
-const ProfileLocation = () => {
+const ProfileLocation: React.FC<Props> = ({ editable }) => {
   const { user, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,6 +48,7 @@ const ProfileLocation = () => {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user || loading) return
+    if (!editable) return
     setUpdating(true)
 
     const response = await updateUserInfo({
@@ -71,6 +76,14 @@ const ProfileLocation = () => {
     form.reset()
     form.setValue('location', user.location || '')
   }, [form, user, loading])
+
+  if (!editable) {
+    return (
+      <span className={'text-foreground text-sm/none capitalize'}>
+        {[user?.location].join(' ').toLowerCase().trim() || 'No location'}
+      </span>
+    )
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

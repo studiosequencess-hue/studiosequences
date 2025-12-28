@@ -82,7 +82,7 @@ const FollowSuggestionsBlock: React.FC = () => {
    */
 
   return (
-    <div className="mx-auto max-w-sm overflow-hidden rounded-sm border border-zinc-200 bg-white font-sans shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="mx-auto max-w-sm overflow-hidden rounded-lg border border-zinc-200 bg-white font-sans shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       {/* List Container with fixed height to show 2.5 items */}
       <div
         className="divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-800"

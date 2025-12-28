@@ -12,7 +12,7 @@ const ProfileExtraInfo = () => {
       <ProfileOccupation />
       <ProfileLocation />
       <ProfileContact />
-      {/*<ProfileSocials />*/}
+      <ProfileSocials />
     </div>
   )
 }

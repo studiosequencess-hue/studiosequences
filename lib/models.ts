@@ -37,8 +37,6 @@ export type User = Pick<
 > &
   UserInfo
 
-export type UserSocial = Tables<'user_socials'>
-
 export type SignInEmailData = {
   email: string
   password: string

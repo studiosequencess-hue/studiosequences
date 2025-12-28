@@ -110,7 +110,7 @@ const ProfileAvatar = () => {
       {user?.is_open_to_work && (
         <div
           className={
-            'bg-accent-blue absolute bottom-0 flex w-full translate-x-7 -translate-y-5 -rotate-30 items-center justify-center py-2 text-xs/none'
+            'bg-accent-blue absolute bottom-0 left-1/2 flex w-96 -translate-x-[42%] -translate-y-[70%] -rotate-30 items-center justify-center py-2 text-xs/none'
           }
         >
           Open To Work

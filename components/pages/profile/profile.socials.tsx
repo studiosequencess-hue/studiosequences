@@ -24,9 +24,19 @@ import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { Textarea } from '@/components/ui/textarea'
+import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from 'react-icons/fa6'
 
 const formSchema = z.object({
-  contact: z.string().max(255, {
+  instagram: z.string().max(255, {
+    error: 'Too long',
+  }),
+  twitter: z.string().max(255, {
+    error: 'Too long',
+  }),
+  facebook: z.string().max(255, {
+    error: 'Too long',
+  }),
+  linkedin: z.string().max(255, {
     error: 'Too long',
   }),
 })
@@ -36,7 +46,10 @@ const ProfileSocials = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      contact: user?.contact || '',
+      instagram: user?.instagram || '',
+      twitter: user?.twitter || '',
+      linkedin: user?.linkedin || '',
+      facebook: user?.facebook || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
@@ -48,14 +61,20 @@ const ProfileSocials = () => {
 
     const response = await updateUserInfo({
       user_id: user.id,
-      contact: values.contact,
+      instagram: values.instagram,
+      twitter: values.twitter,
+      linkedin: values.linkedin,
+      facebook: values.facebook,
     })
 
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
         ...user,
-        contact: values.contact,
+        instagram: values.instagram,
+        twitter: values.twitter,
+        linkedin: values.linkedin,
+        facebook: values.facebook,
       })
       setOpen(false)
     } else {
@@ -69,19 +88,25 @@ const ProfileSocials = () => {
     if (!user || loading) return
 
     form.reset()
-    form.setValue('contact', user.contact || '')
+    form.setValue('instagram', user.instagram || '')
+    form.setValue('linkedin', user.linkedin || '')
+    form.setValue('twitter', user.twitter || '')
+    form.setValue('facebook', user.facebook || '')
   }, [form, user, loading])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={!user || loading}>
-        <span
+        <div
           className={
-            'hover:text-foreground/80 text-foreground cursor-pointer text-sm/none capitalize'
+            'hover:text-foreground/80 text-foreground flex cursor-pointer items-center gap-1.5 text-lg/none capitalize'
           }
         >
-          {[user?.contact].join(' ').toLowerCase().trim() || 'No contact'}
-        </span>
+          <FaInstagram />
+          <FaTwitter />
+          <FaFacebook />
+          <FaLinkedin />
+        </div>
       </PopoverTrigger>
       <PopoverContent align={'start'} sideOffset={20} className={'w-fit'}>
         <Form {...form}>
@@ -89,15 +114,54 @@ const ProfileSocials = () => {
             onSubmit={form.handleSubmit(handleSubmit)}
             className="flex flex-col gap-4"
           >
-            <div className={'flex w-full items-start gap-4'}>
+            <div className={'grid w-96 grid-cols-2 gap-2'}>
               <FormField
                 control={form.control}
-                name="contact"
+                name="instagram"
                 render={({ field }) => (
-                  <FormItem className={'w-72'}>
-                    <FormLabel className={'text-xs/none'}>Contact</FormLabel>
+                  <FormItem className={''}>
+                    <FormLabel className={'text-xs/none'}>Instagram</FormLabel>
                     <FormControl>
-                      <Textarea {...field} />
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage className={'text-xs/none'} />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="twitter"
+                render={({ field }) => (
+                  <FormItem className={''}>
+                    <FormLabel className={'text-xs/none'}>Twitter</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage className={'text-xs/none'} />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="facebook"
+                render={({ field }) => (
+                  <FormItem className={''}>
+                    <FormLabel className={'text-xs/none'}>Facebook</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage className={'text-xs/none'} />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem className={''}>
+                    <FormLabel className={'text-xs/none'}>LinkedIn</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage className={'text-xs/none'} />
                   </FormItem>

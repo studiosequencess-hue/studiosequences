@@ -4,6 +4,7 @@ import EmptyPage from '@/components/empty.page'
 import { getUser } from '@/lib/actions.auth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ProfileExperience from '@/components/pages/profile/profile.experience'
+import ProfileActivities from '@/components/pages/profile/profile.activities'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -38,7 +39,9 @@ const ProfilePage: React.FC<Props> = async (props) => {
         <TabsContent value="experiences">
           <ProfileExperience editable={editable} />
         </TabsContent>
-        <TabsContent value="activities">activities</TabsContent>
+        <TabsContent value="activities">
+          <ProfileActivities />
+        </TabsContent>
         <TabsContent value="bookmarks">bookmarks</TabsContent>
       </Tabs>
     </div>

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ProfileExperience from '@/components/pages/profile/profile.experience'
 import ProfileActivities from '@/components/pages/profile/profile.activities'
 import ProfilePortfolio from '@/components/pages/profile/profile.portfolio'
+import ProfileCollections from '@/components/pages/profile/profile.collections'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -34,7 +35,7 @@ const ProfilePage: React.FC<Props> = async (props) => {
           <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
           <TabsTrigger value="experiences">Experiences</TabsTrigger>
           <TabsTrigger value="activities">Activities</TabsTrigger>
-          <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
+          <TabsTrigger value="collections">Collections</TabsTrigger>
         </TabsList>
         <TabsContent value="portfolio">
           <ProfilePortfolio />
@@ -45,7 +46,9 @@ const ProfilePage: React.FC<Props> = async (props) => {
         <TabsContent value="activities">
           <ProfileActivities />
         </TabsContent>
-        <TabsContent value="bookmarks">bookmarks</TabsContent>
+        <TabsContent value="collections">
+          <ProfileCollections />
+        </TabsContent>
       </Tabs>
     </div>
   )

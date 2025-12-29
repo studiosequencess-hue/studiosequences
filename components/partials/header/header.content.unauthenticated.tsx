@@ -20,7 +20,7 @@ const HeaderContentUnauthenticated = () => {
             Discover
           </Link>
           <Link
-            href="/"
+            href="/companies"
             className="hover:border-primary-light flex h-full items-center gap-1.5 border-b border-b-transparent px-2 transition-colors"
           >
             <BsBriefcaseFill />

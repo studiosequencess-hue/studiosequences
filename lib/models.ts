@@ -64,3 +64,16 @@ export type SignUpData = {
   contact: string
   password: string
 }
+
+export type Project = Tables<'projects'> & {
+  images: ProjectImage[]
+  is_revealed?: boolean
+}
+
+export type ProjectImage = Tables<'project_images'>
+
+export type FormProjectFile = {
+  file: File
+  title: string
+  description: string
+}

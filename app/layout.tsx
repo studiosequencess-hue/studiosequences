@@ -5,6 +5,7 @@ import Header from '@/components/header'
 import Footer from '@/components/footer'
 import { Toaster } from '@/components/ui/sonner'
 import AuthProvider from '@/components/auth-provider'
+import ProjectsPartials from '@/components/partials/projects/projects.partials'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -32,6 +33,7 @@ export default function RootLayout({
           <Footer />
 
           <Toaster />
+          <ProjectsPartials />
         </AuthProvider>
       </body>
     </html>

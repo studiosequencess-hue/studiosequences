@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { Project } from '@/lib/models'
-import { useProjectsStore } from '@/store'
+import { useProjectsStore, useProjectViewerStore } from '@/store'
 import { Layers, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,19 +11,18 @@ import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
-  EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
 import { cn } from '@/lib/utils'
+import { FaPlus } from 'react-icons/fa6'
 
 type Props = {
-  projects: Project[]
   editable: boolean
 }
 
 const ProjectsGrid: React.FC<Props> = (props) => {
-  const { createShow, viewShow } = useProjectsStore()
-  const [projects, setProjects] = React.useState<Project[]>(props.projects)
+  const { createShow, viewShow } = useProjectViewerStore()
+  const { projects, setProjects } = useProjectsStore()
 
   const toggleReveal = (id: number): void => {
     setProjects(
@@ -70,6 +69,15 @@ const ProjectsGrid: React.FC<Props> = (props) => {
           )}
         </Empty>
       )}
+      {projects.length != 0 && props.editable && (
+        <div
+          className="group flex size-64 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed"
+          onClick={() => createShow()}
+        >
+          <FaPlus className={'text-xl/none'} />
+          <span>Add</span>
+        </div>
+      )}
       {projects.map((project) => {
         const isCensored = project.is_sensitive && !project.is_revealed
 
@@ -77,16 +85,18 @@ const ProjectsGrid: React.FC<Props> = (props) => {
           <div
             key={project.id}
             onClick={() => viewShow(project)}
-            className={`group relative aspect-square w-64 overflow-hidden border-[0.5px] border-white/5 bg-zinc-950 ${!isCensored ? 'cursor-pointer' : ''}`}
+            className={`group relative h-64 w-64 overflow-hidden border-[0.5px] border-white/5 bg-zinc-950 ${!isCensored ? 'cursor-pointer' : ''}`}
           >
             <Image
               src={project.images[0].url || ''}
               alt={project.title || 'project-image'}
-              className={`h-full w-full object-cover transition-all duration-1000 ${
+              fill
+              className={cn(
+                `h-full w-full object-cover transition-all duration-500`,
                 isCensored
                   ? 'scale-150 opacity-30 blur-3xl grayscale'
-                  : 'group-hover:scale-110'
-              }`}
+                  : 'group-hover:scale-110',
+              )}
             />
 
             {!isCensored && (

@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { useProjectsStore } from '@/store/project.viewer.store'
+import { useProjectViewerStore } from '@/store/project.viewer.store'
 import { X } from 'lucide-react'
 
 const ProjectView = () => {
@@ -17,7 +17,7 @@ const ProjectView = () => {
     viewProject: project,
     viewIsOpen: open,
     viewClose: close,
-  } = useProjectsStore()
+  } = useProjectViewerStore()
 
   return (
     <Dialog

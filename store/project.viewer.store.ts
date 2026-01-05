@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { Project, UserImage } from '@/lib/models'
 
-interface ProjectsState {
+interface ProjectViewerState {
   viewIsOpen: boolean
   viewProject: Project | null
   viewShow: (project: Project) => void
@@ -16,7 +16,7 @@ interface ProjectsState {
   createSetLoading: (loading: boolean) => void
 }
 
-export const useProjectsStore = create<ProjectsState>()((set) => ({
+export const useProjectViewerStore = create<ProjectViewerState>()((set) => ({
   viewIsOpen: false,
   viewProject: null,
   viewShow: (project: Project) =>

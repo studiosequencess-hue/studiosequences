@@ -38,7 +38,7 @@ const ProfilePage: React.FC<Props> = async (props) => {
           <TabsTrigger value="collections">Collections</TabsTrigger>
         </TabsList>
         <TabsContent value="portfolio">
-          <ProfilePortfolio />
+          <ProfilePortfolio user={userResponse.data} editable={editable} />
         </TabsContent>
         <TabsContent value="experiences">
           <ProfileExperience editable={editable} />

@@ -3,13 +3,12 @@
 import React from 'react'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { useProjectsStore } from '@/store'
+import { useAuthStore, useProjectsStore, useProjectViewerStore } from '@/store'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -34,16 +33,17 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { toast } from 'sonner'
-import { FaFileImage, FaFileVideo, FaMinus, FaPlus } from 'react-icons/fa6'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-  InputGroupTextarea,
-} from '@/components/ui/input-group'
+import { FaMinus, FaPlus } from 'react-icons/fa6'
+import { cn } from '@/lib/utils'
+import ProjectCreatePreviewItem from '@/components/partials/projects/project.create.preview.item'
+import { LuImage, LuVideo } from 'react-icons/lu'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { createProject } from '@/lib/actions.projects'
+import { createClient } from '@/lib/supabase.client'
+import { Spinner } from '@/components/ui/spinner'
 
-const formSchema = z.object({
+const projectFormSchema = z.object({
   title: z
     .string()
     .min(1, {
@@ -60,24 +60,26 @@ const formSchema = z.object({
     .max(1000, {
       error: 'Too long',
     }),
+  is_sensitive: z.boolean(),
 })
 
 const ProjectCreate = () => {
-  const {
-    createIsOpen: open,
-    createShow: show,
-    createClose: close,
-  } = useProjectsStore()
+  const { createIsOpen: isOpen, createClose: close } = useProjectViewerStore()
+  const { user, loading: userLoading } = useAuthStore()
+  const { addProject } = useProjectsStore()
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const projectForm = useForm<z.infer<typeof projectFormSchema>>({
+    resolver: zodResolver(projectFormSchema),
     defaultValues: {
       title: '',
       description: '',
+      is_sensitive: false,
     },
   })
   const uploadInputRef = React.useRef<HTMLInputElement>(null)
   const [files, setFiles] = React.useState<FormProjectFile[]>([])
+  const [activeFileIndex, setActiveFileIndex] = React.useState(-1)
+  const [projectCreating, setProjectCreating] = React.useState(false)
 
   const handleUpload = (newFiles: File[]) => {
     setFiles([
@@ -95,20 +97,64 @@ const ProjectCreate = () => {
     }
   }
 
-  const handleSubmit = () => {
-    console.log(form.getValues())
-  }
+  const handleSubmit = async () => {
+    if (!user || userLoading) return
+    setProjectCreating(true)
 
-  React.useEffect(() => {
-    if (!open) {
-      form.reset()
-      setFiles([])
+    const supabase = createClient()
+
+    const uploadImagesPromises = files.map(async (file) => {
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}`
+      const filePath = `projects/${user.id}/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('files')
+        .upload(filePath, file.file)
+
+      if (uploadError) {
+        return {
+          status: 'error',
+          url: '',
+          title: '',
+          description: '',
+        }
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('files').getPublicUrl(filePath)
+
+      return {
+        status: 'success',
+        url: publicUrl,
+        title: file.title,
+        description: file.description,
+      }
+    })
+
+    const uploadedImagesResponses = await Promise.all(uploadImagesPromises)
+
+    const response = await createProject({
+      ...projectForm.getValues(),
+      files: uploadedImagesResponses.filter(
+        (item) => item.status === 'success',
+      ),
+    })
+
+    if (response.status === 'success') {
+      toast.success(response.message)
+      addProject(response.data)
+      close()
+    } else {
+      toast.error(response.message)
     }
-  }, [open])
+
+    setProjectCreating(false)
+  }
 
   return (
     <Sheet
-      open={open}
+      open={isOpen}
       onOpenChange={(state) => {
         if (!state) {
           close()
@@ -142,10 +188,10 @@ const ProjectCreate = () => {
               )
             }}
           />
-          <Form {...form}>
+          <Form {...projectForm}>
             <form className="flex flex-col gap-4 px-4">
               <FormField
-                control={form.control}
+                control={projectForm.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
@@ -158,7 +204,7 @@ const ProjectCreate = () => {
                 )}
               />
               <FormField
-                control={form.control}
+                control={projectForm.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -168,6 +214,27 @@ const ProjectCreate = () => {
                         {...field}
                         className={'h-14 max-h-14 min-h-14 resize-none'}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={projectForm.control}
+                name="is_sensitive"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          id="is_sensitive"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <Label htmlFor="is_sensitive">
+                          Contains Sensitive Content
+                        </Label>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -209,24 +276,27 @@ const ProjectCreate = () => {
               </div>
               <ScrollArea
                 className={
-                  'border-foreground h-[calc(100vh-340px)] w-full rounded-sm border'
+                  'border-foreground h-[calc(100vh-380px)] w-full rounded-sm border'
                 }
               >
                 <div className={'flex flex-col'}>
                   {files.map((file, fileIndex) => (
                     <div
+                      id={`file-${fileIndex}`}
                       key={`file-${fileIndex}`}
-                      className={
-                        'hover:bg-foreground/10 flex cursor-pointer items-start gap-4 p-2 pr-4'
-                      }
+                      className={cn(
+                        'hover:bg-foreground/10 flex cursor-pointer items-start gap-4 p-2 pr-4',
+                        activeFileIndex == fileIndex && 'bg-foreground/10',
+                      )}
+                      onClick={() => setActiveFileIndex(fileIndex)}
                     >
                       <div className={'flex grow items-start gap-2'}>
                         <div className={'py-1'}>
                           {file.file.type.startsWith('image/') && (
-                            <FaFileImage size={20} />
+                            <LuImage size={20} />
                           )}
                           {file.file.type.startsWith('video/') && (
-                            <FaFileVideo size={20} />
+                            <LuVideo size={20} />
                           )}
                         </div>
 
@@ -248,9 +318,11 @@ const ProjectCreate = () => {
                         variant={'destructive'}
                         size={'icon-sm'}
                         className={'h-fit w-fit rounded-sm p-1'}
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
                           setFiles(files.filter((_, i) => i != fileIndex))
-                        }
+                        }}
                       >
                         <FaMinus />
                       </Button>
@@ -262,15 +334,47 @@ const ProjectCreate = () => {
           )}
         </div>
         <SheetFooter className={'flex flex-row items-center pt-0'}>
-          <Button size={'sm'} variant={'secondary'}>
-            Create
+          <Button
+            disabled={
+              !projectForm.formState.isValid ||
+              files.length == 0 ||
+              projectCreating ||
+              !user ||
+              userLoading
+            }
+            size={'sm'}
+            variant={'secondary'}
+            className={'w-20'}
+            onClick={projectForm.handleSubmit(handleSubmit)}
+          >
+            {projectCreating ? <Spinner /> : 'Create'}
           </Button>
-          <SheetClose asChild>
-            <Button size={'sm'} variant={'ghost'}>
-              Cancel
-            </Button>
-          </SheetClose>
+          <Button size={'sm'} variant={'ghost'} onClick={() => close()}>
+            Cancel
+          </Button>
         </SheetFooter>
+
+        <div
+          className={cn(
+            'bg-background absolute inset-0 z-100 translate-x-full transition-transform duration-300',
+            activeFileIndex >= 0 &&
+              activeFileIndex < files.length &&
+              'translate-x-0',
+          )}
+        >
+          {activeFileIndex >= 0 && activeFileIndex < files.length && (
+            <ProjectCreatePreviewItem
+              item={files[activeFileIndex]}
+              onChange={(item) => {
+                const tempFiles = [...files]
+                tempFiles[activeFileIndex] = item
+
+                setFiles(tempFiles)
+              }}
+              close={() => setActiveFileIndex(-1)}
+            />
+          )}
+        </div>
       </SheetContent>
     </Sheet>
   )

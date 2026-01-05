@@ -1,3 +1,5 @@
+'use client'
+
 import React, { ComponentProps } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -17,9 +19,11 @@ interface MultiFileProps {
 type Props = InputFileProps & (SingleFileProps | MultiFileProps)
 
 const InputFile = React.forwardRef<HTMLInputElement, Props>((props, ref) => {
+  const { onFileUpload, ...rest } = props
+
   return (
     <input
-      {...props}
+      {...rest}
       ref={ref}
       type={'file'}
       className={cn(props.className)}

@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
 import { useProjectsStore, useProjectViewerStore } from '@/store'
 import { Layers, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -12,7 +11,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { cn, getProjectPreview } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { FaPlus } from 'react-icons/fa6'
 import ProjectsGridPreviewBackground from '@/components/partials/projects/projects.grid.preview.background'
 
@@ -84,7 +83,7 @@ const ProjectsGrid: React.FC<Props> = (props) => {
         return (
           <div
             key={project.id}
-            onClick={() => !isCensored && show(project, true)}
+            onClick={() => !isCensored && show(project, false)}
             className={cn(
               `group relative size-52 overflow-hidden border-[0.5px] border-white/5 bg-zinc-950`,
               !isCensored && 'cursor-pointer',

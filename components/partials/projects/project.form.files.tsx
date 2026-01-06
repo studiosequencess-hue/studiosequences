@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { FormProjectFile, Project } from '@/lib/models'
+import { FormProjectFile, Project, User } from '@/lib/models'
 import { getProjectFilesById } from '@/lib/actions.projects'
 import { toast } from 'sonner'
 import Loader from '@/components/partials/loader'
@@ -17,47 +17,26 @@ import {
 } from '@/components/ui/empty'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/store'
+import { UserRole } from '@/lib/constants'
 
 type Props = {
-  projectId: Project['id'] | null
   files: FormProjectFile[]
   setFiles: (files: FormProjectFile[]) => void
   activeFileIndex: number
   setActiveFileIndex: (index: number) => void
+  filesLoading: boolean
 }
 
 const ProjectFormFiles: React.FC<Props> = ({
-  projectId,
   files,
   setFiles,
   activeFileIndex,
   setActiveFileIndex,
+  filesLoading,
 }) => {
-  const [filesLoading, setFilesLoading] = React.useState(true)
+  const { user } = useAuthStore()
   const uploadInputRef = React.useRef<HTMLInputElement>(null)
-
-  const loadProjectFiles = React.useCallback(async () => {
-    if (!projectId) return
-
-    const projectFilesResponse = await getProjectFilesById({
-      id: projectId,
-    })
-
-    if (projectFilesResponse.status == 'success') {
-      setFiles(
-        projectFilesResponse.data.map((image) => ({
-          title: image.title || '',
-          description: image.description || '',
-          url: image.url,
-          type: image.type,
-          name: image.name,
-          uploadType: 'url',
-        })),
-      )
-    } else {
-      toast.error(projectFilesResponse.message)
-    }
-  }, [projectId, setFiles])
 
   const handleUpload = (newFiles: File[]) => {
     setFiles([
@@ -77,14 +56,6 @@ const ProjectFormFiles: React.FC<Props> = ({
       uploadInputRef.current.files = null
     }
   }
-
-  React.useEffect(() => {
-    setFiles([])
-    setFilesLoading(true)
-    loadProjectFiles().finally(() => {
-      setFilesLoading(false)
-    })
-  }, [setFiles, loadProjectFiles])
 
   return (
     <React.Fragment>
@@ -145,9 +116,12 @@ const ProjectFormFiles: React.FC<Props> = ({
             </Button>
           </div>
           <ScrollArea
-            className={
-              'border-foreground h-[calc(100vh-380px)] w-full rounded-sm border'
-            }
+            className={cn(
+              'border-foreground w-full rounded-sm border',
+              user?.role == UserRole.Company
+                ? 'h-[calc(100vh-450px)]'
+                : 'h-[calc(100vh-300px)]',
+            )}
           >
             <div className={'flex flex-col'}>
               {files.map((file, fileIndex) => (

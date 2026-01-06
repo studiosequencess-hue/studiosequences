@@ -32,11 +32,14 @@ import { Label } from '@/components/ui/label'
 import {
   createProject,
   deleteProject,
+  getProjectFilesById,
   updateProject,
 } from '@/lib/actions.projects'
 import { createClient } from '@/lib/supabase.client'
 import { Spinner } from '@/components/ui/spinner'
 import ProjectFormFiles from '@/components/partials/projects/project.form.files'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { UserRole } from '@/lib/constants'
 
 const projectFormSchema = z.object({
   title: z
@@ -72,6 +75,7 @@ const ProjectForm = () => {
     },
   })
   const [files, setFiles] = React.useState<FormProjectFile[]>([])
+  const [filesLoading, setFilesLoading] = React.useState(true)
   const [activeFileIndex, setActiveFileIndex] = React.useState(-1)
   const [projectProcessing, setProjectProcessing] = React.useState(false)
   const [projectDeleting, setProjectDeleting] = React.useState(false)
@@ -195,12 +199,41 @@ const ProjectForm = () => {
     setProjectProcessing(false)
   }
 
+  const loadProjectFiles = React.useCallback(async () => {
+    if (!project) return
+
+    const projectFilesResponse = await getProjectFilesById({
+      id: project.id,
+    })
+
+    if (projectFilesResponse.status == 'success') {
+      setFiles(
+        projectFilesResponse.data.map((image) => ({
+          title: image.title || '',
+          description: image.description || '',
+          url: image.url,
+          type: image.type,
+          name: image.name,
+          uploadType: 'url',
+        })),
+      )
+    } else {
+      toast.error(projectFilesResponse.message)
+    }
+  }, [project, setFiles])
+
   React.useEffect(() => {
     projectForm.reset()
 
     projectForm.setValue('title', project?.title || '')
     projectForm.setValue('description', project?.description || '')
     projectForm.setValue('is_sensitive', project?.is_sensitive || false)
+
+    setFiles([])
+    setFilesLoading(true)
+    loadProjectFiles().finally(() => {
+      setFilesLoading(false)
+    })
   }, [project, projectForm])
 
   return (
@@ -273,13 +306,32 @@ const ProjectForm = () => {
             </form>
           </Form>
 
-          <ProjectFormFiles
-            files={files}
-            setFiles={setFiles}
-            projectId={project?.id || null}
-            activeFileIndex={activeFileIndex}
-            setActiveFileIndex={setActiveFileIndex}
-          />
+          {user?.role == UserRole.Company.toString() ? (
+            <Tabs defaultValue="files">
+              <TabsList>
+                <TabsTrigger value="files">Files</TabsTrigger>
+                <TabsTrigger value="members">Members</TabsTrigger>
+              </TabsList>
+              <TabsContent value="files">
+                <ProjectFormFiles
+                  files={files}
+                  setFiles={setFiles}
+                  activeFileIndex={activeFileIndex}
+                  setActiveFileIndex={setActiveFileIndex}
+                  filesLoading={filesLoading}
+                />
+              </TabsContent>
+              <TabsContent value="members">Members here</TabsContent>
+            </Tabs>
+          ) : (
+            <ProjectFormFiles
+              files={files}
+              setFiles={setFiles}
+              activeFileIndex={activeFileIndex}
+              setActiveFileIndex={setActiveFileIndex}
+              filesLoading={filesLoading}
+            />
+          )}
         </div>
         <SheetFooter
           className={'flex flex-row items-center justify-between gap-2 pt-0'}

@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import HeaderSearchbar from '@/components/partials/header/header.searchbar'
 
 const HeaderContentAuthenticated = () => {
   const { user, setLoading, setUser } = useAuthStore()
@@ -50,13 +51,13 @@ const HeaderContentAuthenticated = () => {
 
   return (
     <div className="flex h-full w-full items-center justify-between px-12">
-      <div className="flex h-full items-center gap-8">
+      <div className="flex h-full w-full items-center gap-8">
         <Link href={'/'}>
-          <h1 className="font-display text-2xl font-bold">Studio Sequence</h1>
+          <h1 className="font-display text-2xl/none font-bold">
+            Studio Sequence
+          </h1>
         </Link>
-        <div className="flex w-96 cursor-pointer items-center rounded-lg bg-white/15 p-2 transition-colors">
-          <IoSearch />
-        </div>
+        <HeaderSearchbar />
       </div>
 
       <div className={'flex items-center gap-2'}>

@@ -24,8 +24,10 @@ import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { Textarea } from '@/components/ui/textarea'
+import { UserInfo } from '@/lib/models'
 
 type Props = {
+  user: UserInfo
   editable: boolean
 }
 
@@ -35,31 +37,31 @@ const formSchema = z.object({
   }),
 })
 
-const ProfileContact: React.FC<Props> = ({ editable }) => {
-  const { user, setUser, loading } = useAuthStore()
+const ProfileContact: React.FC<Props> = ({ user, editable }) => {
+  const { user: currentUser, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      contact: user?.contact || '',
+      contact: currentUser?.contact || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
   const [updating, setUpdating] = React.useState<boolean>(false)
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
     if (!editable) return
     setUpdating(true)
 
     const response = await updateUserInfo({
-      user_id: user.id,
+      user_id: currentUser.id,
       contact: values.contact,
     })
 
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
-        ...user,
+        ...currentUser,
         contact: values.contact,
       })
       setOpen(false)
@@ -71,11 +73,11 @@ const ProfileContact: React.FC<Props> = ({ editable }) => {
   }
 
   React.useEffect(() => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
 
     form.reset()
-    form.setValue('contact', user.contact || '')
-  }, [form, user, loading])
+    form.setValue('contact', currentUser.contact || '')
+  }, [form, currentUser, loading])
 
   if (!editable) {
     return (
@@ -87,13 +89,14 @@ const ProfileContact: React.FC<Props> = ({ editable }) => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild disabled={!user || loading}>
+      <PopoverTrigger asChild disabled={!currentUser || loading}>
         <span
           className={
             'hover:text-foreground/80 text-foreground cursor-pointer text-sm/none capitalize'
           }
         >
-          {[user?.contact].join(' ').toLowerCase().trim() || 'No contact'}
+          {[currentUser?.contact].join(' ').toLowerCase().trim() ||
+            'No contact'}
         </span>
       </PopoverTrigger>
       <PopoverContent align={'start'} sideOffset={20} className={'w-fit'}>

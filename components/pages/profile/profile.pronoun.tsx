@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { User } from '@/lib/models'
+import { User, UserInfo } from '@/lib/models'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -27,6 +27,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 
 type Props = {
+  user: UserInfo
   editable: boolean
 }
 
@@ -36,31 +37,31 @@ const formSchema = z.object({
   }),
 })
 
-const ProfilePronoun: React.FC<Props> = ({ editable }) => {
-  const { user, setUser, loading } = useAuthStore()
+const ProfilePronoun: React.FC<Props> = ({ user, editable }) => {
+  const { user: currentUser, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      pronoun: user?.pronoun || '',
+      pronoun: currentUser?.pronoun || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
   const [updating, setUpdating] = React.useState<boolean>(false)
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
     if (!editable) return
     setUpdating(true)
 
     const response = await updateUserInfo({
-      user_id: user.id,
+      user_id: currentUser.id,
       pronoun: values.pronoun,
     })
 
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
-        ...user,
+        ...currentUser,
         pronoun: values.pronoun,
       })
       setOpen(false)
@@ -72,11 +73,11 @@ const ProfilePronoun: React.FC<Props> = ({ editable }) => {
   }
 
   React.useEffect(() => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
 
     form.reset()
-    form.setValue('pronoun', user.pronoun || '')
-  }, [form, user, loading])
+    form.setValue('pronoun', currentUser.pronoun || '')
+  }, [form, currentUser, loading])
 
   if (!editable) {
     return (
@@ -94,7 +95,7 @@ const ProfilePronoun: React.FC<Props> = ({ editable }) => {
             'hover:text-foreground/80 text-foreground cursor-pointer self-end text-sm/none capitalize'
           }
         >
-          ({user?.pronoun?.trim() || 'No pronoun'})
+          ({currentUser?.pronoun?.trim() || 'No pronoun'})
         </span>
       </PopoverTrigger>
       <PopoverContent align={'start'} sideOffset={20} className={'w-fit'}>

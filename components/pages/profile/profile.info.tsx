@@ -1,5 +1,5 @@
 import React from 'react'
-import { User } from '@/lib/models'
+import { UserInfo } from '@/lib/models'
 import { cn } from '@/lib/utils'
 import { HiBadgeCheck, HiOutlineBadgeCheck } from 'react-icons/hi'
 import HoverCard from '@/components/partials/hover-card'
@@ -12,7 +12,7 @@ import ProfileExtraInfo from '@/components/pages/profile/profile.extra.info'
 import { UserRole } from '@/lib/constants'
 
 type Props = {
-  user: User
+  user: UserInfo
   editable: boolean
 }
 
@@ -24,11 +24,11 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
           'bg-primary-dark relative flex h-44 w-full items-end px-64 py-4',
         )}
       >
-        <ProfileBackgroundTop editable={editable} />
+        <ProfileBackgroundTop user={user} editable={editable} />
         <div className={'z-20 flex items-center gap-2'}>
-          <ProfileDisplayName editable={editable} />
+          <ProfileDisplayName user={user} editable={editable} />
           {user.role == UserRole.User.toString() && (
-            <ProfilePronoun editable={editable} />
+            <ProfilePronoun user={user} editable={editable} />
           )}
 
           <HoverCard
@@ -55,7 +55,7 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
         )}
       >
         <ProfileExtraInfo user={user} editable={editable} />
-        <ProfileBackgroundBottom editable={editable} />
+        <ProfileBackgroundBottom user={user} editable={editable} />
       </div>
       <ProfileAvatar editable={editable} />
     </div>

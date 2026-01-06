@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { User } from '@/lib/models'
+import { UserInfo } from '@/lib/models'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -27,6 +27,7 @@ import { useAuthStore } from '@/store'
 import { UserRole } from '@/lib/constants'
 
 type Props = {
+  user: UserInfo
   editable: boolean
 }
 
@@ -40,25 +41,25 @@ const formSchema = z.object({
   company_name: z.string().max(255, { error: 'Too long' }),
 })
 
-const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
-  const { user, setUser, loading } = useAuthStore()
+const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
+  const { user: currentUser, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: user?.first_name || '',
-      last_name: user?.last_name || '',
-      company_name: user?.company_name || '',
+      first_name: currentUser?.first_name || '',
+      last_name: currentUser?.last_name || '',
+      company_name: currentUser?.company_name || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
   const [updating, setUpdating] = React.useState<boolean>(false)
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
     if (!editable) return
 
     if (
-      user.role == UserRole.User.toString() &&
+      currentUser.role == UserRole.User.toString() &&
       values.first_name.trim().length <= 0
     ) {
       form.setError('first_name', {
@@ -68,7 +69,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
     }
 
     if (
-      user.role == UserRole.Company.toString() &&
+      currentUser.role == UserRole.Company.toString() &&
       values.company_name.trim().length <= 0
     ) {
       form.setError('company_name', {
@@ -80,7 +81,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
     setUpdating(true)
 
     const response = await updateUserInfo({
-      user_id: user.id,
+      user_id: currentUser.id,
       first_name: values.first_name,
       last_name: values.last_name,
       company_name: values.company_name,
@@ -89,7 +90,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
-        ...user,
+        ...currentUser,
         first_name: values.first_name,
         last_name: values.last_name,
         company_name: values.company_name,
@@ -103,34 +104,39 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
   }
 
   React.useEffect(() => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
 
     form.reset()
-    form.setValue('first_name', user.first_name || '')
-    form.setValue('last_name', user.last_name || '')
-    form.setValue('company_name', user.company_name || '')
-  }, [form, user, loading])
+    form.setValue('first_name', currentUser.first_name || '')
+    form.setValue('last_name', currentUser.last_name || '')
+    form.setValue('company_name', currentUser.company_name || '')
+  }, [form, currentUser, loading])
 
   if (!editable) {
     return (
       <span className={'text-foreground text-xl/none capitalize'}>
-        {[user?.first_name, user?.last_name].join(' ').toLowerCase().trim() ||
-          'No name'}
+        {(user?.role == UserRole.Company.toString()
+          ? [user?.company_name]
+          : [user?.first_name, user?.last_name]
+        )
+          .join(' ')
+          .toLowerCase()
+          .trim() || 'No name'}
       </span>
     )
   }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild disabled={!user || loading}>
+      <PopoverTrigger asChild disabled={!currentUser || loading}>
         <span
           className={
             'hover:text-foreground/80 text-foreground cursor-pointer text-xl/none capitalize'
           }
         >
-          {(user?.role == UserRole.Company.toString()
-            ? [user?.company_name]
-            : [user?.first_name, user?.last_name]
+          {(currentUser?.role == UserRole.Company.toString()
+            ? [currentUser?.company_name]
+            : [currentUser?.first_name, currentUser?.last_name]
           )
             .join(' ')
             .toLowerCase()
@@ -144,7 +150,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
             className="flex flex-col gap-4"
           >
             <div className={'flex w-full items-start gap-4'}>
-              {user?.role == UserRole.User.toString() && (
+              {currentUser?.role == UserRole.User.toString() && (
                 <React.Fragment>
                   <FormField
                     control={form.control}
@@ -181,7 +187,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
                   />
                 </React.Fragment>
               )}
-              {user?.role == UserRole.Company.toString() && (
+              {currentUser?.role == UserRole.Company.toString() && (
                 <FormField
                   control={form.control}
                   name="company_name"

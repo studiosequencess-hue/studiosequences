@@ -7,24 +7,28 @@ import ProfileExperience from '@/components/pages/profile/profile.experience'
 import ProfileActivities from '@/components/pages/profile/profile.activities'
 import ProfilePortfolio from '@/components/pages/profile/profile.portfolio'
 import ProfileCollections from '@/components/pages/profile/profile.collections'
+import { getUserById } from '@/lib/actions.user'
+import { createClient } from '@/lib/supabase.server'
 
 type Props = {
   params: Promise<{ id: string }>
 }
 
 const ProfilePage: React.FC<Props> = async (props) => {
-  const [userResponse, { id }] = await Promise.all([getUser(), props.params])
+  const [{ id }, supabase] = await Promise.all([props.params, createClient()])
+  const [userResponse] = await Promise.all([getUserById(id)])
 
   if (userResponse.status == 'error') {
     return (
       <EmptyPage.Error
-        title={'No such user found.'}
-        description={'Please, try to login or contact support.'}
+        title={'No such user found'}
+        description={'Cannot find such user. Please try again'}
       />
     )
   }
 
-  const editable = id === userResponse.data.id
+  const currentUser = await supabase.auth.getUser()
+  const editable = id === currentUser.data.user?.id
 
   return (
     <div className={'flex grow flex-col'}>

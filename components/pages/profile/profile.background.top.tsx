@@ -11,19 +11,21 @@ import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { UserInfo } from '@/lib/models'
 
 type Props = {
+  user: UserInfo
   editable: boolean
 }
 
-const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
-  const { user, setUser } = useAuthStore()
+const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
+  const { user: currentUser, setUser } = useAuthStore()
   const ref = React.useRef<HTMLInputElement>(null)
   const [editing, setEditing] = React.useState<boolean>(false)
 
   const handleFileUpload = async (file: File) => {
     if (editing) return
-    if (!user) return
+    if (!currentUser) return
     if (!editable) return
 
     setEditing(true)
@@ -32,7 +34,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
       bucket: StorageBucketType.Images,
       file: file,
       path: StoragePath.User,
-      user_id: user.id,
+      user_id: currentUser.id,
       basename: 'background-top',
     })
 
@@ -42,7 +44,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
       const url = uploadResponse.data
 
       const updateInfoResponse = await updateUserInfo({
-        user_id: user.id,
+        user_id: currentUser.id,
         background_top: `${url}?t=${new Date().getTime()}`,
       })
 
@@ -51,7 +53,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
       } else {
         toast.success(updateInfoResponse.message)
         setUser({
-          ...user,
+          ...currentUser,
           background_top: url,
         })
       }
@@ -66,19 +68,19 @@ const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
 
   const handleDelete = async () => {
     if (editing) return
-    if (!user) return
-    if (!user.background_top) return
+    if (!currentUser) return
+    if (!currentUser.background_top) return
 
     setEditing(true)
 
     const [deleteResponse, updateInfoResponse] = await Promise.all([
       deleteFile({
-        user_id: user.id,
+        user_id: currentUser.id,
         bucket: StorageBucketType.Images,
-        publicUrl: user.background_top,
+        publicUrl: currentUser.background_top,
       }),
       updateUserInfo({
-        user_id: user.id,
+        user_id: currentUser.id,
         background_top: '',
       }),
     ])
@@ -95,7 +97,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
     ) {
       toast.success('Background deleted successfully')
       setUser({
-        ...user,
+        ...currentUser,
         background_top: '',
       })
     }
@@ -142,7 +144,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ editable }) => {
                 change
               </Button>
 
-              {user?.background_top && (
+              {currentUser?.background_top && (
                 <Button
                   size={'sm'}
                   variant={'destructive'}

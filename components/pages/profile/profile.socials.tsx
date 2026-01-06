@@ -23,11 +23,12 @@ import { Spinner } from '@/components/ui/spinner'
 import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
-import { Textarea } from '@/components/ui/textarea'
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from 'react-icons/fa6'
 import Link from 'next/link'
+import { UserInfo } from '@/lib/models'
 
 type Props = {
+  user: UserInfo
   editable: boolean
 }
 
@@ -46,27 +47,27 @@ const formSchema = z.object({
   }),
 })
 
-const ProfileSocials: React.FC<Props> = ({ editable }) => {
-  const { user, setUser, loading } = useAuthStore()
+const ProfileSocials: React.FC<Props> = ({ user, editable }) => {
+  const { user: currentUser, setUser, loading } = useAuthStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      instagram: user?.instagram || '',
-      twitter: user?.twitter || '',
-      linkedin: user?.linkedin || '',
-      facebook: user?.facebook || '',
+      instagram: currentUser?.instagram || '',
+      twitter: currentUser?.twitter || '',
+      linkedin: currentUser?.linkedin || '',
+      facebook: currentUser?.facebook || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
   const [updating, setUpdating] = React.useState<boolean>(false)
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
     if (!editable) return
     setUpdating(true)
 
     const response = await updateUserInfo({
-      user_id: user.id,
+      user_id: currentUser.id,
       instagram: values.instagram,
       twitter: values.twitter,
       linkedin: values.linkedin,
@@ -76,7 +77,7 @@ const ProfileSocials: React.FC<Props> = ({ editable }) => {
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
-        ...user,
+        ...currentUser,
         instagram: values.instagram,
         twitter: values.twitter,
         linkedin: values.linkedin,
@@ -91,14 +92,14 @@ const ProfileSocials: React.FC<Props> = ({ editable }) => {
   }
 
   React.useEffect(() => {
-    if (!user || loading) return
+    if (!currentUser || loading) return
 
     form.reset()
-    form.setValue('instagram', user.instagram || '')
-    form.setValue('linkedin', user.linkedin || '')
-    form.setValue('twitter', user.twitter || '')
-    form.setValue('facebook', user.facebook || '')
-  }, [form, user, loading])
+    form.setValue('instagram', currentUser.instagram || '')
+    form.setValue('linkedin', currentUser.linkedin || '')
+    form.setValue('twitter', currentUser.twitter || '')
+    form.setValue('facebook', currentUser.facebook || '')
+  }, [form, currentUser, loading])
 
   if (!editable) {
     return (
@@ -107,25 +108,33 @@ const ProfileSocials: React.FC<Props> = ({ editable }) => {
           'text-foreground flex items-center gap-1.5 text-lg/none capitalize'
         }
       >
-        <Link href={user?.instagram || ''}>
-          <FaInstagram />
-        </Link>
-        <Link href={user?.twitter || ''}>
-          <FaTwitter />
-        </Link>
-        <Link href={user?.facebook || ''}>
-          <FaFacebook />
-        </Link>
-        <Link href={user?.linkedin || ''}>
-          <FaLinkedin />
-        </Link>
+        {user?.instagram && (
+          <Link href={user.instagram}>
+            <FaInstagram />
+          </Link>
+        )}
+        {user?.twitter && (
+          <Link href={user.twitter}>
+            <FaTwitter />
+          </Link>
+        )}
+        {user?.facebook && (
+          <Link href={user.facebook}>
+            <FaFacebook />
+          </Link>
+        )}
+        {user?.linkedin && (
+          <Link href={user.linkedin}>
+            <FaLinkedin />
+          </Link>
+        )}
       </div>
     )
   }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild disabled={!user || loading}>
+      <PopoverTrigger asChild disabled={!currentUser || loading}>
         <div
           className={
             'hover:text-foreground/80 text-foreground flex cursor-pointer items-center gap-1.5 text-lg/none capitalize'

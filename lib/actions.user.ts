@@ -68,6 +68,38 @@ export async function getUserByUsername(
   }
 }
 
+export async function searchUsers(
+  value: string,
+): Promise<ServerResponse<UserInfo[]>> {
+  try {
+    const supabase = await createClient()
+    const { data, count, error } = await supabase
+      .from('users')
+      .select('*', { count: 'exact' })
+      .or(`email.ilike.%${value}%,username.ilike.%${value}%`)
+      .range(0, 9)
+
+    if (error || !data || data.length == 0) {
+      return {
+        status: 'error',
+        message: 'No user or companies found.',
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully found users.',
+      data: data,
+    }
+  } catch (e) {
+    console.log('getUser', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch user. Please try again later.',
+    }
+  }
+}
+
 type UpdateUserInfoProps = Partial<UserInfo> & {
   user_id: User['id']
 }

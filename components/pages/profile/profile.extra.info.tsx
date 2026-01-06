@@ -4,11 +4,11 @@ import ProfileContact from '@/components/pages/profile/profile.contact'
 import ProfileOccupation from '@/components/pages/profile/profile.occupation'
 import ProfileSocials from '@/components/pages/profile/profile.socials'
 import ProfileOpenToWork from '@/components/pages/profile/profile.open.to.work'
-import { User } from '@/lib/models'
+import { UserInfo } from '@/lib/models'
 import { UserRole } from '@/lib/constants'
 
 type Props = {
-  user: User
+  user: UserInfo
   editable: boolean
 }
 
@@ -19,9 +19,9 @@ const ProfileExtraInfo: React.FC<Props> = ({ user, editable }) => {
         <ProfileOpenToWork editable={editable} />
       )}
       <ProfileOccupation editable={editable} />
-      <ProfileLocation editable={editable} />
-      <ProfileContact editable={editable} />
-      <ProfileSocials editable={editable} />
+      <ProfileLocation user={user} editable={editable} />
+      <ProfileContact user={user} editable={editable} />
+      <ProfileSocials user={user} editable={editable} />
     </div>
   )
 }

@@ -34,9 +34,12 @@ import { toast } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
 import { useRouter } from 'next/navigation'
 import { HiOutlineAtSymbol } from 'react-icons/hi2'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 const formSchema = z
   .object({
+    role: z.enum(['user', 'company']),
     username: z
       .string()
       .min(2, {
@@ -45,18 +48,16 @@ const formSchema = z
       .max(255, {
         error: 'Too long',
       }),
-    first_name: z
-      .string()
-      .min(1, {
-        error: 'Too short',
-      })
-      .max(255, {
-        error: 'Too long',
-      }),
+    first_name: z.string().max(255, {
+      error: 'Too long',
+    }),
     last_name: z.string().max(255, {
       error: 'Too long',
     }),
     pronoun: z.string().max(255, {
+      error: 'Too long',
+    }),
+    company_name: z.string().max(255, {
       error: 'Too long',
     }),
     email: z.email(),
@@ -94,6 +95,7 @@ const SignupPage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      role: 'user',
       username: '',
       first_name: '',
       last_name: '',
@@ -102,15 +104,29 @@ const SignupPage = () => {
       contact: '',
       password: '',
       confirmPassword: '',
+      company_name: '',
     },
   })
 
   const { setLoading, loading } = useAuthStore()
   const router = useRouter()
+  const role = form.watch('role')
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true)
+    if (values.role == 'user' && values.first_name.trim().length <= 0) {
+      form.setError('first_name', {
+        message: 'Too short',
+      })
+      return
+    }
+    if (values.role == 'company' && values.company_name.trim().length <= 0) {
+      form.setError('company_name', {
+        message: 'Too short',
+      })
+      return
+    }
 
+    setLoading(true)
     const response = await signUpWithEmailPassword(values)
 
     if (response.status == 'success') {
@@ -141,92 +157,172 @@ const SignupPage = () => {
           <CardContent>
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(handleSubmit)}
+                onSubmit={form.handleSubmit(handleSubmit, (error) => {
+                  console.log(error)
+                })}
                 className="flex flex-col gap-4"
               >
-                <div className={'grid grid-cols-2 items-start gap-4'}>
-                  <FormField
-                    control={form.control}
-                    name="first_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            type={'text'}
-                            placeholder={'John'}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="last_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={'flex items-center justify-between'}
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RadioGroup
+                          defaultValue={field.value}
+                          onValueChange={field.onChange}
                         >
-                          <span>Last Name </span>
-                          <span className={'text-muted-foreground'}>
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input type={'text'} placeholder={'Doe'} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className={'grid grid-cols-2 items-start gap-4'}>
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <InputGroup>
-                            <InputGroupInput
+                          <div className={'flex items-center gap-4'}>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="user" id="user" />
+                              <Label htmlFor="user">Artist</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="company" id="company" />
+                              <Label htmlFor="company">Company</Label>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {role == 'user' && (
+                  <div className={'grid grid-cols-2 items-start gap-4'}>
+                    <FormField
+                      control={form.control}
+                      name="first_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <Input
                               type={'text'}
-                              placeholder={'johndoe'}
+                              placeholder={'John'}
                               {...field}
                             />
-                            <InputGroupAddon>
-                              <HiOutlineAtSymbol />
-                            </InputGroupAddon>
-                          </InputGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pronoun"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel
-                          className={'flex items-center justify-between'}
-                        >
-                          <span>Pronoun </span>
-                          <span className={'text-muted-foreground'}>
-                            (optional)
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input type={'text'} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="last_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={'flex items-center justify-between'}
+                          >
+                            <span>Last Name </span>
+                            <span className={'text-muted-foreground'}>
+                              (optional)
+                            </span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type={'text'}
+                              placeholder={'Doe'}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+                {role == 'company' && (
+                  <div className={'grid grid-cols-2 items-start gap-4'}>
+                    <FormField
+                      control={form.control}
+                      name="company_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Company Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              type={'text'}
+                              placeholder={'Studio'}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <InputGroup>
+                              <InputGroupInput
+                                type={'text'}
+                                placeholder={'studio'}
+                                {...field}
+                              />
+                              <InputGroupAddon>
+                                <HiOutlineAtSymbol />
+                              </InputGroupAddon>
+                            </InputGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+                {role == 'user' && (
+                  <div className={'grid grid-cols-2 items-start gap-4'}>
+                    <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <InputGroup>
+                              <InputGroupInput
+                                type={'text'}
+                                placeholder={'johndoe'}
+                                {...field}
+                              />
+                              <InputGroupAddon>
+                                <HiOutlineAtSymbol />
+                              </InputGroupAddon>
+                            </InputGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="pronoun"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel
+                            className={'flex items-center justify-between'}
+                          >
+                            <span>Pronoun </span>
+                            <span className={'text-muted-foreground'}>
+                              (optional)
+                            </span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input type={'text'} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
                 <div className={'grid grid-cols-2 items-start gap-4'}>
                   <FormField
                     control={form.control}

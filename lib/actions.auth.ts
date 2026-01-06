@@ -15,6 +15,7 @@ import { DEFAULT_USER, DEFAULT_USER_INFO } from '@/lib/defaults'
 import lodash from 'lodash'
 import { getBaseURL } from '@/lib/utils'
 import { getUserById, getUserByUsername } from '@/lib/actions.user'
+import { UserRole } from '@/lib/constants'
 
 export async function getUser(): Promise<ServerResponse<User>> {
   try {
@@ -148,12 +149,14 @@ export async function signUpWithEmailPassword(
     await saveUserInfo(
       lodash.merge(DEFAULT_USER_INFO, {
         id: data.user?.id || '',
+        role: signUpData.role || UserRole.User.toString(),
         email: data.user?.email || '',
         username: signUpData.username,
         first_name: signUpData.first_name,
         last_name: signUpData.last_name,
         pronoun: signUpData.pronoun,
         contact: signUpData.contact,
+        company_name: signUpData.company_name,
       }),
     )
 

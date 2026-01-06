@@ -24,23 +24,20 @@ import { Spinner } from '@/components/ui/spinner'
 import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
+import { UserRole } from '@/lib/constants'
 
 type Props = {
   editable: boolean
 }
 
 const formSchema = z.object({
-  first_name: z
-    .string()
-    .min(1, {
-      error: 'Too short',
-    })
-    .max(255, {
-      error: 'Too long',
-    }),
+  first_name: z.string().max(255, {
+    error: 'Too long',
+  }),
   last_name: z.string().max(255, {
     error: 'Too long',
   }),
+  company_name: z.string().max(255, { error: 'Too long' }),
 })
 
 const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
@@ -50,6 +47,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
     defaultValues: {
       first_name: user?.first_name || '',
       last_name: user?.last_name || '',
+      company_name: user?.company_name || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
@@ -58,12 +56,34 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user || loading) return
     if (!editable) return
+
+    if (
+      user.role == UserRole.User.toString() &&
+      values.first_name.trim().length <= 0
+    ) {
+      form.setError('first_name', {
+        message: 'Too short',
+      })
+      return
+    }
+
+    if (
+      user.role == UserRole.Company.toString() &&
+      values.company_name.trim().length <= 0
+    ) {
+      form.setError('company_name', {
+        message: 'Too short',
+      })
+      return
+    }
+
     setUpdating(true)
 
     const response = await updateUserInfo({
       user_id: user.id,
       first_name: values.first_name,
       last_name: values.last_name,
+      company_name: values.company_name,
     })
 
     if (response.status == 'success') {
@@ -72,6 +92,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
         ...user,
         first_name: values.first_name,
         last_name: values.last_name,
+        company_name: values.company_name,
       })
       setOpen(false)
     } else {
@@ -87,6 +108,7 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
     form.reset()
     form.setValue('first_name', user.first_name || '')
     form.setValue('last_name', user.last_name || '')
+    form.setValue('company_name', user.company_name || '')
   }, [form, user, loading])
 
   if (!editable) {
@@ -106,8 +128,13 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
             'hover:text-foreground/80 text-foreground cursor-pointer text-xl/none capitalize'
           }
         >
-          {[user?.first_name, user?.last_name].join(' ').toLowerCase().trim() ||
-            'No name'}
+          {(user?.role == UserRole.Company.toString()
+            ? [user?.company_name]
+            : [user?.first_name, user?.last_name]
+          )
+            .join(' ')
+            .toLowerCase()
+            .trim() || 'No name'}
         </span>
       </PopoverTrigger>
       <PopoverContent align={'start'} sideOffset={20} className={'w-fit'}>
@@ -117,39 +144,60 @@ const ProfileDisplayName: React.FC<Props> = ({ editable }) => {
             className="flex flex-col gap-4"
           >
             <div className={'flex w-full items-start gap-4'}>
-              <FormField
-                control={form.control}
-                name="first_name"
-                render={({ field }) => (
-                  <FormItem className={'w-40'}>
-                    <FormLabel className={'text-xs/none'}>
-                      First Name<sup>*</sup>
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage className={'text-xs/none'} />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="last_name"
-                render={({ field }) => (
-                  <FormItem className={'w-40'}>
-                    <FormLabel className={'text-xs/none'}>
-                      Last Name{' '}
-                      <span className={'text-muted-foreground'}>
-                        (optional)
-                      </span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage className={'text-xs/none'} />
-                  </FormItem>
-                )}
-              />
+              {user?.role == UserRole.User.toString() && (
+                <React.Fragment>
+                  <FormField
+                    control={form.control}
+                    name="first_name"
+                    render={({ field }) => (
+                      <FormItem className={'w-40'}>
+                        <FormLabel className={'text-xs/none'}>
+                          First Name<sup>*</sup>
+                        </FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage className={'text-xs/none'} />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="last_name"
+                    render={({ field }) => (
+                      <FormItem className={'w-40'}>
+                        <FormLabel className={'text-xs/none'}>
+                          Last Name{' '}
+                          <span className={'text-muted-foreground'}>
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage className={'text-xs/none'} />
+                      </FormItem>
+                    )}
+                  />
+                </React.Fragment>
+              )}
+              {user?.role == UserRole.Company.toString() && (
+                <FormField
+                  control={form.control}
+                  name="company_name"
+                  render={({ field }) => (
+                    <FormItem className={'w-40'}>
+                      <FormLabel className={'text-xs/none'}>
+                        Company Name<sup>*</sup>
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage className={'text-xs/none'} />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             <Button
               size="sm"

@@ -9,6 +9,7 @@ import ProfileBackgroundTop from '@/components/pages/profile/profile.background.
 import ProfileBackgroundBottom from '@/components/pages/profile/profile.background.bottom'
 import ProfileAvatar from '@/components/pages/profile/profile.avatar'
 import ProfileExtraInfo from '@/components/pages/profile/profile.extra.info'
+import { UserRole } from '@/lib/constants'
 
 type Props = {
   user: User
@@ -26,7 +27,9 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
         <ProfileBackgroundTop editable={editable} />
         <div className={'z-20 flex items-center gap-2'}>
           <ProfileDisplayName editable={editable} />
-          <ProfilePronoun editable={editable} />
+          {user.role == UserRole.User.toString() && (
+            <ProfilePronoun editable={editable} />
+          )}
 
           <HoverCard
             trigger={
@@ -51,7 +54,7 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
           'bg-primary-dark/60 relative z-0 min-h-66 w-full pt-24 pl-24',
         )}
       >
-        <ProfileExtraInfo editable={editable} />
+        <ProfileExtraInfo user={user} editable={editable} />
         <ProfileBackgroundBottom editable={editable} />
       </div>
       <ProfileAvatar editable={editable} />

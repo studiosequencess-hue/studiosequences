@@ -38,6 +38,7 @@ export const DEFAULT_USER_INFO: UserInfo = {
   username: '',
   first_name: '',
   last_name: '',
+  company_name: '',
   email: '',
   contact: '',
   instagram: '',

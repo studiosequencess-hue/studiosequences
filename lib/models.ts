@@ -56,6 +56,7 @@ export type PasswordResetData = {
 }
 
 export type SignUpData = {
+  role: string
   first_name: string
   last_name: string
   pronoun: string
@@ -63,6 +64,7 @@ export type SignUpData = {
   email: string
   contact: string
   password: string
+  company_name: string
 }
 
 export type Project = Tables<'projects'> & {

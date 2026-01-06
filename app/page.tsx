@@ -6,7 +6,7 @@ const HomePage = async () => {
   const response = await getUser()
 
   if (response.status == 'success' && response.data) {
-    return <HomeContentAuthenticated />
+    return <HomeContentAuthenticated user={response.data} />
   }
 
   return <HomeContentUnauthenticated />

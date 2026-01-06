@@ -8,8 +8,13 @@ import TabPosts from '@/components/pages/home/sections/tab.posts'
 import TabPortfolio from '@/components/pages/home/sections/tab.portfolio'
 import TabBookmarks from '@/components/pages/home/sections/tab.bookmarks'
 import TabAbout from '@/components/pages/home/sections/tab.about'
+import { UserInfo } from '@/lib/models'
 
-const HomeContentAuthenticated = () => {
+type Props = {
+  user: UserInfo
+}
+
+const HomeContentAuthenticated: React.FC<Props> = ({ user }) => {
   return (
     <div className={'grid h-full w-full grid-cols-[250px_1fr]'}>
       <div className={'bg-foreground/10 flex flex-col gap-2 p-4'}>
@@ -43,7 +48,7 @@ const HomeContentAuthenticated = () => {
             <TabPosts />
           </TabsContent>
           <TabsContent value="portfolio">
-            <TabPortfolio />
+            <TabPortfolio user={user} />
           </TabsContent>
           <TabsContent value="bookmarks">
             <TabBookmarks />

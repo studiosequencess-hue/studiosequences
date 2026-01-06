@@ -83,7 +83,7 @@ const ProjectsGrid: React.FC<Props> = (props) => {
         return (
           <div
             key={project.id}
-            onClick={() => !isCensored && show(project, false)}
+            onClick={() => !isCensored && show(project, true)}
             className={cn(
               `group relative size-52 overflow-hidden border-[0.5px] border-white/5 bg-zinc-950`,
               !isCensored && 'cursor-pointer',

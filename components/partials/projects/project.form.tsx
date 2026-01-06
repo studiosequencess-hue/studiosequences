@@ -24,30 +24,19 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from '@/components/ui/empty'
 import { toast } from 'sonner'
-import { FaMinus, FaPlus } from 'react-icons/fa6'
 import { cn } from '@/lib/utils'
 import ProjectFormPreviewItem from '@/components/partials/projects/project.form.preview.item'
-import { LuImage, LuVideo } from 'react-icons/lu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
   createProject,
   deleteProject,
-  getProjectFilesById,
   updateProject,
 } from '@/lib/actions.projects'
 import { createClient } from '@/lib/supabase.client'
 import { Spinner } from '@/components/ui/spinner'
-import Loader from '@/components/partials/loader'
+import ProjectFormFiles from '@/components/partials/projects/project.form.files'
 
 const projectFormSchema = z.object({
   title: z
@@ -82,9 +71,7 @@ const ProjectForm = () => {
       is_sensitive: project?.is_sensitive || false,
     },
   })
-  const uploadInputRef = React.useRef<HTMLInputElement>(null)
   const [files, setFiles] = React.useState<FormProjectFile[]>([])
-  const [filesLoading, setFilesLoading] = React.useState(true)
   const [activeFileIndex, setActiveFileIndex] = React.useState(-1)
   const [projectProcessing, setProjectProcessing] = React.useState(false)
   const [projectDeleting, setProjectDeleting] = React.useState(false)
@@ -110,25 +97,6 @@ const ProjectForm = () => {
     }
 
     setProjectDeleting(false)
-  }
-
-  const handleUpload = (newFiles: File[]) => {
-    setFiles([
-      ...files,
-      ...newFiles.map((file) => ({
-        name: file.name,
-        title: '',
-        description: '',
-        uploadType: 'file' as const,
-        type: file.type.startsWith('image/') ? 'image' : 'video',
-        file,
-      })),
-    ])
-
-    if (uploadInputRef.current) {
-      uploadInputRef.current.value = ''
-      uploadInputRef.current.files = null
-    }
   }
 
   const handleSubmit = async () => {
@@ -227,41 +195,13 @@ const ProjectForm = () => {
     setProjectProcessing(false)
   }
 
-  const loadProjectFiles = React.useCallback(async () => {
-    if (!project) return
-
-    const projectFilesResponse = await getProjectFilesById({
-      id: project.id,
-    })
-
-    if (projectFilesResponse.status == 'success') {
-      setFiles(
-        projectFilesResponse.data.map((image) => ({
-          title: image.title || '',
-          description: image.description || '',
-          url: image.url,
-          type: image.type,
-          name: image.name,
-          uploadType: 'url',
-        })),
-      )
-    } else {
-      toast.error(projectFilesResponse.message)
-    }
-  }, [project])
-
   React.useEffect(() => {
     projectForm.reset()
 
     projectForm.setValue('title', project?.title || '')
     projectForm.setValue('description', project?.description || '')
     projectForm.setValue('is_sensitive', project?.is_sensitive || false)
-
-    setFilesLoading(true)
-    loadProjectFiles().finally(() => {
-      setFilesLoading(false)
-    })
-  }, [project, projectForm, loadProjectFiles])
+  }, [project, projectForm])
 
   return (
     <Sheet
@@ -278,28 +218,6 @@ const ProjectForm = () => {
           <SheetTitle>{project ? 'Edit Project' : 'New Project'}</SheetTitle>
         </SheetHeader>
         <div className={'flex flex-col gap-4'}>
-          <input
-            ref={uploadInputRef}
-            type={'file'}
-            accept={'image/*,video/*'}
-            className={'hidden'}
-            multiple
-            onChange={(e) => {
-              const files = e.target.files
-              if (!files || files.length == 0) {
-                toast.error('No files selected')
-                return
-              }
-
-              handleUpload(
-                Array.from(files).filter(
-                  (file) =>
-                    file.type.startsWith('image/') ||
-                    file.type.startsWith('video/'),
-                ),
-              )
-            }}
-          />
           <Form {...projectForm}>
             <form className="flex flex-col gap-4 px-4">
               <FormField
@@ -355,93 +273,13 @@ const ProjectForm = () => {
             </form>
           </Form>
 
-          {filesLoading ? (
-            <Loader />
-          ) : files.length === 0 ? (
-            <Empty className="mx-4 border border-dashed">
-              <EmptyHeader>
-                <EmptyTitle>No Items</EmptyTitle>
-                <EmptyDescription>
-                  Attach images / videos to your project
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => uploadInputRef.current?.click()}
-                >
-                  Attach
-                </Button>
-              </EmptyContent>
-            </Empty>
-          ) : (
-            <div className={'flex flex-col gap-2 px-4'}>
-              <div className={'flex items-center justify-between gap-4'}>
-                <span>Files</span>
-                <Button
-                  variant={'secondary'}
-                  size={'icon-sm'}
-                  className={'h-fit w-fit rounded-sm p-1'}
-                  onClick={() => uploadInputRef.current?.click()}
-                >
-                  <FaPlus />
-                </Button>
-              </div>
-              <ScrollArea
-                className={
-                  'border-foreground h-[calc(100vh-380px)] w-full rounded-sm border'
-                }
-              >
-                <div className={'flex flex-col'}>
-                  {files.map((file, fileIndex) => (
-                    <div
-                      id={`file-${fileIndex}`}
-                      key={`file-${fileIndex}`}
-                      className={cn(
-                        'hover:bg-foreground/10 flex cursor-pointer items-start gap-4 p-2 pr-4',
-                        activeFileIndex == fileIndex && 'bg-foreground/10',
-                      )}
-                      onClick={() => setActiveFileIndex(fileIndex)}
-                    >
-                      <div className={'flex grow items-start gap-2'}>
-                        <div className={'py-1'}>
-                          {file.type == 'image' && <LuImage size={20} />}
-                          {file.type == 'video' && <LuVideo size={20} />}
-                        </div>
-
-                        <div
-                          className={'flex w-64 flex-col gap-2 text-xs/none'}
-                        >
-                          <span className={'text-muted-foreground truncate'}>
-                            {file.name || 'No name'}
-                          </span>
-                          <span className={'truncate'}>
-                            {file.title || 'No title'}
-                          </span>
-                          <span className={'wrap-break line-clamp-3'}>
-                            {file.description || 'No description'}
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        variant={'destructive'}
-                        size={'icon-sm'}
-                        className={'h-fit w-fit rounded-sm p-1'}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          setFiles(files.filter((_, i) => i != fileIndex))
-                        }}
-                      >
-                        <FaMinus />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
-          )}
+          <ProjectFormFiles
+            files={files}
+            setFiles={setFiles}
+            projectId={project?.id || null}
+            activeFileIndex={activeFileIndex}
+            setActiveFileIndex={setActiveFileIndex}
+          />
         </div>
         <SheetFooter
           className={'flex flex-row items-center justify-between gap-2 pt-0'}

@@ -12,9 +12,36 @@ import {
 import { useProjectViewerStore } from '@/store/project.viewer.store'
 import { X } from 'lucide-react'
 import ProjectViewFilesCarousel from '@/components/partials/projects/project.view.files.carousel'
+import { toast } from 'sonner'
+import { ProjectFile } from '@/lib/models'
+import { getProjectFilesById } from '@/lib/actions.projects'
+import Loader from '@/components/partials/loader'
 
 const ProjectView = () => {
   const { project, isOpen, isEditable, close } = useProjectViewerStore()
+  const [files, setFiles] = React.useState<ProjectFile[]>([])
+  const [filesLoading, setFilesLoading] = React.useState(true)
+
+  const loadProjectFiles = React.useCallback(async () => {
+    if (!project) return
+
+    const projectFilesResponse = await getProjectFilesById({
+      id: project.id,
+    })
+
+    if (projectFilesResponse.status == 'success') {
+      setFiles(projectFilesResponse.data)
+    } else {
+      toast.error(projectFilesResponse.message)
+    }
+  }, [project])
+
+  React.useEffect(() => {
+    setFilesLoading(true)
+    loadProjectFiles().finally(() => {
+      setFilesLoading(false)
+    })
+  }, [project, loadProjectFiles])
 
   if (!project) return null
 
@@ -34,7 +61,7 @@ const ProjectView = () => {
             {project.description}
           </DialogDescription>
         </DialogHeader>
-        <ProjectViewFilesCarousel files={project.files} />
+        {filesLoading ? <Loader /> : <ProjectViewFilesCarousel files={files} />}
       </DialogContent>
     </Dialog>
   )

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { ProjectFile } from '@/lib/models'
+import { Project, ProjectFile } from '@/lib/models'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -46,4 +46,12 @@ export function getProjectPreview(files: ProjectFile[]): string {
   } else {
     return `${file.url}?t=0.1`
   }
+}
+
+export function getProjectFilesCount(project: Project): number {
+  if (project.files_count.length > 0) {
+    return project.files_count[0].count
+  }
+
+  return 0
 }

@@ -25,11 +25,14 @@ export async function getAllProjectsByUserId(
 
     const projectsResponse = await supabase
       .from('projects')
-      .select('*, files:project_files(*)', { count: 'exact' })
+      .select('*, files:project_files(*), files_count:project_files(count)', {
+        count: 'exact',
+      })
       .eq('user_id', props.userId)
       .order('position', { ascending: true })
       .order('id', { ascending: true })
       .range(from, to)
+      .limit(1, { foreignTable: 'project_files' })
 
     if (projectsResponse.error) {
       return {
@@ -51,6 +54,41 @@ export async function getAllProjectsByUserId(
     return {
       status: 'error',
       message: 'Failed to fetch user. Please try again later.',
+    }
+  }
+}
+
+type GetProjectFilesByIdProps = {
+  id: Project['id']
+}
+export async function getProjectFilesById(
+  props: GetProjectFilesByIdProps,
+): Promise<ServerResponse<ProjectFile[]>> {
+  try {
+    const supabase = await createClient()
+
+    const projectFilesResponse = await supabase
+      .from('project_files')
+      .select('*')
+      .eq('project_id', props.id)
+
+    if (projectFilesResponse.error) {
+      return {
+        status: 'error',
+        message: projectFilesResponse.error.message,
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully fetched projects.',
+      data: projectFilesResponse.data,
+    }
+  } catch (e) {
+    console.log('getUser', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch project files. Please try again later.',
     }
   }
 }
@@ -86,7 +124,7 @@ export async function createProject(
           user_id: currentUserResponse.data.user.id,
         },
       ])
-      .select()
+      .select('*, files_count:project_files(count)')
       .single()
 
     if (insertProjectResponse.error) {
@@ -162,7 +200,7 @@ export async function updateProject(
         is_sensitive: props.is_sensitive,
       })
       .eq('id', props.id)
-      .select()
+      .select('*, files_count:project_files(count)')
       .single()
 
     if (updateProjectResponse.error) {

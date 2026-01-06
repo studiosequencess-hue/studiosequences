@@ -11,7 +11,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { cn } from '@/lib/utils'
+import { cn, getProjectFilesCount } from '@/lib/utils'
 import { FaPlus } from 'react-icons/fa6'
 import ProjectsGridPreviewBackground from '@/components/partials/projects/projects.grid.preview.background'
 
@@ -100,7 +100,7 @@ const ProjectsGrid: React.FC<Props> = (props) => {
                 >
                   <Layers className="h-2.5 w-2.5 text-white/70" />
                   <span className="text-[9px] font-black text-white/90 uppercase">
-                    {project.files.length}
+                    {getProjectFilesCount(project)}
                   </span>
                 </div>
 

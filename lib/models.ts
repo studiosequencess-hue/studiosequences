@@ -69,10 +69,15 @@ export type SignUpData = {
 
 export type Project = Tables<'projects'> & {
   files: ProjectFile[]
+  files_count: {
+    count: number
+  }[]
   is_revealed?: boolean
 }
 
 export type ProjectFile = Tables<'project_files'>
+
+export type ProjectMember = Tables<'project_members'>
 
 type BaseMedia = Pick<ProjectFile, 'name' | 'title' | 'description' | 'type'>
 

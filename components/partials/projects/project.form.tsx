@@ -35,11 +35,15 @@ import {
 import { toast } from 'sonner'
 import { FaMinus, FaPlus } from 'react-icons/fa6'
 import { cn } from '@/lib/utils'
-import ProjectCreatePreviewItem from '@/components/partials/projects/project.create.preview.item'
+import ProjectFormPreviewItem from '@/components/partials/projects/project.form.preview.item'
 import { LuImage, LuVideo } from 'react-icons/lu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { createProject } from '@/lib/actions.projects'
+import {
+  createProject,
+  deleteProject,
+  updateProject,
+} from '@/lib/actions.projects'
 import { createClient } from '@/lib/supabase.client'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -63,31 +67,58 @@ const projectFormSchema = z.object({
   is_sensitive: z.boolean(),
 })
 
-const ProjectCreate = () => {
-  const { createIsOpen: isOpen, createClose: close } = useProjectViewerStore()
+const ProjectForm = () => {
+  const { isOpen, close, project, isEditable } = useProjectViewerStore()
   const { user, loading: userLoading } = useAuthStore()
-  const { addProject } = useProjectsStore()
+  const { setProjects, projects } = useProjectsStore()
 
   const projectForm = useForm<z.infer<typeof projectFormSchema>>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      is_sensitive: false,
+      title: project?.title || '',
+      description: project?.description || '',
+      is_sensitive: project?.is_sensitive || false,
     },
   })
   const uploadInputRef = React.useRef<HTMLInputElement>(null)
   const [files, setFiles] = React.useState<FormProjectFile[]>([])
   const [activeFileIndex, setActiveFileIndex] = React.useState(-1)
-  const [projectCreating, setProjectCreating] = React.useState(false)
+  const [projectProcessing, setProjectProcessing] = React.useState(false)
+  const [projectDeleting, setProjectDeleting] = React.useState(false)
+
+  const handleDelete = async () => {
+    if (!project) return
+    setProjectDeleting(true)
+
+    const response = await deleteProject({
+      id: project.id,
+    })
+
+    if (response.status == 'success') {
+      projectForm.reset()
+      setFiles([])
+
+      setProjects(projects.filter((p) => p.id != project.id))
+
+      toast.success(response.message)
+      close()
+    } else {
+      toast.error(response.message)
+    }
+
+    setProjectDeleting(false)
+  }
 
   const handleUpload = (newFiles: File[]) => {
     setFiles([
       ...files,
       ...newFiles.map((file) => ({
-        file,
+        name: file.name,
         title: '',
         description: '',
+        uploadType: 'file' as const,
+        type: file.type.startsWith('image/') ? 'image' : 'video',
+        file,
       })),
     ])
 
@@ -99,17 +130,28 @@ const ProjectCreate = () => {
 
   const handleSubmit = async () => {
     if (!user || userLoading) return
-    setProjectCreating(true)
+    setProjectProcessing(true)
 
     const supabase = createClient()
 
-    const uploadImagesPromises = files.map(async (file) => {
+    const uploadImagesPromises = files.map(async (projectFile) => {
+      if (projectFile.uploadType == 'url') {
+        return {
+          status: 'success',
+          url: projectFile.url,
+          title: projectFile.title,
+          description: projectFile.description,
+          name: projectFile.name,
+          type: projectFile.type,
+        }
+      }
+
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}`
       const filePath = `projects/${user.id}/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('files')
-        .upload(filePath, file.file)
+        .upload(filePath, projectFile.file)
 
       if (uploadError) {
         return {
@@ -117,6 +159,8 @@ const ProjectCreate = () => {
           url: '',
           title: '',
           description: '',
+          type: 'image',
+          name: '',
         }
       }
 
@@ -127,43 +171,91 @@ const ProjectCreate = () => {
       return {
         status: 'success',
         url: publicUrl,
-        title: file.title,
-        description: file.description,
+        title: projectFile.title,
+        description: projectFile.description,
+        name: fileName,
+        type: projectFile.file.type.startsWith('image/') ? 'image' : 'video',
       }
     })
 
     const uploadedImagesResponses = await Promise.all(uploadImagesPromises)
 
-    const response = await createProject({
-      ...projectForm.getValues(),
-      files: uploadedImagesResponses.filter(
-        (item) => item.status === 'success',
-      ),
-    })
+    const response = project
+      ? await updateProject({
+          ...projectForm.getValues(),
+          id: project.id,
+          files: uploadedImagesResponses.filter(
+            (item) => item.status === 'success',
+          ),
+        })
+      : await createProject({
+          ...projectForm.getValues(),
+          files: uploadedImagesResponses.filter(
+            (item) => item.status === 'success',
+          ),
+        })
 
     if (response.status === 'success') {
       toast.success(response.message)
-      addProject(response.data)
+      if (project) {
+        setProjects(
+          projects.map((p) => {
+            if (p.id == project.id) {
+              return {
+                ...response.data,
+              }
+            }
+
+            return p
+          }),
+        )
+      } else {
+        setProjects([...projects, response.data])
+      }
+
+      projectForm.reset()
+      setFiles([])
+
       close()
     } else {
       toast.error(response.message)
     }
 
-    setProjectCreating(false)
+    setProjectProcessing(false)
   }
+
+  React.useEffect(() => {
+    projectForm.reset()
+
+    projectForm.setValue('title', project?.title || '')
+    projectForm.setValue('description', project?.description || '')
+    projectForm.setValue('is_sensitive', project?.is_sensitive || false)
+
+    setFiles(
+      (project?.files || []).map((image) => ({
+        title: image.title || '',
+        description: image.description || '',
+        url: image.url,
+        type: image.type,
+        name: image.name,
+        uploadType: 'url',
+      })),
+    )
+  }, [project, projectForm])
 
   return (
     <Sheet
-      open={isOpen}
+      open={isOpen && isEditable}
       onOpenChange={(state) => {
         if (!state) {
+          setActiveFileIndex(-1)
           close()
         }
       }}
     >
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>New Project</SheetTitle>
+          <SheetTitle>{project ? 'Edit Project' : 'New Project'}</SheetTitle>
         </SheetHeader>
         <div className={'flex flex-col gap-4'}>
           <input
@@ -292,19 +384,15 @@ const ProjectCreate = () => {
                     >
                       <div className={'flex grow items-start gap-2'}>
                         <div className={'py-1'}>
-                          {file.file.type.startsWith('image/') && (
-                            <LuImage size={20} />
-                          )}
-                          {file.file.type.startsWith('video/') && (
-                            <LuVideo size={20} />
-                          )}
+                          {file.type == 'image' && <LuImage size={20} />}
+                          {file.type == 'video' && <LuVideo size={20} />}
                         </div>
 
                         <div
                           className={'flex w-64 flex-col gap-2 text-xs/none'}
                         >
                           <span className={'text-muted-foreground truncate'}>
-                            {file.file.name || 'No name'}
+                            {file.name || 'No name'}
                           </span>
                           <span className={'truncate'}>
                             {file.title || 'No title'}
@@ -333,25 +421,41 @@ const ProjectCreate = () => {
             </div>
           )}
         </div>
-        <SheetFooter className={'flex flex-row items-center pt-0'}>
-          <Button
-            disabled={
-              !projectForm.formState.isValid ||
-              files.length == 0 ||
-              projectCreating ||
-              !user ||
-              userLoading
-            }
-            size={'sm'}
-            variant={'secondary'}
-            className={'w-20'}
-            onClick={projectForm.handleSubmit(handleSubmit)}
-          >
-            {projectCreating ? <Spinner /> : 'Create'}
-          </Button>
-          <Button size={'sm'} variant={'ghost'} onClick={() => close()}>
-            Cancel
-          </Button>
+        <SheetFooter
+          className={'flex flex-row items-center justify-between gap-2 pt-0'}
+        >
+          <div className={'flex items-center gap-2'}>
+            <Button
+              disabled={
+                !projectForm.formState.isValid ||
+                files.length == 0 ||
+                projectProcessing ||
+                projectDeleting ||
+                !user ||
+                userLoading
+              }
+              size={'sm'}
+              variant={'secondary'}
+              className={'w-20'}
+              onClick={projectForm.handleSubmit(handleSubmit)}
+            >
+              {projectProcessing ? <Spinner /> : project ? 'Update' : 'Create'}
+            </Button>
+            <Button size={'sm'} variant={'ghost'} onClick={() => close()}>
+              Cancel
+            </Button>
+          </div>
+
+          {project && (
+            <Button
+              size={'sm'}
+              variant={'destructive'}
+              disabled={projectDeleting || projectProcessing}
+              onClick={handleDelete}
+            >
+              {projectDeleting ? <Spinner /> : 'Delete'}
+            </Button>
+          )}
         </SheetFooter>
 
         <div
@@ -363,7 +467,7 @@ const ProjectCreate = () => {
           )}
         >
           {activeFileIndex >= 0 && activeFileIndex < files.length && (
-            <ProjectCreatePreviewItem
+            <ProjectFormPreviewItem
               item={files[activeFileIndex]}
               onChange={(item) => {
                 const tempFiles = [...files]
@@ -380,4 +484,4 @@ const ProjectCreate = () => {
   )
 }
 
-export default ProjectCreate
+export default ProjectForm

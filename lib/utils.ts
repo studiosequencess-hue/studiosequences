@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { ProjectFile } from '@/lib/models'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -27,10 +28,22 @@ export function getBaseURL() {
   return url.slice(0, -1)
 }
 
-export const getPathFromPublicUrl = (
+export function getPathFromPublicUrl(
   url: string,
   bucketName: string,
-): string | null => {
+): string | null {
   const parts = url.split(`${bucketName}/`)
   return parts.length > 1 ? parts[1] : null
+}
+
+export function getProjectPreview(files: ProjectFile[]): string {
+  if (files.length == 0) return '/public/images/placeholder.svg'
+
+  const file = files[0]
+
+  if (file.type == 'image') {
+    return file.url
+  } else {
+    return `${file.url}?t=0.1`
+  }
 }

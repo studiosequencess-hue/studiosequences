@@ -1,12 +1,12 @@
 import React from 'react'
 import ProjectView from '@/components/partials/projects/project.view'
-import ProjectCreate from '@/components/partials/projects/project.create'
+import ProjectForm from '@/components/partials/projects/project.form'
 
 const ProjectsPartials = () => {
   return (
     <React.Fragment>
       <ProjectView />
-      <ProjectCreate />
+      <ProjectForm />
     </React.Fragment>
   )
 }

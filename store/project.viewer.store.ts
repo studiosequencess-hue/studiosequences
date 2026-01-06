@@ -1,33 +1,22 @@
 import { create } from 'zustand'
-import { Project, UserImage } from '@/lib/models'
+import { Project } from '@/lib/models'
 
 interface ProjectViewerState {
-  viewIsOpen: boolean
-  viewProject: Project | null
-  viewShow: (project: Project) => void
-  viewClose: () => void
-  viewLoading: boolean
-  viewSetLoading: (loading: boolean) => void
-
-  createIsOpen: boolean
-  createShow: () => void
-  createClose: () => void
-  createLoading: boolean
-  createSetLoading: (loading: boolean) => void
+  isOpen: boolean
+  isEditable: boolean
+  show: (project: Project | null, isEditable: boolean) => void
+  close: () => void
+  loading: boolean
+  setLoading: (loading: boolean) => void
+  project: Project | null
 }
 
 export const useProjectViewerStore = create<ProjectViewerState>()((set) => ({
-  viewIsOpen: false,
-  viewProject: null,
-  viewShow: (project: Project) =>
-    set({ viewProject: project, viewIsOpen: true }),
-  viewClose: () => set({ viewProject: null, viewIsOpen: false }),
-  viewLoading: false,
-  viewSetLoading: (loading: boolean) => set({ viewLoading: loading }),
-
-  createIsOpen: false,
-  createShow: () => set({ createIsOpen: true }),
-  createClose: () => set({ createIsOpen: false }),
-  createLoading: false,
-  createSetLoading: (loading: boolean) => set({ createLoading: loading }),
+  isOpen: false,
+  isEditable: false,
+  show: (project, isEditable) => set({ isOpen: true, project, isEditable }),
+  close: () => set({ isOpen: false, project: null, isEditable: false }),
+  loading: false,
+  setLoading: (loading: boolean) => set({ loading: loading }),
+  project: null,
 }))

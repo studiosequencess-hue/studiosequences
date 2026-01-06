@@ -66,14 +66,22 @@ export type SignUpData = {
 }
 
 export type Project = Tables<'projects'> & {
-  images: ProjectImage[]
+  files: ProjectFile[]
   is_revealed?: boolean
 }
 
-export type ProjectImage = Tables<'project_images'>
+export type ProjectFile = Tables<'project_files'>
 
-export type FormProjectFile = {
+type BaseMedia = Pick<ProjectFile, 'name' | 'title' | 'description' | 'type'>
+
+interface FileMedia extends BaseMedia {
+  uploadType: 'file'
   file: File
-  title: string
-  description: string
 }
+
+interface URLMedia extends BaseMedia {
+  uploadType: 'url'
+  url: string
+}
+
+export type FormProjectFile = FileMedia | URLMedia

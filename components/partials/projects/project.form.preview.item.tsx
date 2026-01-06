@@ -46,11 +46,7 @@ type Props = {
   close: () => void
 }
 
-const ProjectCreatePreviewItem: React.FC<Props> = ({
-  item,
-  onChange,
-  close,
-}) => {
+const ProjectFormPreviewItem: React.FC<Props> = ({ item, onChange, close }) => {
   const itemForm = useForm<z.infer<typeof itemFormSchema>>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: {
@@ -58,13 +54,13 @@ const ProjectCreatePreviewItem: React.FC<Props> = ({
       description: '',
     },
   })
-  const [file, setFile] = React.useState<File>(item.file)
+  const [file, setFile] = React.useState<FormProjectFile>(item)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
-    itemForm.setValue('title', item.title)
-    itemForm.setValue('description', item.description)
-    setFile(item.file)
+    itemForm.setValue('title', item.title || '')
+    itemForm.setValue('description', item.description || '')
+    setFile(item)
   }, [item, itemForm])
 
   return (
@@ -108,19 +104,27 @@ const ProjectCreatePreviewItem: React.FC<Props> = ({
           </form>
         </Form>
 
-        {file.type.startsWith('image/') && (
+        {file.type == 'image' && (
           <div className={'relative aspect-square w-full'}>
             <Image
-              src={URL.createObjectURL(file)}
+              src={
+                file.uploadType == 'file'
+                  ? URL.createObjectURL(file.file)
+                  : file.url
+              }
               alt={'active-file-image'}
               fill
               className={'object-cover'}
             />
           </div>
         )}
-        {file.type.startsWith('video/') && (
+        {file.type == 'video' && (
           <ReactPlayer
-            src={URL.createObjectURL(file)}
+            src={
+              file.uploadType == 'file'
+                ? URL.createObjectURL(file.file)
+                : file.url
+            }
             controls
             width={'100%'}
           />
@@ -134,13 +138,29 @@ const ProjectCreatePreviewItem: React.FC<Props> = ({
             className={'hidden'}
             multiple={false}
             onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (!file) {
+              const uploadedFile = e.target.files?.[0]
+              if (!uploadedFile) {
                 toast.error('No file selected')
                 return
               }
 
-              setFile(file)
+              if (
+                !uploadedFile.type.startsWith('image/') &&
+                !uploadedFile.type.startsWith('video/')
+              ) {
+                toast.error('Invalid file uploaded')
+                return
+              }
+
+              setFile({
+                ...file,
+                type: uploadedFile.type.startsWith('image/')
+                  ? 'image'
+                  : 'video',
+                uploadType: 'file',
+                file: uploadedFile,
+                name: uploadedFile.name,
+              })
               e.currentTarget.value = ''
               e.currentTarget.files = null
             }}
@@ -163,15 +183,15 @@ const ProjectCreatePreviewItem: React.FC<Props> = ({
               disabled={
                 !itemForm.formState.isDirty &&
                 !itemForm.formState.isValid &&
-                file == item.file
+                file.name == item.name
               }
               size={'sm'}
               variant={'secondary'}
               onClick={() => {
                 onChange({
+                  ...file,
                   title: itemForm.getValues('title'),
                   description: itemForm.getValues('description'),
-                  file,
                 })
 
                 close()
@@ -189,4 +209,4 @@ const ProjectCreatePreviewItem: React.FC<Props> = ({
   )
 }
 
-export default ProjectCreatePreviewItem
+export default ProjectFormPreviewItem

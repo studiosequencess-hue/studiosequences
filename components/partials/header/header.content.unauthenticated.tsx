@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { IoGlobeOutline, IoSearch } from 'react-icons/io5'
 import { Button } from '@/components/ui/button'
 import { BsBriefcaseFill } from 'react-icons/bs'
+import HeaderSearchbar from '@/components/partials/header/header.searchbar'
 
 const HeaderContentUnauthenticated = () => {
   return (
@@ -27,9 +28,7 @@ const HeaderContentUnauthenticated = () => {
             Companies
           </Link>
         </div>
-        <div className="flex w-44 cursor-pointer items-center rounded-lg bg-white/15 p-2 transition-colors">
-          <IoSearch />
-        </div>
+        <HeaderSearchbar />
       </div>
 
       <div className="flex items-center gap-4">

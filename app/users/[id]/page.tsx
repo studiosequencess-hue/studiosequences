@@ -1,7 +1,6 @@
 import React from 'react'
 import ProfileInfo from '@/components/pages/profile/profile.info'
 import EmptyPage from '@/components/empty.page'
-import { getUser } from '@/lib/actions.auth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ProfileExperience from '@/components/pages/profile/profile.experience'
 import ProfileActivities from '@/components/pages/profile/profile.activities'

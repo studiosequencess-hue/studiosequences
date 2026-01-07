@@ -8,6 +8,7 @@ import { getOnlyCompanies } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import Loader from '@/components/partials/loader'
 import Placeholder from '@/public/images/placeholder.svg'
+import Link from 'next/link'
 
 const CompaniesPage = () => {
   const [companies, setCompanies] = React.useState<UserInfo[]>([])
@@ -51,7 +52,7 @@ const CompaniesPage = () => {
   }, [])
 
   if (companiesLoading) {
-    return <Loader />
+    return <Loader wrapperClassName={'h-screen'} />
   }
 
   return (
@@ -112,7 +113,10 @@ interface CompanyCardProps {
 
 function CompanyCard({ company }: CompanyCardProps) {
   return (
-    <div className="group bg-foreground flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200">
+    <Link
+      href={`/users/${company.id}`}
+      className="group bg-foreground flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200"
+    >
       <div className="relative aspect-square h-20 overflow-hidden bg-slate-100">
         {(company.background_top || company.background_bottom) && (
           <Image
@@ -147,7 +151,7 @@ function CompanyCard({ company }: CompanyCardProps) {
           {company.location || 'No location'}
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

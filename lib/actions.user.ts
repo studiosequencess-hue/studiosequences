@@ -76,7 +76,9 @@ export async function searchAllUsers(
     const { data, count, error } = await supabase
       .from('users')
       .select('*', { count: 'exact' })
-      .or(`email.ilike.%${value}%,username.ilike.%${value}%`)
+      .or(
+        `email.ilike.%${value}%,username.ilike.%${value}%,company_name.ilike.%${value}%,first_name.ilike.%${value}%,last_name.ilike.%${value}%`,
+      )
       .range(0, 9)
 
     if (error || !data || data.length == 0) {

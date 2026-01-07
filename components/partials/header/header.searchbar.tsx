@@ -123,6 +123,9 @@ const HeaderSearchbar = () => {
                     onSelect={() => {
                       setResults([])
                       router.push(`/users/${item.id}`)
+                      if (searchInputRef.current) {
+                        searchInputRef.current.value = ''
+                      }
                     }}
                   >
                     <div
@@ -130,7 +133,10 @@ const HeaderSearchbar = () => {
                         'flex cursor-pointer flex-col gap-0.5 text-xs/none'
                       }
                     >
-                      <span>{item.email}</span>
+                      <span>
+                        {[item.first_name, item.last_name].join(' ').trim() ||
+                          item.email}
+                      </span>
                       {item.username && (
                         <span className={'text-muted-foreground'}>
                           @{item.username}
@@ -149,10 +155,15 @@ const HeaderSearchbar = () => {
                     onSelect={() => {
                       setResults([])
                       router.push(`/users/${item.id}`)
+                      if (searchInputRef.current) {
+                        searchInputRef.current.value = ''
+                      }
                     }}
                   >
                     <div className={'flex flex-col gap-0.5 text-xs/none'}>
-                      <span>{item.email}</span>
+                      <span>
+                        {[item.company_name].join(' ').trim() || item.email}
+                      </span>
                       {item.username && (
                         <span className={'text-muted-foreground'}>
                           @{item.username}

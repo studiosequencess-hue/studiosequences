@@ -55,3 +55,11 @@ export function getProjectFilesCount(project: Project): number {
 
   return 0
 }
+
+export function getProjectMembersCount(project: Project): number {
+  if (project.members_count.length > 0) {
+    return project.members_count[0].count
+  }
+
+  return 0
+}

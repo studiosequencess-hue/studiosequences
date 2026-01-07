@@ -5,6 +5,7 @@ import {
   FormProjectFile,
   Project,
   ProjectFile,
+  ProjectMember,
   ServerResponse,
   User,
 } from '@/lib/models'
@@ -25,9 +26,12 @@ export async function getAllProjectsByUserId(
 
     const projectsResponse = await supabase
       .from('projects')
-      .select('*, files:project_files(*), files_count:project_files(count)', {
-        count: 'exact',
-      })
+      .select(
+        '*, files:project_files(*), files_count:project_files(count), members:project_members(*), members_count:project_members(count)',
+        {
+          count: 'exact',
+        },
+      )
       .eq('user_id', props.userId)
       .order('position', { ascending: true })
       .order('id', { ascending: true })
@@ -93,11 +97,47 @@ export async function getProjectFilesById(
   }
 }
 
+type GetProjectMembersByIdProps = {
+  id: Project['id']
+}
+export async function getProjectMembersById(
+  props: GetProjectMembersByIdProps,
+): Promise<ServerResponse<ProjectMember[]>> {
+  try {
+    const supabase = await createClient()
+
+    const projectMembersResponse = await supabase
+      .from('project_members')
+      .select('*, user:users(*)')
+      .eq('project_id', props.id)
+
+    if (projectMembersResponse.error) {
+      return {
+        status: 'error',
+        message: projectMembersResponse.error.message,
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully fetched projects.',
+      data: projectMembersResponse.data,
+    }
+  } catch (e) {
+    console.log('getProjectMembersById', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch project members. Please try again later.',
+    }
+  }
+}
+
 type CreateProjectProps = Pick<
   Project,
   'title' | 'description' | 'is_sensitive'
 > & {
   files: Pick<ProjectFile, 'name' | 'type' | 'title' | 'description' | 'url'>[]
+  members: Pick<ProjectMember, 'department' | 'user_id'>[]
 }
 export async function createProject(
   props: CreateProjectProps,
@@ -124,7 +164,9 @@ export async function createProject(
           user_id: currentUserResponse.data.user.id,
         },
       ])
-      .select('*, files_count:project_files(count)')
+      .select(
+        '*, files_count:project_files(count), members_count:project_members(count)',
+      )
       .single()
 
     if (insertProjectResponse.error) {
@@ -134,24 +176,43 @@ export async function createProject(
       }
     }
 
-    const insertImagesResponse = await supabase
-      .from('project_files')
-      .insert(
-        props.files.map((file) => ({
-          title: file.title,
-          description: file.description,
-          url: file.url,
-          project_id: insertProjectResponse.data.id,
-          name: file.name,
-          type: file.type,
-        })),
-      )
-      .select()
+    const [insertFilesResponse, insertMembersResponse] = await Promise.all([
+      supabase
+        .from('project_files')
+        .insert(
+          props.files.map((file) => ({
+            title: file.title,
+            description: file.description,
+            url: file.url,
+            project_id: insertProjectResponse.data.id,
+            name: file.name,
+            type: file.type,
+          })),
+        )
+        .select(),
+      supabase
+        .from('project_members')
+        .insert(
+          props.members.map((member) => ({
+            department: member.department,
+            user_id: member.user_id,
+            project_id: insertProjectResponse.data.id,
+          })),
+        )
+        .select(),
+    ])
 
-    if (insertImagesResponse.error) {
+    if (insertFilesResponse.error) {
       return {
         status: 'error',
-        message: insertImagesResponse.error.message,
+        message: insertFilesResponse.error.message,
+      }
+    }
+
+    if (insertMembersResponse.error) {
+      return {
+        status: 'error',
+        message: insertMembersResponse.error.message,
       }
     }
 
@@ -160,7 +221,18 @@ export async function createProject(
       message: 'Successfully fetched projects.',
       data: {
         ...insertProjectResponse.data,
-        files: insertImagesResponse.data,
+        files: insertFilesResponse.data,
+        members: insertMembersResponse.data,
+        files_count: [
+          {
+            count: insertFilesResponse.data.length,
+          },
+        ],
+        members_count: [
+          {
+            count: insertMembersResponse.data.length,
+          },
+        ],
       },
     }
   } catch (e) {
@@ -177,6 +249,7 @@ type UpdateProjectProps = Pick<
   'id' | 'title' | 'description' | 'is_sensitive'
 > & {
   files: Pick<ProjectFile, 'name' | 'type' | 'title' | 'description' | 'url'>[]
+  members: Pick<ProjectMember, 'department' | 'user_id'>[]
 }
 export async function updateProject(
   props: UpdateProjectProps,
@@ -200,7 +273,9 @@ export async function updateProject(
         is_sensitive: props.is_sensitive,
       })
       .eq('id', props.id)
-      .select('*, files_count:project_files(count)')
+      .select(
+        '*, files_count:project_files(count), members_count:project_members(count)',
+      )
       .single()
 
     if (updateProjectResponse.error) {
@@ -210,10 +285,10 @@ export async function updateProject(
       }
     }
 
-    const deleteFilesResponse = await supabase
-      .from('project_files')
-      .delete()
-      .eq('project_id', props.id)
+    const [deleteFilesResponse, deleteMembersResponse] = await Promise.all([
+      supabase.from('project_files').delete().eq('project_id', props.id),
+      supabase.from('project_members').delete().eq('project_id', props.id),
+    ])
 
     if (deleteFilesResponse.error) {
       return {
@@ -222,24 +297,50 @@ export async function updateProject(
       }
     }
 
-    const updateImagesResponse = await supabase
-      .from('project_files')
-      .insert(
-        props.files.map((file) => ({
-          title: file.title,
-          description: file.description,
-          url: file.url,
-          project_id: updateProjectResponse.data.id,
-          name: file.name,
-          type: file.type,
-        })),
-      )
-      .select()
-
-    if (updateImagesResponse.error) {
+    if (deleteMembersResponse.error) {
       return {
         status: 'error',
-        message: updateImagesResponse.error.message,
+        message: deleteMembersResponse.error.message,
+      }
+    }
+
+    const [updateFilesResponse, updateMembersResponse] = await Promise.all([
+      supabase
+        .from('project_files')
+        .insert(
+          props.files.map((file) => ({
+            title: file.title,
+            description: file.description,
+            url: file.url,
+            project_id: updateProjectResponse.data.id,
+            name: file.name,
+            type: file.type,
+          })),
+        )
+        .select(),
+      supabase
+        .from('project_members')
+        .insert(
+          props.members.map((member) => ({
+            department: member.department,
+            user_id: member.user_id,
+            project_id: updateProjectResponse.data.id,
+          })),
+        )
+        .select(),
+    ])
+
+    if (updateFilesResponse.error) {
+      return {
+        status: 'error',
+        message: updateFilesResponse.error.message,
+      }
+    }
+
+    if (updateMembersResponse.error) {
+      return {
+        status: 'error',
+        message: updateMembersResponse.error.message,
       }
     }
 
@@ -253,7 +354,18 @@ export async function updateProject(
       message: 'Successfully updated project.',
       data: {
         ...updateProjectResponse.data,
-        files: updateImagesResponse.data,
+        files: updateFilesResponse.data,
+        members: updateMembersResponse.data,
+        files_count: [
+          {
+            count: updateFilesResponse.data.length,
+          },
+        ],
+        members_count: [
+          {
+            count: updateMembersResponse.data.length,
+          },
+        ],
       },
     }
   } catch (e) {

@@ -62,7 +62,7 @@ const ProfilePortfolio: React.FC<Props> = ({ user, editable }) => {
 
   return (
     <div className="flex h-full min-h-[50vh]">
-      {fetching ? <Loader /> : <ProjectsGrid editable={editable} />}
+      {fetching ? <Loader /> : <ProjectsGrid user={user} editable={editable} />}
     </div>
   )
 }

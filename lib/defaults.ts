@@ -1,4 +1,4 @@
-import { User, UserInfo } from '@/lib/models'
+import { ProjectMember, User, UserInfo } from '@/lib/models'
 import { UserRole } from '@/lib/constants'
 
 export const PLACEHOLDER_IMAGES: string[] = [
@@ -51,4 +51,12 @@ export const DEFAULT_USER: User = {
   is_anonymous: false,
   created_at: '',
   ...DEFAULT_USER_INFO,
+}
+
+export const DEFAULT_PROJECT_MEMBER: ProjectMember = {
+  id: -1,
+  user: null,
+  user_id: '',
+  department: '',
+  created_at: new Date().toString(),
 }

@@ -8,8 +8,8 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
-import { searchAllUsers } from '@/lib/actions.user'
-import { UserInfo } from '@/lib/models'
+import { searchOnlyUsers } from '@/lib/actions.user'
+import { ProjectMember, UserInfo } from '@/lib/models'
 import { toast } from 'sonner'
 import debounce from 'debounce'
 import {
@@ -25,49 +25,43 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { UserRole } from '@/lib/constants'
-import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store'
+import deepmerge from 'deepmerge'
+import { DEFAULT_PROJECT_MEMBER } from '@/lib/defaults'
 
-const HeaderSearchbar = () => {
+type Props = {
+  memberIds: ProjectMember['user_id'][]
+  onSelect: (user: ProjectMember) => void
+}
+
+const ProjectFormMembersSearchbar: React.FC<Props> = (props) => {
   const { user } = useAuthStore()
   const [searchValue, setSearchValue] = useState('')
   const [results, setResults] = React.useState<UserInfo[]>([])
   const [searching, setSearching] = React.useState<boolean>(false)
   const searchInputRef = React.useRef<HTMLInputElement>(null)
-  const router = useRouter()
 
   const searchHandler = async () => {
     if (searching) return
     if (searchValue.length == 0) return
     setSearching(true)
 
-    const usersResponse = await searchAllUsers(searchValue)
+    const usersResponse = await searchOnlyUsers(searchValue)
 
     if (usersResponse.status == 'error') {
       toast.error(usersResponse.message)
     } else {
-      setResults(usersResponse.data.filter((item) => item.id != user?.id))
+      setResults(
+        usersResponse.data.filter(
+          (item) => item.id != user?.id && !props.memberIds.includes(item.id),
+        ),
+      )
     }
 
     setSearching(false)
   }
 
   const debouncedSearchHandler = debounce(searchHandler, 500)
-
-  const users = React.useMemo(() => {
-    return results.filter((item) => item.role == UserRole.User.toString())
-  }, [results])
-
-  const companies = React.useMemo(() => {
-    return results.filter((item) => item.role == UserRole.Company.toString())
-  }, [results])
-
-  React.useEffect(() => {
-    results.forEach((item) => {
-      router.prefetch(`/users/${item.id}`)
-    })
-  }, [results, router])
 
   return (
     <Popover
@@ -80,7 +74,7 @@ const HeaderSearchbar = () => {
       modal={true}
     >
       <PopoverTrigger asChild>
-        <InputGroup className={'w-96'}>
+        <InputGroup className={'mx-4 w-auto'}>
           <InputGroupInput
             ref={searchInputRef}
             placeholder="Search..."
@@ -111,18 +105,23 @@ const HeaderSearchbar = () => {
           </InputGroupAddon>
         </InputGroup>
       </PopoverTrigger>
-      <PopoverContent align={'start'} side={'bottom'} className={'w-96 p-1'}>
+      <PopoverContent align={'start'} side={'bottom'} className={'w-88 p-1'}>
         <Command>
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
-            {users.length > 0 && (
-              <CommandGroup heading="Users">
-                {users.map((item, itemIndex) => (
+            {results.length > 0 && (
+              <CommandGroup>
+                {results.map((item, itemIndex) => (
                   <CommandItem
-                    key={`results-users-${itemIndex}`}
+                    key={`results-${itemIndex}`}
                     onSelect={() => {
                       setResults([])
-                      router.push(`/users/${item.id}`)
+                      props.onSelect(
+                        deepmerge(DEFAULT_PROJECT_MEMBER, {
+                          user: item,
+                          user_id: item.id,
+                        }),
+                      )
                     }}
                   >
                     <div
@@ -141,28 +140,6 @@ const HeaderSearchbar = () => {
                 ))}
               </CommandGroup>
             )}
-            {companies.length > 0 && (
-              <CommandGroup heading="Companies">
-                {companies.map((item, itemIndex) => (
-                  <CommandItem
-                    key={`results-companies-${itemIndex}`}
-                    onSelect={() => {
-                      setResults([])
-                      router.push(`/users/${item.id}`)
-                    }}
-                  >
-                    <div className={'flex flex-col gap-0.5 text-xs/none'}>
-                      <span>{item.email}</span>
-                      {item.username && (
-                        <span className={'text-muted-foreground'}>
-                          @{item.username}
-                        </span>
-                      )}
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
           </CommandList>
         </Command>
       </PopoverContent>
@@ -170,4 +147,4 @@ const HeaderSearchbar = () => {
   )
 }
 
-export default HeaderSearchbar
+export default ProjectFormMembersSearchbar

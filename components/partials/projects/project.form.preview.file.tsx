@@ -46,7 +46,7 @@ type Props = {
   close: () => void
 }
 
-const ProjectFormPreviewItem: React.FC<Props> = ({ item, onChange, close }) => {
+const ProjectFormPreviewFile: React.FC<Props> = ({ item, onChange, close }) => {
   const itemForm = useForm<z.infer<typeof itemFormSchema>>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: {
@@ -71,7 +71,12 @@ const ProjectFormPreviewItem: React.FC<Props> = ({ item, onChange, close }) => {
       </div>
       <div className={'flex w-full flex-col gap-4 px-4'}>
         <Form {...itemForm}>
-          <form className="flex flex-col gap-4">
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+            }}
+          >
             <FormField
               control={itemForm.control}
               name="title"
@@ -209,4 +214,4 @@ const ProjectFormPreviewItem: React.FC<Props> = ({ item, onChange, close }) => {
   )
 }
 
-export default ProjectFormPreviewItem
+export default ProjectFormPreviewFile

@@ -12,7 +12,7 @@ import { useAuthStore, useProjectsStore, useProjectViewerStore } from '@/store'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { FormProjectFile } from '@/lib/models'
+import { FormProjectFile, ProjectMember } from '@/lib/models'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -26,13 +26,14 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import ProjectFormPreviewItem from '@/components/partials/projects/project.form.preview.item'
+import ProjectFormPreviewFile from '@/components/partials/projects/project.form.preview.file'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
   createProject,
   deleteProject,
   getProjectFilesById,
+  getProjectMembersById,
   updateProject,
 } from '@/lib/actions.projects'
 import { createClient } from '@/lib/supabase.client'
@@ -40,6 +41,8 @@ import { Spinner } from '@/components/ui/spinner'
 import ProjectFormFiles from '@/components/partials/projects/project.form.files'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserRole } from '@/lib/constants'
+import ProjectFormMembers from '@/components/partials/projects/project.form.members'
+import ProjectFormPreviewMember from '@/components/partials/projects/project.form.preview.member'
 
 const projectFormSchema = z.object({
   title: z
@@ -76,7 +79,10 @@ const ProjectForm = () => {
   })
   const [files, setFiles] = React.useState<FormProjectFile[]>([])
   const [filesLoading, setFilesLoading] = React.useState(true)
-  const [activeFileIndex, setActiveFileIndex] = React.useState(-1)
+  const [activeFileIndex, setActiveFileIndex] = React.useState<number>(-1)
+  const [members, setMembers] = React.useState<ProjectMember[]>([])
+  const [membersLoading, setMembersLoading] = React.useState<boolean>(false)
+  const [activeMemberIndex, setActiveMemberIndex] = React.useState<number>(-1)
   const [projectProcessing, setProjectProcessing] = React.useState(false)
   const [projectDeleting, setProjectDeleting] = React.useState(false)
 
@@ -162,12 +168,14 @@ const ProjectForm = () => {
           files: uploadedImagesResponses.filter(
             (item) => item.status === 'success',
           ),
+          members: members,
         })
       : await createProject({
           ...projectForm.getValues(),
           files: uploadedImagesResponses.filter(
             (item) => item.status === 'success',
           ),
+          members: members,
         })
 
     if (response.status === 'success') {
@@ -222,6 +230,20 @@ const ProjectForm = () => {
     }
   }, [project, setFiles])
 
+  const loadProjectMembers = React.useCallback(async () => {
+    if (!project) return
+
+    const projectFilesResponse = await getProjectMembersById({
+      id: project.id,
+    })
+
+    if (projectFilesResponse.status == 'success') {
+      setMembers(projectFilesResponse.data)
+    } else {
+      toast.error(projectFilesResponse.message)
+    }
+  }, [project, setMembers])
+
   React.useEffect(() => {
     projectForm.reset()
 
@@ -234,7 +256,13 @@ const ProjectForm = () => {
     loadProjectFiles().finally(() => {
       setFilesLoading(false)
     })
-  }, [project, projectForm])
+
+    setMembers([])
+    setMembersLoading(true)
+    loadProjectMembers().finally(() => {
+      setMembersLoading(false)
+    })
+  }, [project, projectForm, loadProjectFiles, loadProjectMembers])
 
   return (
     <Sheet
@@ -242,6 +270,7 @@ const ProjectForm = () => {
       onOpenChange={(state) => {
         if (!state) {
           setActiveFileIndex(-1)
+          setActiveMemberIndex(-1)
           close()
         }
       }}
@@ -309,8 +338,10 @@ const ProjectForm = () => {
           {user?.role == UserRole.Company.toString() ? (
             <Tabs defaultValue="files">
               <TabsList>
-                <TabsTrigger value="files">Files</TabsTrigger>
-                <TabsTrigger value="members">Members</TabsTrigger>
+                <TabsTrigger value="files">Files ({files.length})</TabsTrigger>
+                <TabsTrigger value="members">
+                  Members ({members.length})
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="files">
                 <ProjectFormFiles
@@ -321,7 +352,15 @@ const ProjectForm = () => {
                   filesLoading={filesLoading}
                 />
               </TabsContent>
-              <TabsContent value="members">Members here</TabsContent>
+              <TabsContent value="members">
+                <ProjectFormMembers
+                  members={members}
+                  setMembers={setMembers}
+                  activeMemberIndex={activeMemberIndex}
+                  setActiveMemberIndex={setActiveMemberIndex}
+                  membersLoading={membersLoading}
+                />
+              </TabsContent>
             </Tabs>
           ) : (
             <ProjectFormFiles
@@ -379,7 +418,7 @@ const ProjectForm = () => {
           )}
         >
           {activeFileIndex >= 0 && activeFileIndex < files.length && (
-            <ProjectFormPreviewItem
+            <ProjectFormPreviewFile
               item={files[activeFileIndex]}
               onChange={(item) => {
                 const tempFiles = [...files]
@@ -388,6 +427,28 @@ const ProjectForm = () => {
                 setFiles(tempFiles)
               }}
               close={() => setActiveFileIndex(-1)}
+            />
+          )}
+        </div>
+
+        <div
+          className={cn(
+            'bg-background absolute inset-0 z-100 translate-x-full transition-transform duration-300',
+            activeMemberIndex >= 0 &&
+              activeMemberIndex < files.length &&
+              'translate-x-0',
+          )}
+        >
+          {activeMemberIndex >= 0 && activeMemberIndex < files.length && (
+            <ProjectFormPreviewMember
+              item={members[activeMemberIndex]}
+              onChange={(item) => {
+                const tempMembers = [...members]
+                tempMembers[activeMemberIndex] = item
+
+                setMembers(tempMembers)
+              }}
+              close={() => setActiveMemberIndex(-1)}
             />
           )}
         </div>

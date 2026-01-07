@@ -72,12 +72,18 @@ export type Project = Tables<'projects'> & {
   files_count: {
     count: number
   }[]
+  members: ProjectMember[]
+  members_count: {
+    count: number
+  }[]
   is_revealed?: boolean
 }
 
 export type ProjectFile = Tables<'project_files'>
 
-export type ProjectMember = Tables<'project_members'>
+export type ProjectMember = Tables<'project_members'> & {
+  user?: UserInfo | null
+}
 
 type BaseMedia = Pick<ProjectFile, 'name' | 'title' | 'description' | 'type'>
 

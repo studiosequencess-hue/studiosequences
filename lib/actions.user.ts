@@ -68,7 +68,7 @@ export async function getUserByUsername(
   }
 }
 
-export async function searchUsers(
+export async function searchAllUsers(
   value: string,
 ): Promise<ServerResponse<UserInfo[]>> {
   try {
@@ -96,6 +96,39 @@ export async function searchUsers(
     return {
       status: 'error',
       message: 'Failed to fetch user. Please try again later.',
+    }
+  }
+}
+
+export async function searchOnlyUsers(
+  value: string,
+): Promise<ServerResponse<UserInfo[]>> {
+  try {
+    const supabase = await createClient()
+    const { data, count, error } = await supabase
+      .from('users')
+      .select('*', { count: 'exact' })
+      .or(`email.ilike.%${value}%,username.ilike.%${value}%`)
+      .eq('role', 'user')
+      .range(0, 9)
+
+    if (error || !data || data.length == 0) {
+      return {
+        status: 'error',
+        message: 'No user or companies found.',
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully found users.',
+      data: data,
+    }
+  } catch (e) {
+    console.log('searchUsersOnly', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch users. Please try again later.',
     }
   }
 }

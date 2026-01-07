@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useProjectsStore, useProjectViewerStore } from '@/store'
-import { Layers, Lock } from 'lucide-react'
+import { Layers, Lock, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -11,11 +11,14 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { cn, getProjectFilesCount } from '@/lib/utils'
+import { cn, getProjectFilesCount, getProjectMembersCount } from '@/lib/utils'
 import { FaPlus } from 'react-icons/fa6'
 import ProjectsGridPreviewBackground from '@/components/partials/projects/projects.grid.preview.background'
+import { UserInfo } from '@/lib/models'
+import { UserRole } from '@/lib/constants'
 
 type Props = {
+  user: UserInfo
   editable: boolean
 }
 
@@ -93,6 +96,19 @@ const ProjectsGrid: React.FC<Props> = (props) => {
 
             {!isCensored && (
               <div className="absolute inset-0 z-10 flex flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                {props.user.role == UserRole.Company.toString() && (
+                  <div
+                    className={
+                      'absolute top-2 left-2 flex h-fit w-fit items-center gap-1 rounded-sm border border-white/10 bg-black/40 px-1.5 py-0.5 backdrop-blur-md'
+                    }
+                  >
+                    <Users className="h-2.5 w-2.5 text-white/70" />
+                    <span className="text-[9px] font-black text-white/90 uppercase">
+                      {getProjectMembersCount(project)}
+                    </span>
+                  </div>
+                )}
+
                 <div
                   className={
                     'absolute top-2 right-2 flex h-fit w-fit items-center gap-1 rounded-sm border border-white/10 bg-black/40 px-1.5 py-0.5 backdrop-blur-md'

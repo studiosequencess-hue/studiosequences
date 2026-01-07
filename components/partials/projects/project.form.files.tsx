@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react'
-import { FormProjectFile, Project, User } from '@/lib/models'
-import { getProjectFilesById } from '@/lib/actions.projects'
+import { FormProjectFile } from '@/lib/models'
 import { toast } from 'sonner'
 import Loader from '@/components/partials/loader'
 import { LuImage, LuVideo } from 'react-icons/lu'

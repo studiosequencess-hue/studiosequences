@@ -6,7 +6,7 @@ import { BsBriefcaseFill } from 'react-icons/bs'
 
 const HeaderContentUnauthenticated = () => {
   return (
-    <div className="flex h-full w-full items-center justify-between px-12">
+    <div className="flex h-full w-full items-center justify-between">
       <div className="flex h-full items-center gap-8">
         <Link href={'/'}>
           <h1 className="font-display text-2xl font-bold">Studio Sequence</h1>

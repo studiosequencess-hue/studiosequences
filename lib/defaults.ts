@@ -57,6 +57,7 @@ export const DEFAULT_PROJECT_MEMBER: ProjectMember = {
   id: -1,
   user: null,
   user_id: '',
+  project_id: -1,
   department: '',
   created_at: new Date().toString(),
 }

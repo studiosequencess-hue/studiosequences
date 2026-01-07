@@ -6,6 +6,35 @@ import { DEFAULT_USER_INFO } from '@/lib/defaults'
 import deepmerge from 'deepmerge'
 import { UserRole } from '@/lib/constants'
 
+export async function getOnlyCompanies(): Promise<ServerResponse<UserInfo[]>> {
+  try {
+    const supabase = await createClient()
+    const fetchResponse = await supabase
+      .from('users')
+      .select('*')
+      .eq('role', 'company')
+
+    if (fetchResponse.error) {
+      return {
+        status: 'error',
+        message: fetchResponse.error.message,
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully fetched companies.',
+      data: fetchResponse.data,
+    }
+  } catch (e) {
+    console.log('getOnlyCompanies', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch companies. Please try again later.',
+    }
+  }
+}
+
 export async function getUserById(
   id: User['id'],
 ): Promise<ServerResponse<UserInfo>> {

@@ -139,7 +139,7 @@ function CompanyCard({ company }: CompanyCardProps) {
           />
         </div>
 
-        <h3 className="line-clamp-1 text-sm leading-tight font-bold">
+        <h3 className="line-clamp-1 text-sm leading-tight font-bold text-slate-400">
           {company.company_name || 'No name'}
         </h3>
         <p className="mt-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">

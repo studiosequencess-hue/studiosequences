@@ -104,3 +104,4 @@ export type PostLike = Tables<'post_likes'>
 export type PostComment = Tables<'post_comments'>
 export type PostFile = Tables<'post_files'>
 export type PostProject = Tables<'post_projects'>
+export type UserPostBookmarks = Tables<'user_post_bookmarks'>

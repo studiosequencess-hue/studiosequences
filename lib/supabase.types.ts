@@ -153,6 +153,42 @@ export type Database = {
           },
         ]
       }
+      post_reposts: {
+        Row: {
+          created_at: string
+          id: number
+          post_id: number | null
+          repost_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          post_id?: number | null
+          repost_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          post_id?: number | null
+          repost_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'post_reposts_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'post_reposts_repost_id_fkey'
+            columns: ['repost_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       posts: {
         Row: {
           comments_count: number | null
@@ -305,6 +341,42 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'projects_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      user_post_bookmarks: {
+        Row: {
+          created_at: string
+          id: number
+          post_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          post_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          post_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'user_post_bookmarks_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'user_post_bookmarks_user_id_fkey'
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'users'

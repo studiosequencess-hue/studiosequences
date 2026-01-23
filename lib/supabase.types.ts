@@ -19,25 +19,25 @@ export type Database = {
           content: string | null
           created_at: string
           id: number
-          post_id: number | null
+          post_id: number
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           content?: string | null
           created_at?: string
           id?: number
-          post_id?: number | null
+          post_id: number
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           content?: string | null
           created_at?: string
           id?: number
-          post_id?: number | null
+          post_id?: number
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -60,26 +60,26 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          name: string | null
-          post_id: number | null
-          type: string | null
-          url: string | null
+          name: string
+          post_id: number
+          type: string
+          url: string
         }
         Insert: {
           created_at?: string
           id?: number
-          name?: string | null
-          post_id?: number | null
-          type?: string | null
-          url?: string | null
+          name: string
+          post_id: number
+          type?: string
+          url: string
         }
         Update: {
           created_at?: string
           id?: number
-          name?: string | null
-          post_id?: number | null
-          type?: string | null
-          url?: string | null
+          name?: string
+          post_id?: number
+          type?: string
+          url?: string
         }
         Relationships: [
           {
@@ -95,20 +95,20 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          post_id: number | null
-          user_id: string | null
+          post_id: number
+          user_id: string
         }
         Insert: {
           created_at?: string
           id?: number
-          post_id?: number | null
-          user_id?: string | null
+          post_id: number
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: number
-          post_id?: number | null
-          user_id?: string | null
+          post_id?: number
+          user_id?: string
         }
         Relationships: [
           {
@@ -131,19 +131,29 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          project_id: number | null
+          post_id: number
+          project_id: number
         }
         Insert: {
           created_at?: string
           id?: number
-          project_id?: number | null
+          post_id: number
+          project_id: number
         }
         Update: {
           created_at?: string
           id?: number
-          project_id?: number | null
+          post_id?: number
+          project_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: 'post_projects_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'post_projects_project_id_fkey'
             columns: ['project_id']
@@ -157,19 +167,19 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          post_id: number | null
+          post_id: number
           repost_id: number | null
         }
         Insert: {
           created_at?: string
           id?: number
-          post_id?: number | null
+          post_id: number
           repost_id?: number | null
         }
         Update: {
           created_at?: string
           id?: number
-          post_id?: number | null
+          post_id?: number
           repost_id?: number | null
         }
         Relationships: [
@@ -191,34 +201,34 @@ export type Database = {
       }
       posts: {
         Row: {
-          comments_count: number | null
+          comments_count: number
           created_at: string
           description: string | null
           id: number
-          likes_count: number | null
+          likes_count: number
           title: string | null
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
-          comments_count?: number | null
+          comments_count?: number
           created_at?: string
           description?: string | null
           id?: number
-          likes_count?: number | null
+          likes_count?: number
           title?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
-          comments_count?: number | null
+          comments_count?: number
           created_at?: string
           description?: string | null
           id?: number
-          likes_count?: number | null
+          likes_count?: number
           title?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -276,21 +286,21 @@ export type Database = {
           created_at: string
           department: string
           id: number
-          project_id: number | null
+          project_id: number
           user_id: string
         }
         Insert: {
           created_at?: string
           department: string
           id?: number
-          project_id?: number | null
+          project_id: number
           user_id: string
         }
         Update: {
           created_at?: string
           department?: string
           id?: number
-          project_id?: number | null
+          project_id?: number
           user_id?: string
         }
         Relationships: [
@@ -352,20 +362,20 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          post_id: number | null
-          user_id: string | null
+          post_id: number
+          user_id: string
         }
         Insert: {
           created_at?: string
           id?: number
-          post_id?: number | null
-          user_id?: string | null
+          post_id: number
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: number
-          post_id?: number | null
-          user_id?: string | null
+          post_id?: number
+          user_id?: string
         }
         Relationships: [
           {

@@ -99,7 +99,13 @@ interface URLMedia extends BaseMedia {
 
 export type FormProjectFile = FileMedia | URLMedia
 
-export type Post = Tables<'posts'>
+export type Post = Tables<'posts'> & {
+  user: UserInfo
+  likes?: PostLike[]
+  comments?: PostComment[]
+  files?: PostFile[]
+  projects?: PostProject[]
+}
 export type PostLike = Tables<'post_likes'>
 export type PostComment = Tables<'post_comments'>
 export type PostFile = Tables<'post_files'>

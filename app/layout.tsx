@@ -4,9 +4,8 @@ import './globals.css'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
 import { Toaster } from '@/components/ui/sonner'
-import AuthProvider from '@/components/auth-provider'
-import ThemeProvider from '@/components/theme-provider'
 import ProjectsPartials from '@/components/partials/projects/projects.partials'
+import Providers from '@/components/providers'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -26,23 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-background relative antialiased`}>
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Header />
-            <main className={'flex h-full w-full flex-1 flex-col'}>
-              {children}
-            </main>
-            <Footer />
+        <Providers>
+          <Header />
+          <main className={'flex h-full w-full flex-1 flex-col'}>
+            {children}
+          </main>
+          <Footer />
 
-            <Toaster />
-            <ProjectsPartials />
-          </ThemeProvider>
-        </AuthProvider>
+          <Toaster />
+          <ProjectsPartials />
+        </Providers>
       </body>
     </html>
   )

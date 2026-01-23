@@ -1,8 +1,8 @@
 import React from 'react'
-import ProfileActivities from '@/components/pages/profile/profile.activities'
+import PostsInfiniteList from '@/components/partials/posts/posts.infinite.list'
 
 const TabPosts = () => {
-  return <ProfileActivities />
+  return <PostsInfiniteList type={'discover'} />
 }
 
 export default TabPosts

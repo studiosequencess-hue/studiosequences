@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      collection_projects: {
+        Row: {
+          collection_id: number | null
+          created_at: string
+          id: number
+          project_id: number | null
+        }
+        Insert: {
+          collection_id?: number | null
+          created_at?: string
+          id?: number
+          project_id?: number | null
+        }
+        Update: {
+          collection_id?: number | null
+          created_at?: string
+          id?: number
+          project_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'collection_projects_collection_id_fkey'
+            columns: ['collection_id']
+            isOneToOne: false
+            referencedRelation: 'collections'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'collection_projects_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'collections_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       post_comments: {
         Row: {
           content: string | null

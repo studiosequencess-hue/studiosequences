@@ -118,3 +118,8 @@ export type UserPostBookmarks = Tables<'user_post_bookmarks'>
 type PostBaseMedia = Pick<PostFile, 'name' | 'type'>
 
 export type PostFormFile = PostBaseMedia & (FileMedia | URLMedia)
+
+export type Collection = Tables<'collections'> & {
+  projects: Project[]
+}
+export type CollectionProject = Tables<'collection_projects'>

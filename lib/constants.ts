@@ -33,4 +33,7 @@ export enum QUERY_KEYS {
   DELETE_POST = 'delete-post',
   TOGGLE_LIKE_POST = 'toggle-like-post',
   EDITOR_SAVE = 'editor-save',
+  PERSONAL_PROJECTS = 'personal-projects',
+  PERSONAL_COLLECTIONS = 'personal-collections',
+  PERSONAL_COLLECTION_CREATE = 'personal-collection-create',
 }

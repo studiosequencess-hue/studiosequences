@@ -52,7 +52,7 @@ const ProfilePage: React.FC<Props> = async (props) => {
           <ProfileActivities />
         </TabsContent>
         <TabsContent value="collections">
-          <ProfileCollections />
+          <ProfileCollections editable={editable} />
         </TabsContent>
         <TabsContent value="about">
           <TabAbout editable={editable} />

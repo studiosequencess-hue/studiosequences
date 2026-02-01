@@ -396,6 +396,7 @@ export type Database = {
       }
       users: {
         Row: {
+          about: string | null
           avatar: string | null
           background_bottom: string | null
           background_top: string | null
@@ -418,6 +419,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          about?: string | null
           avatar?: string | null
           background_bottom?: string | null
           background_top?: string | null
@@ -440,6 +442,7 @@ export type Database = {
           username: string
         }
         Update: {
+          about?: string | null
           avatar?: string | null
           background_bottom?: string | null
           background_top?: string | null

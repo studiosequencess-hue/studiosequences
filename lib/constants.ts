@@ -32,4 +32,5 @@ export enum QUERY_KEYS {
   POST = 'post',
   DELETE_POST = 'delete-post',
   TOGGLE_LIKE_POST = 'toggle-like-post',
+  EDITOR_SAVE = 'editor-save',
 }

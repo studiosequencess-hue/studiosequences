@@ -8,6 +8,7 @@ import ProfilePortfolio from '@/components/pages/profile/profile.portfolio'
 import ProfileCollections from '@/components/pages/profile/profile.collections'
 import { getUserById } from '@/lib/actions.user'
 import { createClient } from '@/lib/supabase.server'
+import TabAbout from '@/components/pages/home/sections/tab.about'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -39,6 +40,7 @@ const ProfilePage: React.FC<Props> = async (props) => {
           <TabsTrigger value="experiences">Experiences</TabsTrigger>
           <TabsTrigger value="activities">Activities</TabsTrigger>
           <TabsTrigger value="collections">Collections</TabsTrigger>
+          <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
         <TabsContent value="portfolio">
           <ProfilePortfolio user={userResponse.data} editable={editable} />
@@ -51,6 +53,9 @@ const ProfilePage: React.FC<Props> = async (props) => {
         </TabsContent>
         <TabsContent value="collections">
           <ProfileCollections />
+        </TabsContent>
+        <TabsContent value="about">
+          <TabAbout editable={editable} />
         </TabsContent>
       </Tabs>
     </div>

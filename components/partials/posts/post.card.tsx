@@ -29,6 +29,7 @@ import { deletePostById, toggleLikePostById } from '@/lib/actions.posts'
 import { QUERY_KEYS } from '@/lib/constants'
 import { FaHeart, FaRegHeart } from 'react-icons/fa6'
 import ReactPlayer from 'react-player'
+import { toast } from 'sonner'
 
 type Props = {
   post: Post
@@ -88,6 +89,26 @@ const PostCard: React.FC<Props> = (props) => {
 
   const handleDelete = () => {
     deletePostMutation.mutate()
+  }
+
+  const handleShare = async () => {
+    const shareData = {
+      title: props.post.user.username + "'s post",
+      text: `Check out this post: ${props.post.user.username}`,
+      url: `${window.location.origin}/posts/${props.post.id}`,
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(shareData.url)
+        toast.success('Link copied to clipboard!')
+      }
+    } catch (err) {
+      console.error('Error sharing:', err)
+      toast.error('Failed to share post link!')
+    }
   }
 
   return (
@@ -174,22 +195,34 @@ const PostCard: React.FC<Props> = (props) => {
         </CarouselContent>
       </Carousel>
 
-      <div className="flex items-center gap-4 border-t border-slate-50 p-3">
-        <Button
-          variant={'link'}
-          className={'text-foreground'}
-          onClick={() => toggleLikeMutation.mutate()}
+      <div className="flex items-center gap-4 border-t border-slate-50 p-4">
+        <div
+          className={
+            'flex grow items-center justify-between gap-4 text-sm/none'
+          }
         >
-          {liked ? <FaHeart size={12} /> : <FaRegHeart size={12} />}
-          <span>{likesCount}</span>
-        </Button>
-        <button className="hover:text-accent-blue flex items-center gap-1.5 text-sm transition-colors">
-          <MessageCircle className="h-4 w-4" />
-          <span>{props.post.comments_count}</span>
-        </button>
-        <button className="ml-auto flex items-center gap-1.5 text-sm transition-colors hover:text-emerald-500">
+          <div
+            className={
+              'text-foreground hover:text-foreground/80 flex cursor-pointer items-center gap-1.5'
+            }
+            onClick={() => toggleLikeMutation.mutate()}
+          >
+            {liked ? <FaHeart size={14} /> : <FaRegHeart size={14} />}
+            <span>{likesCount}</span>
+          </div>
+          {/*<button className="hover:text-accent-blue flex items-center gap-1.5 text-sm transition-colors">*/}
+          {/*  <MessageCircle className="h-4 w-4" />*/}
+          {/*  <span>{props.post.comments_count}</span>*/}
+          {/*</button>*/}
+        </div>
+        <div
+          className={
+            'text-foreground hover:text-foreground/80 flex cursor-pointer items-center gap-1.5'
+          }
+          onClick={handleShare}
+        >
           <Share2 className="h-4 w-4" />
-        </button>
+        </div>
       </div>
     </div>
   )

@@ -73,13 +73,20 @@ export async function getPostById(
 ): Promise<ServerResponse<Post>> {
   try {
     const supabase = await createClient()
+    const userResponse = await supabase.auth.getUser()
+    if (userResponse.error) {
+      return {
+        status: 'error',
+        message: userResponse.error.message,
+      }
+    }
 
     const postResponse = await supabase
       .from('posts')
       .select(
         '*, files:post_files(*), user:users(*), post_projects(project:projects(*, files:project_files(*), files_count:project_files(count)))',
       )
-      .eq('id', props.id)
+      .match({ id: props.id, user_id: userResponse.data.user.id })
       .single()
 
     if (postResponse.error) {

@@ -36,4 +36,5 @@ export enum QUERY_KEYS {
   PERSONAL_PROJECTS = 'personal-projects',
   PERSONAL_COLLECTIONS = 'personal-collections',
   PERSONAL_COLLECTION_CREATE = 'personal-collection-create',
+  PERSONAL_COLLECTION_DELETE = 'personal-collection-delete',
 }

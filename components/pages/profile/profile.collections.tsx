@@ -8,6 +8,7 @@ import {
   Search,
   Plus,
   Edit,
+  Trash2,
 } from 'lucide-react'
 import { Collection, Project } from '@/lib/models'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -15,12 +16,17 @@ import { getPersonalProjects } from '@/lib/actions.projects'
 import { QUERY_KEYS } from '@/lib/constants'
 import Placeholder from '@/public/images/placeholder.svg'
 import CollectionFormDialog from '@/components/partials/collections/collection.form.dialog'
-import { getPersonalCollections } from '@/lib/actions.collections'
+import {
+  deleteCollection,
+  getPersonalCollections,
+} from '@/lib/actions.collections'
 import Image from 'next/image'
 import CollectionProjectsFormDialog from '@/components/partials/collections/collection.projects.form.dialog'
 import Loader from '@/components/partials/loader'
 import { Spinner } from '@/components/ui/spinner'
 import ReactPlayer from 'react-player'
+import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 type ViewMode = 'collections' | 'projects' | 'detail'
 
@@ -42,8 +48,9 @@ type Props = {
 
 const ProfileCollections: React.FC<Props> = (props) => {
   const [view, setView] = useState<ViewMode>('collections')
-  const [selectionCollection, setSelectionCollection] =
-    useState<Collection | null>(null)
+  const [selecteCollection, setSelecteCollection] = useState<Collection | null>(
+    null,
+  )
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [collectionFormOpen, setCollectionFormOpen] = useState<boolean>(false)
@@ -63,12 +70,43 @@ const ProfileCollections: React.FC<Props> = (props) => {
     },
   })
 
-  const handleAlbumAdd = () => {
+  const collectionDeleteMutation = useMutation({
+    mutationKey: [QUERY_KEYS.PERSONAL_COLLECTION_DELETE, selecteCollection?.id],
+    mutationFn: async () => {
+      if (!selecteCollection) return false
+
+      const response = await deleteCollection({
+        id: selecteCollection.id,
+      })
+
+      if (response.status == 'success') {
+        toast.success(response.message)
+        setView('collections')
+        setSelecteCollection(null)
+        setSelectedProject(null)
+      } else {
+        toast.error(response.message)
+      }
+
+      return true
+    },
+    onSuccess: () => {
+      collectionsQuery.refetch()
+    },
+  })
+
+  const handleCollectionAdd = () => {
     setCollectionFormOpen(true)
   }
 
+  const handleCollectionDelete = () => {
+    if (collectionDeleteMutation.isPending) return
+
+    collectionDeleteMutation.mutate()
+  }
+
   const handleCollectionClick = (album: Collection) => {
-    setSelectionCollection(album)
+    setSelecteCollection(album)
     setView('projects')
   }
 
@@ -87,7 +125,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
       setSelectedProject(null)
     } else if (view === 'projects') {
       setView('collections')
-      setSelectionCollection(null)
+      setSelecteCollection(null)
     }
   }
 
@@ -131,9 +169,9 @@ const ProfileCollections: React.FC<Props> = (props) => {
   }
 
   React.useEffect(() => {
-    if (selectionCollection) {
-      setSelectionCollection(
-        collectionsQuery.data?.find((c) => c.id == selectionCollection.id) ||
+    if (selecteCollection) {
+      setSelecteCollection(
+        collectionsQuery.data?.find((c) => c.id == selecteCollection.id) ||
           null,
       )
     }
@@ -148,11 +186,11 @@ const ProfileCollections: React.FC<Props> = (props) => {
           collectionsQuery.refetch()
         }}
       />
-      {selectionCollection && (
+      {selecteCollection && (
         <CollectionProjectsFormDialog
           open={collectionProjectsFormOpen}
           setOpen={setCollectionProjectsFormOpen}
-          collection={selectionCollection}
+          collection={selecteCollection}
           onSuccess={() => {
             collectionsQuery.refetch()
           }}
@@ -162,29 +200,44 @@ const ProfileCollections: React.FC<Props> = (props) => {
       <main className="mx-auto max-w-7xl">
         {/* Navigation / Search Bar */}
         <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div className="flex items-center gap-3">
-            {view !== 'collections' && (
-              <button
-                onClick={handleBack}
-                className="rounded-lg border border-zinc-800 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-              >
-                <ChevronLeft size={20} />
-              </button>
-            )}
-            <div>
-              <h1 className="text-lg font-bold tracking-tight">
-                {view === 'collections' && 'Collections'}
-                {view === 'projects' && selectionCollection?.name}
-                {view === 'detail' && selectedProject?.title}
-              </h1>
-              <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">
-                {view === 'collections' &&
-                  `${filteredCollections.length} Collections`}
-                {view === 'projects' &&
-                  `${selectionCollection?.projects.length} Projects`}
-                {view === 'detail' && `${selectedProject?.files.length} Files`}
-              </span>
+          <div className="flex w-full items-center justify-between gap-3 pr-4">
+            <div className={'flex items-center gap-4'}>
+              {view !== 'collections' && (
+                <button
+                  onClick={handleBack}
+                  className="rounded-lg border border-zinc-800 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+              )}
+              <div>
+                <h1 className="text-lg font-bold tracking-tight">
+                  {view === 'collections' && 'Collections'}
+                  {view === 'projects' && selecteCollection?.name}
+                  {view === 'detail' && selectedProject?.title}
+                </h1>
+                <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">
+                  {view === 'collections' &&
+                    `${filteredCollections.length} Collections`}
+                  {view === 'projects' &&
+                    `${selecteCollection?.projects.length} Projects`}
+                  {view === 'detail' &&
+                    `${selectedProject?.files.length} Files`}
+                </span>
+              </div>
             </div>
+
+            {view === 'projects' &&
+              (collectionDeleteMutation.isPending ? (
+                <Spinner className={'text-destructive'} />
+              ) : (
+                <Trash2
+                  className={
+                    'text-destructive hover:text-destructive/80 cursor-pointer'
+                  }
+                  onClick={handleCollectionDelete}
+                />
+              ))}
           </div>
 
           {view === 'collections' && (
@@ -210,14 +263,20 @@ const ProfileCollections: React.FC<Props> = (props) => {
         {view === 'collections' && (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {props.editable && (
-              <div onClick={handleAlbumAdd} className="group cursor-pointer">
+              <div
+                onClick={handleCollectionAdd}
+                className="group cursor-pointer"
+              >
                 <div className="relative flex aspect-square items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 transition-all duration-300 group-hover:border-zinc-500">
                   <Plus size={32} />
                 </div>
               </div>
             )}
             {collectionsQuery.isLoading ? (
-              <div onClick={handleAlbumAdd} className="group cursor-pointer">
+              <div
+                onClick={handleCollectionAdd}
+                className="group cursor-pointer"
+              >
                 <div className="relative flex aspect-square items-center justify-center rounded-xl">
                   <Spinner />
                 </div>
@@ -276,7 +335,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
         )}
 
         {/* VIEW: PROJECTS IN ALBUM */}
-        {view === 'projects' && selectionCollection && (
+        {view === 'projects' && selecteCollection && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {props.editable && (
               <div onClick={handleProjectAdd} className="group cursor-pointer">
@@ -285,7 +344,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
                 </div>
               </div>
             )}
-            {selectionCollection.projects.map((project) => {
+            {selecteCollection.projects.map((project) => {
               const projectPreview = getProjectPreview(project)
 
               return (
@@ -364,7 +423,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
                 onClick={handleBack}
                 className="flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-500 uppercase transition-colors hover:text-white"
               >
-                <ChevronLeft size={16} /> Back to {selectionCollection?.name}
+                <ChevronLeft size={16} /> Back to {selecteCollection?.name}
               </button>
             </div>
           </div>

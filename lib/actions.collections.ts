@@ -158,3 +158,35 @@ export async function addProjectsToCollection(
     }
   }
 }
+
+type DeleteCollectionProps = {
+  id: Collection['id']
+}
+export async function deleteCollection(
+  props: DeleteCollectionProps,
+): Promise<ServerResponse<boolean>> {
+  try {
+    const supabase = await createClient()
+    const userResponse = await getUser()
+
+    if (userResponse.status === 'error') {
+      return userResponse
+    }
+
+    await supabase.from('collections').delete().match({
+      id: props.id,
+    })
+
+    return {
+      status: 'success',
+      message: 'Successfully deleted collection.',
+      data: true,
+    }
+  } catch (e) {
+    console.log('createCollection', e)
+    return {
+      status: 'error',
+      message: 'Failed to create collection. Please try again later.',
+    }
+  }
+}

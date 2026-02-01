@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { Post } from '@/lib/models'
+import { Post, PostFile, PostFormFile } from '@/lib/models'
 import { format } from 'date-fns'
 import { MessageCircle, Share2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -110,6 +110,27 @@ const PostCard: React.FC<Props> = (props) => {
     }
   }
 
+  const postFiles = (props.post.files || [])
+    .map((f) => ({
+      url: f.url,
+      type: f.type,
+      name: f.name,
+    }))
+    .concat(
+      (props.post.projects || []).reduce(
+        (acc, p) => {
+          return acc.concat(
+            p.files.map((f) => ({
+              url: f.url,
+              type: f.type,
+              name: f.name,
+            })),
+          )
+        },
+        [] as Pick<PostFile, 'name' | 'url' | 'type'>[],
+      ),
+    )
+
   return (
     <div
       key={props.post.id}
@@ -173,7 +194,7 @@ const PostCard: React.FC<Props> = (props) => {
 
       <Carousel className="mx-auto w-full">
         <CarouselContent>
-          {(props.post.files || []).map((file, fileIndex) => (
+          {postFiles.map((file, fileIndex) => (
             <CarouselItem
               key={`post-file-${fileIndex}`}
               className="relative aspect-square h-72"
@@ -211,7 +232,11 @@ const PostCard: React.FC<Props> = (props) => {
             }
             onClick={() => toggleLikeMutation.mutate()}
           >
-            {liked ? <FaHeart size={14} /> : <FaRegHeart size={14} />}
+            {liked ? (
+              <FaHeart size={14} className={'text-destructive'} />
+            ) : (
+              <FaRegHeart size={14} />
+            )}
             <span>{likesCount}</span>
           </div>
           {/*<button className="hover:text-accent-blue flex items-center gap-1.5 text-sm transition-colors">*/}
@@ -225,7 +250,7 @@ const PostCard: React.FC<Props> = (props) => {
           }
           onClick={handleShare}
         >
-          <Share2 className="h-4 w-4" />
+          <Share2 size={14} className={'text-accent-blue'} />
         </div>
       </div>
     </div>

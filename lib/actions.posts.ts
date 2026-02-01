@@ -55,6 +55,7 @@ export async function getPosts(
       data: postsResponse.data.map((post) => ({
         ...post,
         user_liked: post.user_liked.length > 0,
+        projects: post.post_projects.map((project) => ({ ...project.project })),
       })),
     }
   } catch (e) {
@@ -101,7 +102,12 @@ export async function getPostById(
     return {
       status: 'success',
       message: 'Successfully fetched posts.',
-      data: postResponse.data,
+      data: {
+        ...postResponse.data,
+        projects: postResponse.data.post_projects.map((p) => ({
+          ...p.project,
+        })),
+      },
     }
   } catch (e) {
     console.log('getPostById', e)

@@ -208,6 +208,7 @@ export type Database = {
           likes_count: number
           updated_at: string | null
           user_id: string
+          visibility: string | null
         }
         Insert: {
           comments_count?: number
@@ -217,6 +218,7 @@ export type Database = {
           likes_count?: number
           updated_at?: string | null
           user_id: string
+          visibility?: string | null
         }
         Update: {
           comments_count?: number
@@ -226,6 +228,7 @@ export type Database = {
           likes_count?: number
           updated_at?: string | null
           user_id?: string
+          visibility?: string | null
         }
         Relationships: [
           {

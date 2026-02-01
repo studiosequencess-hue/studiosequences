@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase.server'
 import { Post, PostFile, PostProject, ServerResponse, User } from '@/lib/models'
-import { POSTS_LIST_TYPE } from '@/lib/constants'
+import { POST_VISIBILITY, POSTS_LIST_TYPE } from '@/lib/constants'
 
 type GetPostsProps = {
   type: POSTS_LIST_TYPE
@@ -38,6 +38,7 @@ export async function getPosts(
             .select(
               '*, files:post_files(*), user:users(*), post_projects(project:projects(*, files:project_files(*), files_count:project_files(count))), user_liked:post_likes!left(id)',
             )
+            .eq('visibility', POST_VISIBILITY.PUBLIC)
             .order('created_at', { ascending: false })
             .range(from, to)
 
@@ -111,7 +112,7 @@ export async function getPostById(
   }
 }
 
-type CreatePostProps = Pick<Post, 'content'> & {
+type CreatePostProps = Pick<Post, 'content' | 'visibility'> & {
   files: Pick<PostFile, 'name' | 'type' | 'url'>[]
   projects: Pick<PostProject, 'project_id'>[]
 }
@@ -134,6 +135,7 @@ export async function createPost(
       .insert([
         {
           content: props.content,
+          visibility: props.visibility,
           user_id: currentUserResponse.data.user.id,
           comments_count: 0,
           likes_count: 0,

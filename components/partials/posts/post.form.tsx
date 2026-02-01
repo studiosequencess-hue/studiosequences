@@ -35,8 +35,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createPost } from '@/lib/actions.posts'
 import { createClient } from '@/lib/supabase.client'
 import { toast } from 'sonner'
-import { POSTS_LIST_TYPE, QUERY_KEYS } from '@/lib/constants'
+import { POST_VISIBILITY, POSTS_LIST_TYPE, QUERY_KEYS } from '@/lib/constants'
 import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 const MAX_CHARS = 500
 
@@ -49,6 +51,10 @@ const postFormSchema = z.object({
     .max(MAX_CHARS, {
       error: 'Too long',
     }),
+  visibility: z.enum([
+    POST_VISIBILITY.PUBLIC.toString(),
+    POST_VISIBILITY.PRIVATE.toString(),
+  ]),
 })
 
 type Props = {
@@ -64,6 +70,7 @@ const PostForm: React.FC<Props> = (props) => {
     resolver: zodResolver(postFormSchema),
     defaultValues: {
       content: props.post?.content || '',
+      visibility: props.post?.visibility || POST_VISIBILITY.PUBLIC.toString(),
     },
   })
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -83,6 +90,7 @@ const PostForm: React.FC<Props> = (props) => {
     mutationKey: ['post-processing'],
     mutationFn: async (data: {
       content: string
+      visibility: POST_VISIBILITY
       files: Pick<PostFile, 'url' | 'type' | 'name'>[]
       projects: Pick<PostProject, 'project_id'>[]
     }) => {
@@ -193,9 +201,11 @@ const PostForm: React.FC<Props> = (props) => {
       (item) => item.status === 'success',
     )
     const content = postForm.getValues().content
+    const visibility = postForm.getValues().visibility as POST_VISIBILITY
 
     postProcessMutation.mutate({
       content,
+      visibility,
       files: uploadedFiles.map((f) => ({
         name: f.name,
         type: f.type,
@@ -304,9 +314,39 @@ const PostForm: React.FC<Props> = (props) => {
                   control={postForm.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="post-form-title">
-                        Create Post
-                      </FieldLabel>
+                      <div
+                        className={
+                          'flex w-full items-center justify-between gap-4'
+                        }
+                      >
+                        <FieldLabel htmlFor="post-form-title">
+                          Create Post
+                        </FieldLabel>
+
+                        <div className={'flex items-center gap-2'}>
+                          <Label
+                            htmlFor="post-visibility"
+                            className={'text-xs/none'}
+                          >
+                            Public
+                          </Label>
+                          <Switch
+                            id={'post-visibility'}
+                            defaultChecked={
+                              postForm.getValues('visibility') ==
+                              POST_VISIBILITY.PUBLIC
+                            }
+                            onCheckedChange={(state) => {
+                              postForm.setValue(
+                                'visibility',
+                                state
+                                  ? POST_VISIBILITY.PUBLIC
+                                  : POST_VISIBILITY.PRIVATE,
+                              )
+                            }}
+                          />
+                        </div>
+                      </div>
                       <Textarea
                         {...field}
                         id="post-form-content"

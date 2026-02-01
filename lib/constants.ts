@@ -16,6 +16,11 @@ export enum StorageBucketType {
   Files = 'files',
 }
 
+export enum POST_VISIBILITY {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+}
+
 export enum POSTS_LIST_TYPE {
   DISCOVER = 'discover',
   PERSONAL = 'personal',

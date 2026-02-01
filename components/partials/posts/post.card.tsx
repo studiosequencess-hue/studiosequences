@@ -16,17 +16,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel'
 import { useAuthStore } from '@/store'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deletePostById, toggleLikePostById } from '@/lib/actions.posts'
-import { QUERY_KEYS } from '@/lib/constants'
+import { POST_VISIBILITY, QUERY_KEYS } from '@/lib/constants'
 import { FaHeart, FaRegHeart } from 'react-icons/fa6'
 import ReactPlayer from 'react-player'
 import { toast } from 'sonner'
@@ -141,27 +140,32 @@ const PostCard: React.FC<Props> = (props) => {
               {format(props.post.created_at, 'MMMM dd, yyyy')}
             </span>
           </div>
-          {user?.id == props.post.user.id && (
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <BsThreeDotsVertical />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side={'bottom'}
-                sideOffset={10}
-                align={'end'}
-              >
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    disabled={loading || deletePostMutation.isPending}
-                    onSelect={handleDelete}
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          <div className={'flex items-center gap-2'}>
+            {props.post.visibility == POST_VISIBILITY.PRIVATE && (
+              <Badge variant={'accent'}>Private</Badge>
+            )}
+            {user?.id == props.post.user.id && (
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <BsThreeDotsVertical />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side={'bottom'}
+                  sideOffset={10}
+                  align={'end'}
+                >
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      disabled={loading || deletePostMutation.isPending}
+                      onSelect={handleDelete}
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </div>
 

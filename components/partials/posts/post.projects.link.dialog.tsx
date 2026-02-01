@@ -75,7 +75,7 @@ const PostProjectsLinkDialog: React.FC<Props> = ({
         <DialogHeader>
           <DialogTitle>
             <span>Choose projects </span>
-            {!mutation.isFetching && (
+            {!mutation.isPending && (
               <span className={'text-muted-foreground text-sm/none'}>
                 ({selectedProjects.length}/{projects.length})
               </span>
@@ -83,7 +83,7 @@ const PostProjectsLinkDialog: React.FC<Props> = ({
           </DialogTitle>
         </DialogHeader>
 
-        {mutation.isFetching ? (
+        {mutation.isPending ? (
           <Loader />
         ) : (
           <ScrollArea className={'h-64 w-full pr-3'}>

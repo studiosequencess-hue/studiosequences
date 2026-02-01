@@ -392,12 +392,12 @@ const PostForm: React.FC<Props> = (props) => {
                 <div className={'text-muted-foreground'}>{}</div>
 
                 <Button
-                  disabled={!isValidPost || postProcessMutation.isFetching}
+                  disabled={!isValidPost || postProcessMutation.isPending}
                   variant={'accent'}
                   onClick={postForm.handleSubmit(handleSubmit)}
                   className={'w-18'}
                 >
-                  {postProcessMutation.isFetching ? <Spinner /> : 'Post'}
+                  {postProcessMutation.isPending ? <Spinner /> : 'Post'}
                 </Button>
               </div>
             </div>

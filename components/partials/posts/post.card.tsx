@@ -1,8 +1,10 @@
-import { Post } from '@/lib/models'
+'use client'
+
 import React from 'react'
-import Placeholder from '@/public/images/placeholder.svg'
+import Image from 'next/image'
+import { Post } from '@/lib/models'
 import { format } from 'date-fns'
-import { Heart, MessageCircle, Share2 } from 'lucide-react'
+import { MessageCircle, Share2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { BsThreeDotsVertical } from 'react-icons/bs'
@@ -12,15 +14,21 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel'
 import { useAuthStore } from '@/store'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deletePostById, toggleLikePostById } from '@/lib/actions.posts'
 import { QUERY_KEYS } from '@/lib/constants'
 import { FaHeart, FaRegHeart } from 'react-icons/fa6'
+import ReactPlayer from 'react-player'
 
 type Props = {
   post: Post
@@ -124,7 +132,7 @@ const PostCard: React.FC<Props> = (props) => {
               >
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    disabled={loading || deletePostMutation.isFetching}
+                    disabled={loading || deletePostMutation.isPending}
                     onSelect={handleDelete}
                   >
                     Delete
@@ -136,7 +144,35 @@ const PostCard: React.FC<Props> = (props) => {
         </div>
       </div>
 
-      <div className={'h-24 w-full bg-red-100'}></div>
+      <div className={'px-4 pb-4 text-sm/none'}>{props.post.content}</div>
+
+      <Carousel className="mx-auto w-full">
+        <CarouselContent>
+          {(props.post.files || []).map((file, fileIndex) => (
+            <CarouselItem
+              key={`post-file-${fileIndex}`}
+              className="relative aspect-square h-72"
+            >
+              {file.type == 'image' && (
+                <Image
+                  src={file.url}
+                  alt={`project-file-${fileIndex}`}
+                  fill
+                  className={`object-contain pr-6 pl-10`}
+                />
+              )}
+              {file.type == 'video' && (
+                <ReactPlayer
+                  src={file.url}
+                  controls
+                  width={'100%'}
+                  height={'100%'}
+                />
+              )}
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
 
       <div className="flex items-center gap-4 border-t border-slate-50 p-3">
         <Button

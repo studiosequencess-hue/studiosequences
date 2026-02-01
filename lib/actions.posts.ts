@@ -192,3 +192,48 @@ export async function createPost(
     }
   }
 }
+
+type DeletePostByIdProps = {
+  id: Post['id']
+}
+export async function deletePostById(
+  props: GetPostByIdProps,
+): Promise<ServerResponse<Post>> {
+  try {
+    const supabase = await createClient()
+    const userResponse = await supabase.auth.getUser()
+
+    if (userResponse.error) {
+      return {
+        status: 'error',
+        message: userResponse.error.message,
+      }
+    }
+
+    const postResponse = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', props.id)
+      .eq('user_id', userResponse.data.user.id)
+      .single()
+
+    if (postResponse.error) {
+      return {
+        status: 'error',
+        message: postResponse.error.message,
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully deleted post.',
+      data: postResponse.data,
+    }
+  } catch (e) {
+    console.log('deletePostById', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch post. Please try again later.',
+    }
+  }
+}

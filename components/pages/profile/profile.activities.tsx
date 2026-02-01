@@ -28,7 +28,7 @@ interface Activity {
 
 const ProfileActivities: React.FC = () => {
   return (
-    <div className={'flex flex-col gap-4'}>
+    <div className={'flex flex-col gap-3'}>
       <PostForm type={POSTS_LIST_TYPE.PERSONAL} />
       <PostsInfiniteList type={POSTS_LIST_TYPE.PERSONAL} />
     </div>

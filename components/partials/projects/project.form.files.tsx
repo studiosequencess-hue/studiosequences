@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { FormProjectFile } from '@/lib/models'
+import { ProjectFormFile } from '@/lib/models'
 import { toast } from 'sonner'
 import Loader from '@/components/partials/loader'
 import { LuImage, LuVideo } from 'react-icons/lu'
@@ -20,8 +20,8 @@ import { useAuthStore } from '@/store'
 import { UserRole } from '@/lib/constants'
 
 type Props = {
-  files: FormProjectFile[]
-  setFiles: (files: FormProjectFile[]) => void
+  files: ProjectFormFile[]
+  setFiles: (files: ProjectFormFile[]) => void
   activeFileIndex: number
   setActiveFileIndex: (index: number) => void
   filesLoading: boolean

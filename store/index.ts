@@ -1,11 +1,13 @@
 import { useImagePreviewStore } from './image.preview.store'
-import { useProjectViewerStore } from './project.viewer.store'
+import { useProjectsDialogStore } from './projects.dialog.store'
 import { useProjectsStore } from './projects.store'
+import { usePostsDialogStore } from './post.dialog.store'
 import { useAuthStore } from './auth.store'
 
 export {
   useAuthStore,
   useImagePreviewStore,
-  useProjectViewerStore,
+  useProjectsDialogStore,
   useProjectsStore,
+  usePostsDialogStore,
 }

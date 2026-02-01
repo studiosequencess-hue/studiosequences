@@ -57,6 +57,7 @@ export function getProjectFilesCount(project: Project): number {
 }
 
 export function getProjectMembersCount(project: Project): number {
+  if (!project.members_count) return 0
   if (project.members_count.length > 0) {
     return project.members_count[0].count
   }

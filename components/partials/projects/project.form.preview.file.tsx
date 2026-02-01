@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { FormProjectFile } from '@/lib/models'
+import { ProjectFormFile } from '@/lib/models'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -41,8 +41,8 @@ const itemFormSchema = z.object({
 })
 
 type Props = {
-  item: FormProjectFile
-  onChange: (item: FormProjectFile) => void
+  item: ProjectFormFile
+  onChange: (item: ProjectFormFile) => void
   close: () => void
 }
 
@@ -54,7 +54,7 @@ const ProjectFormPreviewFile: React.FC<Props> = ({ item, onChange, close }) => {
       description: '',
     },
   })
-  const [file, setFile] = React.useState<FormProjectFile>(item)
+  const [file, setFile] = React.useState<ProjectFormFile>(item)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {

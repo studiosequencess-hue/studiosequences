@@ -8,11 +8,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { useAuthStore, useProjectsStore, useProjectViewerStore } from '@/store'
+import { useAuthStore, useProjectsStore, useProjectsDialogStore } from '@/store'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { FormProjectFile, ProjectMember } from '@/lib/models'
+import { ProjectFormFile, ProjectMember } from '@/lib/models'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -65,7 +65,7 @@ const projectFormSchema = z.object({
 })
 
 const ProjectForm = () => {
-  const { isOpen, close, project, isEditable } = useProjectViewerStore()
+  const { isOpen, close, project, isEditable } = useProjectsDialogStore()
   const { user, loading: userLoading } = useAuthStore()
   const { setProjects, projects } = useProjectsStore()
 
@@ -77,7 +77,7 @@ const ProjectForm = () => {
       is_sensitive: project?.is_sensitive || false,
     },
   })
-  const [files, setFiles] = React.useState<FormProjectFile[]>([])
+  const [files, setFiles] = React.useState<ProjectFormFile[]>([])
   const [filesLoading, setFilesLoading] = React.useState(true)
   const [activeFileIndex, setActiveFileIndex] = React.useState<number>(-1)
   const [members, setMembers] = React.useState<ProjectMember[]>([])

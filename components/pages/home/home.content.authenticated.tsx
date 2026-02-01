@@ -39,10 +39,18 @@ const HomeContentAuthenticated: React.FC<Props> = ({ user }) => {
 
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className={'mx-auto flex w-fit gap-0 *:w-fit *:px-4'}>
-            <TabsTrigger value="posts">POSTS</TabsTrigger>
-            <TabsTrigger value="portfolio">PORTFOLIO</TabsTrigger>
-            <TabsTrigger value="bookmarks">BOOKMARKS</TabsTrigger>
-            <TabsTrigger value="about">ABOUT</TabsTrigger>
+            <TabsTrigger value="posts" className={'uppercase'}>
+              posts
+            </TabsTrigger>
+            <TabsTrigger value="portfolio" className={'uppercase'}>
+              portfolio
+            </TabsTrigger>
+            <TabsTrigger value="bookmarks" className={'uppercase'}>
+              bookmarks
+            </TabsTrigger>
+            <TabsTrigger value="about" className={'uppercase'}>
+              about
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="posts">
             <TabPosts />

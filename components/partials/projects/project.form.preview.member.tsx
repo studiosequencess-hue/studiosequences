@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { FormProjectFile, ProjectMember } from '@/lib/models'
+import { ProjectFormFile, ProjectMember } from '@/lib/models'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'

@@ -202,31 +202,28 @@ export type Database = {
       posts: {
         Row: {
           comments_count: number
+          content: string
           created_at: string
-          description: string | null
           id: number
           likes_count: number
-          title: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           comments_count?: number
+          content: string
           created_at?: string
-          description?: string | null
           id?: number
           likes_count?: number
-          title?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           comments_count?: number
+          content?: string
           created_at?: string
-          description?: string | null
           id?: number
           likes_count?: number
-          title?: string | null
           updated_at?: string | null
           user_id?: string
         }

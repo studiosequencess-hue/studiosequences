@@ -5,6 +5,16 @@ export interface UserImage {
   url: string
 }
 
+export type FileMedia = {
+  uploadType: 'file'
+  file: File
+}
+
+export type URLMedia = {
+  uploadType: 'url'
+  url: string
+}
+
 type ServerResponseSuccess<T> = {
   status: 'success'
   message: string
@@ -72,8 +82,8 @@ export type Project = Tables<'projects'> & {
   files_count: {
     count: number
   }[]
-  members: ProjectMember[]
-  members_count: {
+  members?: ProjectMember[]
+  members_count?: {
     count: number
   }[]
   is_revealed?: boolean
@@ -85,29 +95,25 @@ export type ProjectMember = Tables<'project_members'> & {
   user?: UserInfo | null
 }
 
-type BaseMedia = Pick<ProjectFile, 'name' | 'title' | 'description' | 'type'>
-
-interface FileMedia extends BaseMedia {
-  uploadType: 'file'
-  file: File
-}
-
-interface URLMedia extends BaseMedia {
-  uploadType: 'url'
-  url: string
-}
-
-export type FormProjectFile = FileMedia | URLMedia
+type ProjectBaseMedia = Pick<
+  ProjectFile,
+  'name' | 'title' | 'description' | 'type'
+>
+export type ProjectFormFile = ProjectBaseMedia & (FileMedia | URLMedia)
 
 export type Post = Tables<'posts'> & {
   user: UserInfo
   likes?: PostLike[]
   comments?: PostComment[]
   files?: PostFile[]
-  projects?: PostProject[]
+  projects?: Project[]
 }
 export type PostLike = Tables<'post_likes'>
 export type PostComment = Tables<'post_comments'>
 export type PostFile = Tables<'post_files'>
 export type PostProject = Tables<'post_projects'>
 export type UserPostBookmarks = Tables<'user_post_bookmarks'>
+
+type PostBaseMedia = Pick<PostFile, 'name' | 'type'>
+
+export type PostFormFile = PostBaseMedia & (FileMedia | URLMedia)

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { signOut } from '@/lib/actions.auth'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useProjectsDialogStore } from '@/store'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,11 +23,16 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import HeaderSearchbar from '@/components/partials/header/header.searchbar'
+import { Plus } from 'lucide-react'
+import { usePostsDialogStore } from '@/store/post.dialog.store'
 
 const HeaderContentAuthenticated = () => {
   const { user, setLoading, setUser } = useAuthStore()
+  const { show: projectDialogShow } = useProjectsDialogStore()
+  const { show: postDialogShow } = usePostsDialogStore()
   const router = useRouter()
-  const [dropdownOpen, setDropdownOpen] = React.useState(false)
+  const [profileDropdownOpen, setProfileDropdownOpen] = React.useState(false)
+  const [newDropdownOpen, setNewDropdownOpen] = React.useState(false)
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -142,7 +147,36 @@ const HeaderContentAuthenticated = () => {
           }
         />
 
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenu open={newDropdownOpen} onOpenChange={setNewDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <div
+              className={
+                'hover:bg-primary flex h-8 w-8 items-center justify-center rounded-full'
+              }
+            >
+              <Plus />
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side={'bottom'} align={'end'}>
+            <DropdownMenuItem
+              disabled={!user}
+              onSelect={() => user && postDialogShow(null, true)}
+            >
+              New post
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!user}
+              onSelect={() => user && projectDialogShow(null, true)}
+            >
+              New portfolio project
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu
+          open={profileDropdownOpen}
+          onOpenChange={setProfileDropdownOpen}
+        >
           <DropdownMenuTrigger>
             <Avatar>
               <AvatarImage src={user?.avatar || ''} />
@@ -160,7 +194,7 @@ const HeaderContentAuthenticated = () => {
             <DropdownMenuItem
               onSelect={() => {
                 handleSignOut()
-                setDropdownOpen(false)
+                setProfileDropdownOpen(false)
               }}
             >
               Logout

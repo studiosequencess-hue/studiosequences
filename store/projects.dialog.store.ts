@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { Project } from '@/lib/models'
 
-interface ProjectViewerState {
+interface ProjectsDialogState {
   isOpen: boolean
   isEditable: boolean
   show: (project: Project | null, isEditable: boolean) => void
@@ -11,7 +11,7 @@ interface ProjectViewerState {
   project: Project | null
 }
 
-export const useProjectViewerStore = create<ProjectViewerState>()((set) => ({
+export const useProjectsDialogStore = create<ProjectsDialogState>()((set) => ({
   isOpen: false,
   isEditable: false,
   show: (project, isEditable) => set({ isOpen: true, project, isEditable }),

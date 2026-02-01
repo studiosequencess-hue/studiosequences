@@ -2,13 +2,58 @@
 
 import { createClient } from '@/lib/supabase.server'
 import {
-  FormProjectFile,
+  ProjectFormFile,
   Project,
   ProjectFile,
   ProjectMember,
   ServerResponse,
   User,
 } from '@/lib/models'
+import { getUser } from '@/lib/actions.auth'
+
+export async function getPersonalProjects(): Promise<
+  ServerResponse<{ projects: Project[]; total: number }>
+> {
+  try {
+    const supabase = await createClient()
+    const userResponse = await getUser()
+
+    if (userResponse.status === 'error') {
+      return userResponse
+    }
+
+    const projectsResponse = await supabase
+      .from('projects')
+      .select('*, files:project_files(*), files_count:project_files(count)', {
+        count: 'exact',
+      })
+      .eq('user_id', userResponse.data.id)
+      .order('position', { ascending: true })
+      .order('id', { ascending: true })
+
+    if (projectsResponse.error) {
+      return {
+        status: 'error',
+        message: projectsResponse.error.message,
+      }
+    }
+
+    return {
+      status: 'success',
+      message: 'Successfully fetched projects.',
+      data: {
+        projects: projectsResponse.data,
+        total: projectsResponse.count || 0,
+      },
+    }
+  } catch (e) {
+    console.log('getPersonalProjects', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch user. Please try again later.',
+    }
+  }
+}
 
 type GetAllProjectsProps = {
   pageSize: number
@@ -218,7 +263,7 @@ export async function createProject(
 
     return {
       status: 'success',
-      message: 'Successfully fetched projects.',
+      message: 'Successfully created project.',
       data: {
         ...insertProjectResponse.data,
         files: insertFilesResponse.data,

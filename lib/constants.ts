@@ -15,3 +15,13 @@ export enum StorageBucketType {
   Videos = 'videos',
   Files = 'files',
 }
+
+export enum POSTS_LIST_TYPE {
+  DISCOVER = 'discover',
+  PERSONAL = 'personal',
+}
+
+export enum QUERY_KEYS {
+  PERSONAL_POSTS = 'personal-posts',
+  DISCOVER_POSTS = 'discover-posts',
+}

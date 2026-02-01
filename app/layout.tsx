@@ -4,7 +4,7 @@ import './globals.css'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
 import { Toaster } from '@/components/ui/sonner'
-import ProjectsPartials from '@/components/partials/projects/projects.partials'
+import ProjectsDialogs from '@/components/partials/projects/projects.dialogs'
 import Providers from '@/components/providers'
 
 const inter = Inter({
@@ -33,7 +33,7 @@ export default function RootLayout({
           <Footer />
 
           <Toaster />
-          <ProjectsPartials />
+          <ProjectsDialogs />
         </Providers>
       </body>
     </html>

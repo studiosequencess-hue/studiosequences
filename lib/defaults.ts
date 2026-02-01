@@ -62,4 +62,4 @@ export const DEFAULT_PROJECT_MEMBER: ProjectMember = {
   created_at: new Date().toString(),
 }
 
-export const POSTS_PER_PAGE = 20
+export const POSTS_PER_PAGE = 10

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useProjectViewerStore } from '@/store/project.viewer.store'
+import { useProjectsDialogStore } from '@/store/projects.dialog.store'
 import { X } from 'lucide-react'
 import ProjectViewFilesCarousel from '@/components/partials/projects/project.view.files.carousel'
 import { toast } from 'sonner'
@@ -18,7 +18,7 @@ import { getProjectFilesById } from '@/lib/actions.projects'
 import Loader from '@/components/partials/loader'
 
 const ProjectView = () => {
-  const { project, isOpen, isEditable, close } = useProjectViewerStore()
+  const { project, isOpen, isEditable, close } = useProjectsDialogStore()
   const [files, setFiles] = React.useState<ProjectFile[]>([])
   const [filesLoading, setFilesLoading] = React.useState(true)
 

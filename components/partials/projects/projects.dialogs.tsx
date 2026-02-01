@@ -2,7 +2,7 @@ import React from 'react'
 import ProjectView from '@/components/partials/projects/project.view'
 import ProjectForm from '@/components/partials/projects/project.form'
 
-const ProjectsPartials = () => {
+const ProjectsDialogs = () => {
   return (
     <React.Fragment>
       <ProjectView />
@@ -11,4 +11,4 @@ const ProjectsPartials = () => {
   )
 }
 
-export default ProjectsPartials
+export default ProjectsDialogs

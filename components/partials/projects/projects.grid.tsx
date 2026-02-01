@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useProjectsStore, useProjectViewerStore } from '@/store'
+import { useProjectsStore, useProjectsDialogStore } from '@/store'
 import { Layers, Lock, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,7 +23,7 @@ type Props = {
 }
 
 const ProjectsGrid: React.FC<Props> = (props) => {
-  const { show } = useProjectViewerStore()
+  const { show } = useProjectsDialogStore()
   const { projects, setProjects } = useProjectsStore()
 
   const toggleReveal = (id: number): void => {

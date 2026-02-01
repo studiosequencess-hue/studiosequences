@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase.server'
 import { Post, PostFile, PostProject, ServerResponse, User } from '@/lib/models'
 import { POST_VISIBILITY, POSTS_LIST_TYPE } from '@/lib/constants'
+import { getPathFromPublicUrl } from '@/lib/utils'
+import { getUser } from '@/lib/actions.auth'
 
 type GetPostsProps = {
   type: POSTS_LIST_TYPE
@@ -118,36 +120,35 @@ export async function getPostById(
   }
 }
 
-type CreatePostProps = Pick<Post, 'content' | 'visibility'> & {
+type CreatePostProps = Pick<Post, 'id' | 'content' | 'visibility'> & {
   files: Pick<PostFile, 'name' | 'type' | 'url'>[]
   projects: Pick<PostProject, 'project_id'>[]
 }
-export async function createPost(
+export async function upsertPost(
   props: CreatePostProps,
 ): Promise<ServerResponse<Post>> {
   try {
     const supabase = await createClient()
-    const currentUserResponse = await supabase.auth.getUser()
+    const currentUserResponse = await getUser()
 
-    if (currentUserResponse.error) {
+    if (currentUserResponse.status == 'error') {
       return {
         status: 'error',
-        message: currentUserResponse.error.message,
+        message: currentUserResponse.message,
       }
     }
 
     const insertPostResponse = await supabase
       .from('posts')
-      .insert([
-        {
-          content: props.content,
-          visibility: props.visibility,
-          user_id: currentUserResponse.data.user.id,
-          comments_count: 0,
-          likes_count: 0,
-        },
-      ])
-      .select('*')
+      .upsert({
+        id: props.id,
+        content: props.content,
+        visibility: props.visibility,
+        user_id: currentUserResponse.data.id,
+        comments_count: 0,
+        likes_count: 0,
+      })
+      .select('*, files:post_files(*)')
       .single()
 
     if (insertPostResponse.error) {
@@ -155,6 +156,20 @@ export async function createPost(
         status: 'error',
         message: insertPostResponse.error.message,
       }
+    }
+
+    if (props.id != -1) {
+      await Promise.all([
+        supabase.storage
+          .from('files')
+          .remove(
+            insertPostResponse.data.files
+              .map((f) => getPathFromPublicUrl(f.url, 'files'))
+              .filter((p) => p != null),
+          ),
+        supabase.from('post_files').delete().eq('post_id', props.id),
+        supabase.from('post_projects').delete().eq('post_id', props.id),
+      ])
     }
 
     const [insertFilesResponse, insertProjectsResponse] = await Promise.all([

@@ -29,6 +29,7 @@ import { POST_VISIBILITY, QUERY_KEYS } from '@/lib/constants'
 import { FaHeart, FaRegHeart } from 'react-icons/fa6'
 import ReactPlayer from 'react-player'
 import { toast } from 'sonner'
+import PostEditDialog from '@/components/partials/posts/post.edit.dialog'
 
 type Props = {
   post: Post
@@ -40,6 +41,7 @@ const PostCard: React.FC<Props> = (props) => {
   const queryClient = useQueryClient()
   const [liked, setLiked] = React.useState(props.post.user_liked)
   const [likesCount, setLikesCount] = React.useState(props.post.likes_count)
+  const [editOpen, setEditOpen] = React.useState(false)
 
   const deletePostMutation = useMutation({
     mutationKey: [QUERY_KEYS.DELETE_POST, props.post.id],
@@ -85,6 +87,10 @@ const PostCard: React.FC<Props> = (props) => {
       })
     },
   })
+
+  const handleEdit = () => {
+    setEditOpen(true)
+  }
 
   const handleDelete = () => {
     deletePostMutation.mutate()
@@ -136,6 +142,8 @@ const PostCard: React.FC<Props> = (props) => {
       key={props.post.id}
       className="w-full rounded-xl border border-slate-100 transition-all duration-300 hover:border-indigo-100"
     >
+      <PostEditDialog open={editOpen} setOpen={setEditOpen} post={props.post} />
+
       <div className="flex items-start gap-3 p-4">
         <Avatar>
           <AvatarImage src={props.post.user?.avatar || ''} />
@@ -176,6 +184,12 @@ const PostCard: React.FC<Props> = (props) => {
                   align={'end'}
                 >
                   <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      disabled={loading || deletePostMutation.isPending}
+                      onSelect={handleEdit}
+                    >
+                      Edit
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       disabled={loading || deletePostMutation.isPending}
                       onSelect={handleDelete}

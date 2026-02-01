@@ -32,7 +32,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import PostProjectsLinkDialog from '@/components/partials/posts/post.projects.link.dialog'
 import ReactPlayer from 'react-player'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createPost } from '@/lib/actions.posts'
+import { upsertPost } from '@/lib/actions.posts'
 import { createClient } from '@/lib/supabase.client'
 import { toast } from 'sonner'
 import { POST_VISIBILITY, POSTS_LIST_TYPE, QUERY_KEYS } from '@/lib/constants'
@@ -60,6 +60,7 @@ const postFormSchema = z.object({
 type Props = {
   type: POSTS_LIST_TYPE
   post?: Post
+  onSuccess?: () => void
 }
 
 const PostForm: React.FC<Props> = (props) => {
@@ -94,7 +95,10 @@ const PostForm: React.FC<Props> = (props) => {
       files: Pick<PostFile, 'url' | 'type' | 'name'>[]
       projects: Pick<PostProject, 'project_id'>[]
     }) => {
-      return createPost(data)
+      return upsertPost({
+        ...data,
+        id: props.post?.id || -1,
+      })
     },
     onSuccess: (response) => {
       if (response.status == 'error') {
@@ -113,6 +117,8 @@ const PostForm: React.FC<Props> = (props) => {
           ],
         })
       }
+
+      props.onSuccess?.()
     },
     onError: (error) => {
       toast.error(error.message)
@@ -124,15 +130,16 @@ const PostForm: React.FC<Props> = (props) => {
 
   const isValidPost = contentLength != 0 && contentLength < MAX_CHARS
 
-  const handleAddPostFiles = (files: File[]) => {
-    const filteredFiles = files.filter(
+  const handleAddPostFiles = (newFiles: File[]) => {
+    const filteredFiles = newFiles.filter(
       (file) =>
         file.type.startsWith('image/') || file.type.startsWith('video/'),
     )
 
-    setFiles(
-      filteredFiles.map((f) => ({
-        uploadType: 'file',
+    setFiles([
+      ...files,
+      ...filteredFiles.map((f) => ({
+        uploadType: 'file' as PostFormFile['uploadType'],
         file: f,
         name: f.name,
         type: f.type.startsWith('video/') ? 'video' : 'image',
@@ -141,7 +148,7 @@ const PostForm: React.FC<Props> = (props) => {
         post_id: -1,
         url: '',
       })),
-    )
+    ])
   }
 
   const handleRemovePostFile = React.useCallback(
@@ -218,20 +225,20 @@ const PostForm: React.FC<Props> = (props) => {
   }
 
   const renderPostFiles = React.useMemo(() => {
-    const postFiles = files.concat(
-      projects.reduce((acc, p) => {
-        return acc.concat(
-          p.files.map((f) => ({
-            url: f.url,
-            uploadType: 'url',
-            type: f.type as PostFormFile['type'],
-            name: f.name,
-          })),
-        )
-      }, [] as PostFormFile[]),
-    )
+    const projectFiles = projects.reduce((acc, p) => {
+      return acc.concat(
+        p.files.map((f) => ({
+          url: f.url,
+          uploadType: 'url',
+          type: f.type as PostFormFile['type'],
+          name: f.name,
+        })),
+      )
+    }, [] as PostFormFile[])
 
-    return postFiles.length == 0 ? (
+    const filesLength = files.length + projectFiles.length
+
+    return filesLength == 0 ? (
       <div className={'text-muted-foreground w-full py-2 text-sm/none'}>
         No post files
       </div>
@@ -239,12 +246,61 @@ const PostForm: React.FC<Props> = (props) => {
       <ScrollArea
         className={cn(
           'h-42 w-full pr-3',
-          postFiles.length == 0 && 'h-8',
-          postFiles.length <= 6 && 'h-24',
+          filesLength == 0 && 'h-8',
+          filesLength <= 6 && 'h-24',
         )}
       >
         <div className={'flex h-full w-full flex-wrap gap-0.5'}>
-          {postFiles.map((file, fileIndex) => (
+          {files.map((file, fileIndex) => (
+            <div
+              key={`file-${fileIndex}`}
+              className={'group relative aspect-square h-20'}
+            >
+              <div
+                className={cn(
+                  'absolute inset-0 z-10 cursor-pointer bg-black/25 opacity-0 transition-opacity group-hover:opacity-100',
+                  'flex items-center justify-center',
+                )}
+                onClick={() => handleRemovePostFile(fileIndex)}
+              >
+                <X size={18} className={'text-destructive'} />
+              </div>
+              {file.uploadType == 'file' && (
+                <div
+                  className={cn(
+                    'absolute inset-0 z-10 cursor-pointer bg-black/25 opacity-0 transition-opacity group-hover:opacity-100',
+                    'flex items-center justify-center',
+                  )}
+                  onClick={() => handleRemovePostFile(fileIndex)}
+                >
+                  <X size={18} className={'text-destructive'} />
+                </div>
+              )}
+              {file.type == 'image' ? (
+                <Image
+                  src={
+                    file.uploadType == 'file'
+                      ? URL.createObjectURL(file.file)
+                      : file.url
+                  }
+                  alt={`file-${fileIndex}`}
+                  fill
+                  className={'z-0 object-cover'}
+                />
+              ) : (
+                <ReactPlayer
+                  src={
+                    file.uploadType == 'file'
+                      ? URL.createObjectURL(file.file)
+                      : file.url
+                  }
+                  width={'100%'}
+                  height={'100%'}
+                />
+              )}
+            </div>
+          ))}
+          {projectFiles.map((file, fileIndex) => (
             <div
               key={`file-${fileIndex}`}
               className={'group relative aspect-square h-20'}
@@ -299,7 +355,12 @@ const PostForm: React.FC<Props> = (props) => {
         selectedProjects={projects}
       />
 
-      <div className="h-fit w-[600px] rounded-xl border border-gray-800 bg-black">
+      <div
+        className={cn(
+          'h-fit w-[600px] rounded-xl',
+          props.post ? '' : 'bg-background border border-gray-800',
+        )}
+      >
         <div className="flex w-full gap-4 p-4">
           <Avatar>
             <AvatarImage src={user?.avatar || ''} />
@@ -320,7 +381,7 @@ const PostForm: React.FC<Props> = (props) => {
                         }
                       >
                         <FieldLabel htmlFor="post-form-title">
-                          Create Post
+                          {props.post ? `Edit` : 'Create'} Post
                         </FieldLabel>
 
                         <div className={'flex items-center gap-2'}>
@@ -429,7 +490,7 @@ const PostForm: React.FC<Props> = (props) => {
 
               <div className="flex items-center gap-4">
                 {/* Character Counter Ring */}
-                <div className={'text-muted-foreground'}>{}</div>
+                {/*<div className={'text-muted-foreground'}>{}</div>*/}
 
                 <Button
                   disabled={!isValidPost || postProcessMutation.isPending}
@@ -437,7 +498,13 @@ const PostForm: React.FC<Props> = (props) => {
                   onClick={postForm.handleSubmit(handleSubmit)}
                   className={'w-18'}
                 >
-                  {postProcessMutation.isPending ? <Spinner /> : 'Post'}
+                  {postProcessMutation.isPending ? (
+                    <Spinner />
+                  ) : props.post ? (
+                    'Update'
+                  ) : (
+                    'Post'
+                  )}
                 </Button>
               </div>
             </div>

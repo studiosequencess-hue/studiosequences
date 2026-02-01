@@ -25,7 +25,7 @@ export async function getPosts(
           ? await supabase
               .from('posts')
               .select(
-                '*, files:post_files(*), user:users(*), post_projects(project:projects(*,files:project_files(*), files_count:project_files(count)))',
+                '*, files:post_files(*), user:users(*), post_projects(project:projects(*,files:project_files(*), files_count:project_files(count))), user_liked:post_likes!left(id)',
               )
               .eq('user_id', props.userId)
               .order('created_at', { ascending: false })
@@ -36,7 +36,7 @@ export async function getPosts(
         : await supabase
             .from('posts')
             .select(
-              '*, files:post_files(*), user:users(*), post_projects(project:projects(*, files:project_files(*), files_count:project_files(count)))',
+              '*, files:post_files(*), user:users(*), post_projects(project:projects(*, files:project_files(*), files_count:project_files(count))), user_liked:post_likes!left(id)',
             )
             .order('created_at', { ascending: false })
             .range(from, to)
@@ -51,7 +51,10 @@ export async function getPosts(
     return {
       status: 'success',
       message: 'Successfully fetched posts.',
-      data: postsResponse.data,
+      data: postsResponse.data.map((post) => ({
+        ...post,
+        user_liked: post.user_liked.length > 0,
+      })),
     }
   } catch (e) {
     console.log('getUser', e)
@@ -197,7 +200,7 @@ type DeletePostByIdProps = {
   id: Post['id']
 }
 export async function deletePostById(
-  props: GetPostByIdProps,
+  props: DeletePostByIdProps,
 ): Promise<ServerResponse<Post>> {
   try {
     const supabase = await createClient()
@@ -228,6 +231,70 @@ export async function deletePostById(
       status: 'success',
       message: 'Successfully deleted post.',
       data: postResponse.data,
+    }
+  } catch (e) {
+    console.log('deletePostById', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch post. Please try again later.',
+    }
+  }
+}
+
+type ToggleLikePostByIdProps = {
+  id: Post['id']
+  isLiked: boolean
+}
+export async function toggleLikePostById(
+  props: ToggleLikePostByIdProps,
+): Promise<ServerResponse<boolean>> {
+  try {
+    const supabase = await createClient()
+    const userResponse = await supabase.auth.getUser()
+
+    if (userResponse.error) {
+      return {
+        status: 'error',
+        message: userResponse.error.message,
+      }
+    }
+
+    if (props.isLiked) {
+      const [postResponse] = await Promise.all([
+        supabase.rpc('handle_post_like', {
+          p_post_id: props.id,
+          p_user_id: userResponse.data.user.id,
+          p_is_liked: true,
+        }),
+      ])
+
+      if (postResponse.error) {
+        return {
+          status: 'error',
+          message: postResponse.error.message,
+        }
+      }
+    } else {
+      const [postResponse] = await Promise.all([
+        supabase.rpc('handle_post_like', {
+          p_post_id: props.id,
+          p_user_id: userResponse.data.user.id,
+          p_is_liked: false,
+        }),
+      ])
+
+      if (postResponse.error) {
+        return {
+          status: 'error',
+          message: postResponse.error.message,
+        }
+      }
+    }
+
+    return {
+      status: 'success',
+      message: `Successfully ${props.isLiked ? 'liked' : 'unliked'} post.`,
+      data: true,
     }
   } catch (e) {
     console.log('deletePostById', e)

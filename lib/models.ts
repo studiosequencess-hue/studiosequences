@@ -107,6 +107,7 @@ export type Post = Tables<'posts'> & {
   comments?: PostComment[]
   files?: PostFile[]
   projects?: Project[]
+  user_liked?: boolean
 }
 export type PostLike = Tables<'post_likes'>
 export type PostComment = Tables<'post_comments'>

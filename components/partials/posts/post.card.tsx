@@ -17,9 +17,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuthStore } from '@/store'
-import { useMutation } from '@tanstack/react-query'
-import { deletePostById } from '@/lib/actions.posts'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { deletePostById, toggleLikePostById } from '@/lib/actions.posts'
 import { QUERY_KEYS } from '@/lib/constants'
+import { FaHeart, FaRegHeart } from 'react-icons/fa6'
 
 type Props = {
   post: Post
@@ -28,6 +29,9 @@ type Props = {
 
 const PostCard: React.FC<Props> = (props) => {
   const { user, loading } = useAuthStore()
+  const queryClient = useQueryClient()
+  const [liked, setLiked] = React.useState(props.post.user_liked)
+  const [likesCount, setLikesCount] = React.useState(props.post.likes_count)
 
   const deletePostMutation = useMutation({
     mutationKey: [QUERY_KEYS.DELETE_POST, props.post.id],
@@ -37,6 +41,41 @@ const PostCard: React.FC<Props> = (props) => {
       })
     },
     onSuccess: () => props.onDelete && props.onDelete(),
+  })
+
+  const toggleLikeMutation = useMutation({
+    mutationFn: () => {
+      return toggleLikePostById({
+        id: props.post.id,
+        isLiked: !liked,
+      })
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({
+        queryKey: [QUERY_KEYS.TOGGLE_LIKE_POST, props.post.id],
+      })
+
+      const previousPost = queryClient.getQueryData([
+        QUERY_KEYS.POST,
+        props.post.id,
+      ])
+
+      setLiked((prevLiked) => !prevLiked)
+      setLikesCount((prev) => (liked ? prev - 1 : prev + 1))
+
+      return { previousPost }
+    },
+    onError: (err, newLike, context) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.POST, props.post.id],
+        context?.previousPost,
+      )
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.POST, props.post.id],
+      })
+    },
   })
 
   const handleDelete = () => {
@@ -85,7 +124,7 @@ const PostCard: React.FC<Props> = (props) => {
               >
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    disabled={loading || deletePostMutation.isPending}
+                    disabled={loading || deletePostMutation.isFetching}
                     onSelect={handleDelete}
                   >
                     Delete
@@ -99,12 +138,15 @@ const PostCard: React.FC<Props> = (props) => {
 
       <div className={'h-24 w-full bg-red-100'}></div>
 
-      {/* Activity Footer */}
       <div className="flex items-center gap-4 border-t border-slate-50 p-3">
-        <button className="flex items-center gap-1.5 text-sm transition-colors hover:text-rose-500">
-          <Heart className="h-4 w-4" />
-          <span>{props.post.likes_count}</span>
-        </button>
+        <Button
+          variant={'link'}
+          className={'text-foreground'}
+          onClick={() => toggleLikeMutation.mutate()}
+        >
+          {liked ? <FaHeart size={12} /> : <FaRegHeart size={12} />}
+          <span>{likesCount}</span>
+        </Button>
         <button className="hover:text-accent-blue flex items-center gap-1.5 text-sm transition-colors">
           <MessageCircle className="h-4 w-4" />
           <span>{props.post.comments_count}</span>

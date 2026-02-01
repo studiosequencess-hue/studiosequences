@@ -55,8 +55,8 @@ const PostsInfiniteList: React.FC<Props> = (props) => {
         'mx-auto flex w-full max-w-[600px] flex-col items-center gap-3 pb-6'
       }
     >
-      {posts.length == 0 && fetchPostsQuery.isPending && <Spinner />}
-      {posts.length == 0 && !fetchPostsQuery.isPending && (
+      {posts.length == 0 && fetchPostsQuery.isFetching && <Spinner />}
+      {posts.length == 0 && !fetchPostsQuery.isFetching && (
         <div className={'text-muted-foreground text-sm/none'}>No posts yet</div>
       )}
       {posts.map((post, postIndex) => {

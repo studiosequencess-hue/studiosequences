@@ -24,5 +24,7 @@ export enum POSTS_LIST_TYPE {
 export enum QUERY_KEYS {
   PERSONAL_POSTS = 'personal-posts',
   DISCOVER_POSTS = 'discover-posts',
+  POST = 'post',
   DELETE_POST = 'delete-post',
+  TOGGLE_LIKE_POST = 'toggle-like-post',
 }

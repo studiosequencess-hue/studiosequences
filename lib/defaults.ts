@@ -45,6 +45,7 @@ export const DEFAULT_USER_INFO: UserInfo = {
   twitter: '',
   linkedin: '',
   facebook: '',
+  about: '',
 }
 
 export const DEFAULT_USER: User = {

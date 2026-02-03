@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { Project, ProjectFile } from '@/lib/models'
+import { Project, ProjectFile, UserInfo } from '@/lib/models'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -36,7 +36,7 @@ export function getPathFromPublicUrl(
   return parts.length > 1 ? parts[1] : null
 }
 
-export function getProjectPreview(files: ProjectFile[]): string {
+export function getProjectPreviewURL(files: ProjectFile[]): string {
   if (files.length == 0) return '/public/images/placeholder.svg'
 
   const file = files[0]
@@ -63,4 +63,15 @@ export function getProjectMembersCount(project: Project): number {
   }
 
   return 0
+}
+
+export function getUserFullName(user: UserInfo): string {
+  return (
+    [user.first_name, user.last_name]
+      .filter((i) => i)
+      .join(' ')
+      .trim() ||
+    user.username ||
+    user.email
+  )
 }

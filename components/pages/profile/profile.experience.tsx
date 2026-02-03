@@ -358,15 +358,15 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
 
       {/* EDIT/ADD MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b bg-gray-50 px-6 py-4">
-              <h3 className="text-lg font-bold text-gray-800">
+        <div className="bg-background/50 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-background text-foreground flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-2xl">
+            <div className="flex items-center justify-between border-b px-6 py-4">
+              <h3 className="text-lg font-bold">
                 {editingExp ? 'Edit Experience' : 'Add Experience'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground cursor-pointer"
               >
                 <X />
               </button>
@@ -378,7 +378,7 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="mb-1 block text-xs font-bold text-gray-500 uppercase">
+                  <label className="mb-1 block text-xs font-bold uppercase">
                     Title
                   </label>
                   <input
@@ -392,7 +392,7 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="mb-1 block text-xs font-bold text-gray-500 uppercase">
+                  <label className="mb-1 block text-xs font-bold uppercase">
                     Company
                   </label>
                   <input
@@ -406,7 +406,7 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-gray-500 uppercase">
+                  <label className="mb-1 block text-xs font-bold uppercase">
                     Start Date
                   </label>
                   <input
@@ -420,7 +420,7 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-gray-500 uppercase">
+                  <label className="mb-1 block text-xs font-bold uppercase">
                     End Date
                   </label>
                   <input
@@ -434,7 +434,7 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="mb-1 block text-xs font-bold text-gray-500 uppercase">
+                  <label className="mb-1 block text-xs font-bold uppercase">
                     Skills (comma separated)
                   </label>
                   <input
@@ -447,7 +447,7 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="mb-1 block text-xs font-bold text-gray-500 uppercase">
+                  <label className="mb-1 block text-xs font-bold uppercase">
                     Description
                   </label>
                   <textarea
@@ -461,7 +461,7 @@ const ProfileExperience: React.FC<Props> = ({ editable }) => {
               </div>
             </form>
 
-            <div className="flex items-center justify-between border-t bg-gray-50 px-6 py-4">
+            <div className="flex items-center justify-between border-t px-6 py-4">
               {editingExp ? (
                 <button
                   type="button"

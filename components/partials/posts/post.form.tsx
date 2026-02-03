@@ -39,6 +39,7 @@ import { POST_VISIBILITY, POSTS_LIST_TYPE, QUERY_KEYS } from '@/lib/constants'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import UserAvatar from '@/components/partials/user-avatar'
 
 const MAX_CHARS = 500
 
@@ -362,10 +363,7 @@ const PostForm: React.FC<Props> = (props) => {
         )}
       >
         <div className="flex w-full gap-4 p-4">
-          <Avatar>
-            <AvatarImage src={user?.avatar || ''} />
-            <AvatarFallback className={'text-sm/none'}>P</AvatarFallback>
-          </Avatar>
+          <UserAvatar src={user?.avatar} />
 
           <div className="flex w-10/12 grow flex-col gap-2">
             <form id="post-form">

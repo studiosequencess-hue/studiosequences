@@ -30,6 +30,7 @@ import { FaHeart, FaRegHeart } from 'react-icons/fa6'
 import ReactPlayer from 'react-player'
 import { toast } from 'sonner'
 import PostEditDialog from '@/components/partials/posts/post.edit.dialog'
+import UserAvatar from '@/components/partials/user-avatar'
 
 type Props = {
   post: Post
@@ -145,10 +146,7 @@ const PostCard: React.FC<Props> = (props) => {
       <PostEditDialog open={editOpen} setOpen={setEditOpen} post={props.post} />
 
       <div className="flex items-start gap-3 p-4">
-        <Avatar>
-          <AvatarImage src={props.post.user?.avatar || ''} />
-          <AvatarFallback className={'text-sm/none'}>P</AvatarFallback>
-        </Avatar>
+        <UserAvatar src={props.post.user.avatar} />
 
         <div className={'flex grow items-start justify-between gap-2'}>
           <div className="grow">

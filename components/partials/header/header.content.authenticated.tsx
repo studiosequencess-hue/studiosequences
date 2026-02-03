@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import HeaderSearchbar from '@/components/partials/header/header.searchbar'
 import { Plus } from 'lucide-react'
 import { usePostsDialogStore } from '@/store/post.dialog.store'
+import UserAvatar from '@/components/partials/user-avatar'
 
 const HeaderContentAuthenticated = () => {
   const { user, setLoading, setUser } = useAuthStore()
@@ -178,10 +179,7 @@ const HeaderContentAuthenticated = () => {
           onOpenChange={setProfileDropdownOpen}
         >
           <DropdownMenuTrigger>
-            <Avatar>
-              <AvatarImage src={user?.avatar || ''} />
-              <AvatarFallback>{'P'}</AvatarFallback>
-            </Avatar>
+            <UserAvatar src={user?.avatar} />
           </DropdownMenuTrigger>
           <DropdownMenuContent side={'bottom'} align={'end'}>
             <DropdownMenuItem

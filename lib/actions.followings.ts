@@ -4,6 +4,43 @@ import { createClient } from '@/lib/supabase.server'
 import { ServerResponse, DBUser } from '@/lib/models'
 import { ServerRequest } from '@/lib/actions'
 
+type GetFollowingsProps = {
+  followerId: DBUser['id']
+}
+export async function getFollowings(props: GetFollowingsProps) {
+  return ServerRequest<DBUser[], GetFollowingsProps>(
+    'getFollowings',
+    async (): Promise<ServerResponse<DBUser[]>> => {
+      const supabase = await createClient()
+
+      const fetchResponse = await supabase
+        .from('follows')
+        .select(
+          `
+            *,
+            following:users!following_id(*)
+          `,
+        )
+        .eq('follower_id', props.followerId)
+
+      if (fetchResponse.error) {
+        return {
+          status: 'error',
+          message: fetchResponse.error.message,
+        }
+      }
+
+      const followings: DBUser[] = fetchResponse.data.map((f) => f.following)
+
+      return {
+        status: 'success',
+        message: 'Successfully fetched user followings.',
+        data: followings,
+      }
+    },
+  )
+}
+
 type GetFollowSuggestionsProps = {
   count: number
 }

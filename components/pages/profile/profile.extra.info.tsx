@@ -6,6 +6,7 @@ import ProfileSocials from '@/components/pages/profile/profile.socials'
 import ProfileOpenToWork from '@/components/pages/profile/profile.open.to.work'
 import { DBUser } from '@/lib/models'
 import { UserRole } from '@/lib/constants'
+import ProfileFollowings from '@/components/pages/profile/profile.followings'
 
 type Props = {
   user: DBUser
@@ -22,6 +23,11 @@ const ProfileExtraInfo: React.FC<Props> = ({ user, editable }) => {
       <ProfileLocation user={user} editable={editable} />
       <ProfileContact user={user} editable={editable} />
       <ProfileSocials user={user} editable={editable} />
+      <ProfileFollowings
+        user={user}
+        editable={editable}
+        rootClassName={'my-1.5'}
+      />
     </div>
   )
 }

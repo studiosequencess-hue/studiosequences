@@ -47,6 +47,10 @@ export type User = Pick<
 > &
   DBUser
 
+export type DBUserWithFollowStatus = DBUser & {
+  is_following: boolean
+}
+
 export type SignInEmailData = {
   email: string
   password: string

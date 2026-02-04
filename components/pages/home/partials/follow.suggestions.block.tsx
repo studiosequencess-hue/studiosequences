@@ -2,11 +2,11 @@
 
 import React from 'react'
 import { UserCheck, UserPlus } from 'lucide-react'
-import { DBUser } from '@/lib/models'
+import { DBUser, DBUserWithFollowStatus } from '@/lib/models'
 import { getUserFullName } from '@/lib/utils'
 import UserAvatar from '@/components/partials/user-avatar'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getFollowSuggestions, toggleFollow } from '@/lib/actions.subsciptions'
+import { getFollowSuggestions, toggleFollow } from '@/lib/actions.followings'
 import { FOLLOW_SUGGESTIONS_LIMIT } from '@/lib/defaults'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Spinner } from '@/components/ui/spinner'
@@ -14,10 +14,6 @@ import Loader from '@/components/partials/loader'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { QUERY_KEYS } from '@/lib/constants'
-
-type DBUserWithFollowStatus = DBUser & {
-  is_following: boolean
-}
 
 const FollowSuggestionsBlock: React.FC = () => {
   const queryClient = useQueryClient()

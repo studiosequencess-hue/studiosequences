@@ -39,4 +39,5 @@ export enum QUERY_KEYS {
   PERSONAL_COLLECTION_DELETE = 'personal-collection-delete',
   FOLLOW_STATUS = 'follow-status',
   FOLLOW_SUGGESTIONS = 'follow-suggestions',
+  FOLLOWINGS = 'follow-count-users',
 }

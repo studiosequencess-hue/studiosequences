@@ -1,9 +1,9 @@
 import React from 'react'
 import ProfilePortfolio from '@/components/pages/profile/profile.portfolio'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
 }
 
 const TabPortfolio: React.FC<Props> = ({ user }) => {

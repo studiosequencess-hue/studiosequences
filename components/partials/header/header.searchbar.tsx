@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
 import { searchAllUsers } from '@/lib/actions.user'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 import { toast } from 'sonner'
 import debounce from 'debounce'
 import {
@@ -32,7 +32,7 @@ import { useAuthStore } from '@/store'
 const HeaderSearchbar = () => {
   const { user } = useAuthStore()
   const [searchValue, setSearchValue] = useState('')
-  const [results, setResults] = React.useState<UserInfo[]>([])
+  const [results, setResults] = React.useState<DBUser[]>([])
   const [searching, setSearching] = React.useState<boolean>(false)
   const searchInputRef = React.useRef<HTMLInputElement>(null)
   const router = useRouter()

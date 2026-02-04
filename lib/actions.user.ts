@@ -1,12 +1,12 @@
 'use server'
 
 import { createClient } from '@/lib/supabase.server'
-import { ServerResponse, User, UserInfo } from '@/lib/models'
+import { ServerResponse, User, DBUser } from '@/lib/models'
 import { DEFAULT_USER_INFO } from '@/lib/defaults'
 import deepmerge from 'deepmerge'
 import { UserRole } from '@/lib/constants'
 
-export async function getOnlyCompanies(): Promise<ServerResponse<UserInfo[]>> {
+export async function getOnlyCompanies(): Promise<ServerResponse<DBUser[]>> {
   try {
     const supabase = await createClient()
     const fetchResponse = await supabase
@@ -37,7 +37,7 @@ export async function getOnlyCompanies(): Promise<ServerResponse<UserInfo[]>> {
 
 export async function getUserById(
   id: User['id'],
-): Promise<ServerResponse<UserInfo>> {
+): Promise<ServerResponse<DBUser>> {
   try {
     const supabase = await createClient()
     const { data, error } = await supabase
@@ -68,7 +68,7 @@ export async function getUserById(
 
 export async function getUserByUsername(
   username: User['username'],
-): Promise<ServerResponse<UserInfo>> {
+): Promise<ServerResponse<DBUser>> {
   try {
     const supabase = await createClient()
     const { data, error } = await supabase
@@ -99,7 +99,7 @@ export async function getUserByUsername(
 
 export async function searchAllUsers(
   value: string,
-): Promise<ServerResponse<UserInfo[]>> {
+): Promise<ServerResponse<DBUser[]>> {
   try {
     const supabase = await createClient()
     const { data, count, error } = await supabase
@@ -133,7 +133,7 @@ export async function searchAllUsers(
 
 export async function searchOnlyUsers(
   value: string,
-): Promise<ServerResponse<UserInfo[]>> {
+): Promise<ServerResponse<DBUser[]>> {
   try {
     const supabase = await createClient()
     const { data, count, error } = await supabase
@@ -164,7 +164,7 @@ export async function searchOnlyUsers(
   }
 }
 
-type UpdateUserInfoProps = Partial<UserInfo> & {
+type UpdateUserInfoProps = Partial<DBUser> & {
   user_id: User['id']
 }
 export async function updateUserInfo(

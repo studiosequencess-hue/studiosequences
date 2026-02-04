@@ -35,7 +35,7 @@ const UpcomingEventsBlock: React.FC = () => {
   ]
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white font-sans shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="h-full overflow-hidden rounded-lg border border-zinc-200 bg-white font-sans shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="p-2">
         {events.map((event) => (
           <div

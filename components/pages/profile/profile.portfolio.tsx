@@ -6,7 +6,7 @@ import { getAllProjectsByUserId } from '@/lib/actions.projects'
 import { toast } from 'sonner'
 import Loader from '@/components/partials/loader'
 import { useProjectsStore } from '@/store'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 
 type Pagination = {
   pageSize: number
@@ -15,7 +15,7 @@ type Pagination = {
 }
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

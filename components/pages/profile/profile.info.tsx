@@ -1,5 +1,5 @@
 import React from 'react'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 import { cn } from '@/lib/utils'
 import { HiBadgeCheck, HiOutlineBadgeCheck } from 'react-icons/hi'
 import HoverCard from '@/components/partials/hover-card'
@@ -12,7 +12,7 @@ import ProfileExtraInfo from '@/components/pages/profile/profile.extra.info'
 import { UserRole } from '@/lib/constants'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

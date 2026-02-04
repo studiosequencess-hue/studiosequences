@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { Search, MapPin, Building2 } from 'lucide-react'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 import { getOnlyCompanies } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import Loader from '@/components/partials/loader'
@@ -11,7 +11,7 @@ import Placeholder from '@/public/images/placeholder.svg'
 import Link from 'next/link'
 
 const CompaniesPage = () => {
-  const [companies, setCompanies] = React.useState<UserInfo[]>([])
+  const [companies, setCompanies] = React.useState<DBUser[]>([])
   const [companiesLoading, setCompaniesLoading] = React.useState<boolean>(true)
   const [searchQuery, setSearchQuery] = React.useState<string>('')
   const [occupationType, setOccupationType] = React.useState<string>('All')
@@ -108,7 +108,7 @@ const CompaniesPage = () => {
 }
 
 interface CompanyCardProps {
-  company: UserInfo
+  company: DBUser
 }
 
 function CompanyCard({ company }: CompanyCardProps) {

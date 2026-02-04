@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { User, UserInfo } from '@/lib/models'
+import { User, DBUser } from '@/lib/models'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -27,7 +27,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

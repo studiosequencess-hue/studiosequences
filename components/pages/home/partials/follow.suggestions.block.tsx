@@ -1,93 +1,157 @@
 'use client'
 
-import React, { useState, ReactNode } from 'react'
-import {
-  UserPlus,
-  UserCheck,
-  ExternalLink,
-  Palette,
-  Brush,
-  Camera,
-  PenTool,
-} from 'lucide-react'
-import { UserInfo } from '@/lib/models'
+import React from 'react'
+import { UserCheck, UserPlus } from 'lucide-react'
+import { DBUser } from '@/lib/models'
 import { getUserFullName } from '@/lib/utils'
+import UserAvatar from '@/components/partials/user-avatar'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { getFollowSuggestions, toggleFollow } from '@/lib/actions.subsciptions'
+import { FOLLOW_SUGGESTIONS_LIMIT } from '@/lib/defaults'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Spinner } from '@/components/ui/spinner'
+import Loader from '@/components/partials/loader'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { QUERY_KEYS } from '@/lib/constants'
+
+type DBUserWithFollowStatus = DBUser & {
+  is_following: boolean
+}
 
 const FollowSuggestionsBlock: React.FC = () => {
-  const [suggestions, setSuggestions] = useState<UserInfo[]>([])
+  const queryClient = useQueryClient()
 
-  const toggleFollow = (id: number): void => {
-    // setSuggestions((prev) =>
-    //   prev.map((item) =>
-    //     item.id === id ? { ...item, isFollowing: !item.isFollowing } : item,
-    //   ),
-    // )
+  const suggestionsQuery = useQuery<DBUserWithFollowStatus[]>({
+    queryKey: [QUERY_KEYS.FOLLOW_SUGGESTIONS],
+    queryFn: async () => {
+      const response = await getFollowSuggestions({
+        count: FOLLOW_SUGGESTIONS_LIMIT,
+      })
+
+      if (response.status == 'error') {
+        return []
+      } else {
+        return (response.data || []).map((i) => ({
+          ...i,
+          is_following: false,
+        }))
+      }
+    },
+  })
+
+  const toggleFollowMutation = useMutation({
+    mutationFn: async ({ followingId }: { followingId: DBUser['id'] }) => {
+      const response = await toggleFollow({ followingId: followingId })
+      return response.status == 'success'
+    },
+    onMutate: async ({ followingId }: { followingId: DBUser['id'] }) => {
+      await queryClient.cancelQueries({
+        queryKey: [QUERY_KEYS.FOLLOW_SUGGESTIONS],
+      })
+
+      const previousSuggestions = queryClient.getQueryData([
+        QUERY_KEYS.FOLLOW_SUGGESTIONS,
+      ])
+
+      queryClient.setQueryData(
+        [QUERY_KEYS.FOLLOW_SUGGESTIONS],
+        (old: DBUserWithFollowStatus[]) => {
+          return old?.map((user) =>
+            user.id === followingId
+              ? { ...user, is_following: !user.is_following }
+              : user,
+          )
+        },
+      )
+
+      return { previousSuggestions }
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.FOLLOW_STATUS, variables.followingId],
+        context?.previousSuggestions,
+      )
+    },
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.FOLLOW_STATUS, variables.followingId],
+      })
+    },
+  })
+
+  const suggestions: DBUserWithFollowStatus[] = suggestionsQuery.data || []
+
+  if (suggestionsQuery.isLoading) {
+    return <Loader wrapperClassName={'h-full w-full'} />
+  }
+
+  if (suggestions.length == 0) {
+    return (
+      <div
+        className={
+          'text-muted-foreground flex h-full w-full items-center justify-center text-sm/none'
+        }
+      >
+        No suggestions
+      </div>
+    )
   }
 
   return (
-    <div className="max-w-sm overflow-hidden rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div
-        className="divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-800"
-        style={{ height: '200px' }}
-      >
-        {suggestions.map((user) => (
-          <div
-            key={user.id}
-            className="group flex h-[80px] items-center justify-between p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-          >
-            <div className="flex items-center gap-3">
-              {/* Avatar with status ring */}
-              <div className="relative flex-shrink-0">
-                <img
-                  src={user.avatar}
-                  alt={getUserFullName(user)}
-                  className="h-11 w-11 rounded-full object-cover grayscale-[30%] transition-all duration-300 group-hover:grayscale-0"
-                />
-                <div className="absolute -right-1 -bottom-1 rounded-full border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900">
-                  <div className="text-zinc-500 dark:text-zinc-400">
-                    {user.icon}
-                  </div>
-                </div>
-              </div>
+    <ScrollArea className={'h-full w-full'}>
+      {suggestions.map((user) => (
+        <Link
+          key={user.id}
+          href={`/users/${user.id}`}
+          className="group flex cursor-pointer items-center justify-between px-2 py-3 pr-3 transition-colors hover:bg-gray-100"
+        >
+          <div className="flex items-start gap-3">
+            <UserAvatar src={user.avatar} />
 
-              {/* Info */}
-              <div className="min-w-0">
-                <h3 className="flex items-center gap-1 truncate text-sm leading-tight font-bold text-zinc-900 dark:text-zinc-100">
-                  {user.name}
-                  <ExternalLink
-                    size={12}
-                    className="flex-shrink-0 cursor-pointer opacity-0 transition-opacity group-hover:opacity-40"
-                  />
-                </h3>
-                <p className="mb-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">
-                  {user.specialty}
-                </p>
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400 uppercase dark:bg-zinc-800 dark:text-zinc-500">
-                  {user.works} Works
+            <div className="flex flex-col gap-0.5">
+              <h3 className="flex items-center gap-1">
+                <span className={'w-28 truncate text-sm/none font-bold'}>
+                  {getUserFullName(user)}
                 </span>
-              </div>
-            </div>
-
-            {/* Follow Button */}
-            <button
-              onClick={() => toggleFollow(user.id)}
-              className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
-                user.isFollowing
-                  ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
-                  : 'bg-zinc-900 text-white hover:scale-105 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900'
-              }`}
-              aria-label={user.isFollowing ? 'Unfollow' : 'Follow'}
-            >
-              {user.isFollowing ? (
-                <UserCheck size={16} />
-              ) : (
-                <UserPlus size={16} />
+              </h3>
+              <p className="text-muted-foreground w-28 truncate text-xs/none">
+                @{user.username}
+              </p>
+              {user.occupation && (
+                <p className="text-muted-foreground w-28 truncate text-xs/none">
+                  {user.occupation}
+                </p>
               )}
-            </button>
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
+
+          <Button
+            variant={'ghost'}
+            disabled={
+              toggleFollowMutation.isPending &&
+              toggleFollowMutation.variables.followingId == user.id
+            }
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-gray-200`}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+
+              toggleFollowMutation.mutate({ followingId: user.id })
+            }}
+          >
+            {toggleFollowMutation.isPending &&
+            toggleFollowMutation.variables.followingId == user.id ? (
+              <Spinner />
+            ) : user.is_following ? (
+              <UserCheck size={16} />
+            ) : (
+              <UserPlus size={16} />
+            )}
+          </Button>
+        </Link>
+      ))}
+    </ScrollArea>
   )
 }
 

@@ -9,7 +9,7 @@ import {
   SignInUsernameData,
   SignUpData,
   User,
-  UserInfo,
+  DBUser,
 } from '@/lib/models'
 import { DEFAULT_USER, DEFAULT_USER_INFO } from '@/lib/defaults'
 import lodash from 'lodash'
@@ -273,8 +273,8 @@ export async function resetPassword(
 }
 
 export async function saveUserInfo(
-  userInfo: UserInfo,
-): Promise<ServerResponse<UserInfo>> {
+  userInfo: DBUser,
+): Promise<ServerResponse<DBUser>> {
   try {
     const supabase = await createClient()
 

@@ -31,7 +31,7 @@ export type ServerResponse<T> = ServerResponseSuccess<T> | ServerResponseError
 export type Tables<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Row']
 
-export type UserInfo = Tables<'users'>
+export type DBUser = Tables<'users'>
 
 export type User = Pick<
   SupabaseUser,
@@ -45,7 +45,7 @@ export type User = Pick<
   | 'email_confirmed_at'
   | 'last_sign_in_at'
 > &
-  UserInfo
+  DBUser
 
 export type SignInEmailData = {
   email: string
@@ -92,7 +92,7 @@ export type Project = Tables<'projects'> & {
 export type ProjectFile = Tables<'project_files'>
 
 export type ProjectMember = Tables<'project_members'> & {
-  user?: UserInfo | null
+  user?: DBUser | null
 }
 
 type ProjectBaseMedia = Pick<
@@ -102,7 +102,7 @@ type ProjectBaseMedia = Pick<
 export type ProjectFormFile = ProjectBaseMedia & (FileMedia | URLMedia)
 
 export type Post = Tables<'posts'> & {
-  user: UserInfo
+  user: DBUser
   likes?: PostLike[]
   comments?: PostComment[]
   files?: PostFile[]

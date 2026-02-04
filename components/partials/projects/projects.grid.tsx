@@ -14,11 +14,11 @@ import {
 import { cn, getProjectFilesCount, getProjectMembersCount } from '@/lib/utils'
 import { FaPlus } from 'react-icons/fa6'
 import ProjectsGridPreviewBackground from '@/components/partials/projects/projects.grid.preview.background'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 import { UserRole } from '@/lib/constants'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

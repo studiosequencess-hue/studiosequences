@@ -8,22 +8,29 @@ import TabPosts from '@/components/pages/home/sections/tab.posts'
 import TabPortfolio from '@/components/pages/home/sections/tab.portfolio'
 import TabBookmarks from '@/components/pages/home/sections/tab.bookmarks'
 import TabAbout from '@/components/pages/home/sections/tab.about'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
+import LeftSidebarBlock from '@/components/partials/authenticated-left-sidebar/left-sidebar-block'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
 }
 
 const HomeContentAuthenticated: React.FC<Props> = ({ user }) => {
   return (
     <div className={'grid h-full w-full grid-cols-[250px_1fr]'}>
-      <div className={'bg-foreground/10 flex flex-col gap-2 p-4'}>
-        <FollowSuggestionsBlock />
-        <div className={'bg-background my-4 h-1 w-full rounded-full'} />
-        <LatestNewsBlock />
-        <div className={'bg-background my-4 h-1 w-full rounded-full'} />
-        <UpcomingEventsBlock />
-        <div className={'bg-background my-4 h-1 w-full rounded-full'} />
+      <div className={'bg-foreground/10 flex flex-col gap-4 p-4'}>
+        <LeftSidebarBlock>
+          <FollowSuggestionsBlock />
+        </LeftSidebarBlock>
+        <div className={'bg-background h-1 w-full rounded-full'} />
+        <LeftSidebarBlock>
+          <LatestNewsBlock />
+        </LeftSidebarBlock>
+        <div className={'bg-background h-1 w-full rounded-full'} />
+        <LeftSidebarBlock>
+          <UpcomingEventsBlock />
+        </LeftSidebarBlock>
+        <div className={'bg-background h-1 w-full rounded-full'} />
         <div
           className={
             '*:hover:text-foreground/80 mb-8 flex flex-wrap gap-1.5 text-xs/none *:cursor-pointer'

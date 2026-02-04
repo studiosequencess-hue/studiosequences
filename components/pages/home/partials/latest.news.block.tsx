@@ -38,7 +38,7 @@ const LatestNewsBlock: React.FC = () => {
   ]
 
   return (
-    <div className="mx-auto max-w-sm overflow-hidden rounded-lg border border-zinc-200 bg-white font-sans shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="mx-auto h-full max-w-sm overflow-hidden rounded-lg border border-zinc-200 bg-white font-sans shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="p-2">
         {news.map((item) => (
           <div

@@ -24,10 +24,10 @@ import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { Textarea } from '@/components/ui/textarea'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

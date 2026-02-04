@@ -25,10 +25,10 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from 'react-icons/fa6'
 import Link from 'next/link'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

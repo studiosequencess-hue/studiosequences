@@ -11,10 +11,10 @@ import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

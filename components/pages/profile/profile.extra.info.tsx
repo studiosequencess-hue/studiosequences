@@ -4,11 +4,11 @@ import ProfileContact from '@/components/pages/profile/profile.contact'
 import ProfileOccupation from '@/components/pages/profile/profile.occupation'
 import ProfileSocials from '@/components/pages/profile/profile.socials'
 import ProfileOpenToWork from '@/components/pages/profile/profile.open.to.work'
-import { UserInfo } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 import { UserRole } from '@/lib/constants'
 
 type Props = {
-  user: UserInfo
+  user: DBUser
   editable: boolean
 }
 

@@ -1,4 +1,4 @@
-import { ProjectMember, User, UserInfo } from '@/lib/models'
+import { ProjectMember, User, DBUser } from '@/lib/models'
 import { UserRole } from '@/lib/constants'
 
 export const PLACEHOLDER_IMAGES: string[] = [
@@ -24,7 +24,7 @@ export const PLACEHOLDER_IMAGES: string[] = [
   'https://images.unsplash.com/photo-1764416755978-8031e644fd34?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 ]
 
-export const DEFAULT_USER_INFO: UserInfo = {
+export const DEFAULT_USER_INFO: DBUser = {
   id: '',
   role: UserRole.User.toString(),
   avatar: '',
@@ -64,3 +64,5 @@ export const DEFAULT_PROJECT_MEMBER: ProjectMember = {
 }
 
 export const POSTS_PER_PAGE = 10
+
+export const FOLLOW_SUGGESTIONS_LIMIT = 10

@@ -79,6 +79,39 @@ export type Database = {
           },
         ]
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'follows_follower_id_fkey'
+            columns: ['follower_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'follows_following_id_fkey'
+            columns: ['following_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       post_comments: {
         Row: {
           content: string | null
@@ -536,9 +569,77 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_random_unfollowed_users: {
+        Args: { limit_count: number }
+        Returns: {
+          about: string | null
+          avatar: string | null
+          background_bottom: string | null
+          background_top: string | null
+          company_name: string | null
+          contact: string | null
+          email: string
+          facebook: string | null
+          first_name: string | null
+          id: string
+          instagram: string | null
+          is_open_to_work: boolean
+          is_verified: boolean | null
+          last_name: string | null
+          linkedin: string | null
+          location: string | null
+          occupation: string | null
+          pronoun: string | null
+          role: string
+          twitter: string | null
+          username: string
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'users'
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_random_users: {
+        Args: { limit_count: number }
+        Returns: {
+          about: string | null
+          avatar: string | null
+          background_bottom: string | null
+          background_top: string | null
+          company_name: string | null
+          contact: string | null
+          email: string
+          facebook: string | null
+          first_name: string | null
+          id: string
+          instagram: string | null
+          is_open_to_work: boolean
+          is_verified: boolean | null
+          last_name: string | null
+          linkedin: string | null
+          location: string | null
+          occupation: string | null
+          pronoun: string | null
+          role: string
+          twitter: string | null
+          username: string
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'users'
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       handle_post_like: {
         Args: { p_is_liked: boolean; p_post_id: number; p_user_id: string }
         Returns: undefined
+      }
+      toggle_follow: {
+        Args: { target_follower_id: string; target_following_id: string }
+        Returns: boolean
       }
     }
     Enums: {

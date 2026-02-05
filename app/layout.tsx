@@ -6,6 +6,7 @@ import Footer from '@/components/footer'
 import { Toaster } from '@/components/ui/sonner'
 import ProjectsDialogs from '@/components/partials/projects/projects.dialogs'
 import Providers from '@/components/providers'
+import CompanyEventsDialogs from '@/components/partials/events/company.events.dialogs'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -34,6 +35,7 @@ export default function RootLayout({
 
           <Toaster />
           <ProjectsDialogs />
+          <CompanyEventsDialogs />
         </Providers>
       </body>
     </html>

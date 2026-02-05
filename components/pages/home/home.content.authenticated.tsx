@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import StoriesSlider from '@/components/pages/home/partials/stories.slider'
@@ -10,12 +12,18 @@ import TabBookmarks from '@/components/pages/home/sections/tab.bookmarks'
 import TabAbout from '@/components/pages/home/sections/tab.about'
 import { DBUser } from '@/lib/models'
 import LeftSidebarBlock from '@/components/partials/authenticated-left-sidebar/left-sidebar-block'
+import { UserRole } from '@/lib/constants'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+import { useCompanyEventsStore } from '@/store'
 
 type Props = {
   user: DBUser
 }
 
 const HomeContentAuthenticated: React.FC<Props> = ({ user }) => {
+  const { setFormOpen: companyEventFormOpen } = useCompanyEventsStore()
+
   return (
     <div className={'grid h-full w-full grid-cols-[250px_1fr]'}>
       <div className={'bg-foreground/10 flex flex-col gap-4 p-4'}>
@@ -27,6 +35,16 @@ const HomeContentAuthenticated: React.FC<Props> = ({ user }) => {
           <LatestNewsBlock />
         </LeftSidebarBlock>
         <div className={'bg-background h-1 w-full rounded-full'} />
+        {user && user.role != UserRole.User.toString() && (
+          <Button
+            size={'sm'}
+            variant={'accent'}
+            onClick={() => companyEventFormOpen(true)}
+          >
+            <Plus />
+            <span>Add event</span>
+          </Button>
+        )}
         <LeftSidebarBlock>
           <UpcomingEventsBlock />
         </LeftSidebarBlock>

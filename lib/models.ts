@@ -127,3 +127,11 @@ export type Collection = Tables<'collections'> & {
   projects: Project[]
 }
 export type CollectionProject = Tables<'collection_projects'>
+
+export type CompanyEvent = Tables<'events'> & {
+  user: DBUser | null
+}
+export type FormCompanyEvent = Omit<
+  CompanyEvent,
+  'id' | 'created_at' | 'user_id' | 'user'
+>

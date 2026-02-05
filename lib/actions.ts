@@ -2,7 +2,7 @@ import { ServerResponse } from '@/lib/models'
 
 type ApiRequest<T, K> = (...args: K[]) => Promise<ServerResponse<T>>
 
-export async function ServerRequest<T, K>(
+export async function ServerRequest<T, K = void>(
   title: string,
   request: ApiRequest<T, K>,
   error?: string,

@@ -2,7 +2,11 @@
 
 import React from 'react'
 import { signOut } from '@/lib/actions.auth'
-import { useAuthStore, useProjectsDialogStore } from '@/store'
+import {
+  useAuthStore,
+  useCompanyEventsStore,
+  useProjectsDialogStore,
+} from '@/store'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -26,11 +30,13 @@ import HeaderSearchbar from '@/components/partials/header/header.searchbar'
 import { Plus } from 'lucide-react'
 import { usePostsDialogStore } from '@/store/post.dialog.store'
 import UserAvatar from '@/components/partials/user-avatar'
+import { UserRole } from '@/lib/constants'
 
 const HeaderContentAuthenticated = () => {
   const { user, setLoading, setUser } = useAuthStore()
   const { show: projectDialogShow } = useProjectsDialogStore()
   const { show: postDialogShow } = usePostsDialogStore()
+  const { setFormOpen: companyEventFormOpen } = useCompanyEventsStore()
   const router = useRouter()
   const [profileDropdownOpen, setProfileDropdownOpen] = React.useState(false)
   const [newDropdownOpen, setNewDropdownOpen] = React.useState(false)
@@ -165,6 +171,14 @@ const HeaderContentAuthenticated = () => {
             >
               New post
             </DropdownMenuItem>
+            {user && user.role != UserRole.User && (
+              <DropdownMenuItem
+                disabled={!user}
+                onSelect={() => companyEventFormOpen(true)}
+              >
+                New event
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               disabled={!user}
               onSelect={() => user && projectDialogShow(null, true)}

@@ -79,6 +79,53 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          background_url: string | null
+          created_at: string
+          description: string
+          end_date: string
+          id: number
+          location: string
+          start_date: string
+          tag: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          background_url?: string | null
+          created_at?: string
+          description: string
+          end_date: string
+          id?: number
+          location: string
+          start_date: string
+          tag: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          background_url?: string | null
+          created_at?: string
+          description?: string
+          end_date?: string
+          id?: number
+          location?: string
+          start_date?: string
+          tag?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'events_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -449,6 +496,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'projects_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      stories: {
+        Row: {
+          created_at: string
+          expries_at: string
+          id: number
+          type: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expries_at: string
+          id?: number
+          type: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expries_at?: string
+          id?: number
+          type?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'stories_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      story_views: {
+        Row: {
+          created_at: string
+          story_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          story_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          story_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'story_views_story_id_fkey'
+            columns: ['story_id']
+            isOneToOne: false
+            referencedRelation: 'stories'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'story_views_user_id_fkey'
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'users'

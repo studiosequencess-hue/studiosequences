@@ -1,41 +1,46 @@
-import React from 'react'
-import { Calendar, MapPin } from 'lucide-react'
+'use client'
 
-interface ArtEvent {
-  id: number
-  title: string
-  date: string
-  location: string
-  type: string
-}
+import React from 'react'
+import { Calendar, MapPin, Plus } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { CompanyEvent } from '@/lib/models'
+import { QUERY_KEYS } from '@/lib/constants'
+import { getEvents } from '@/lib/actions.events'
+import { format } from 'date-fns'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import Loader from '@/components/partials/loader'
+import { useAuthStore } from '@/store'
 
 const UpcomingEventsBlock: React.FC = () => {
-  const events: ArtEvent[] = [
-    {
-      id: 1,
-      title: 'Neon Surrealism Workshop',
-      date: 'Jan 15, 2026',
-      location: 'London, UK',
-      type: 'Masterclass',
+  const eventsQuery = useQuery<CompanyEvent[]>({
+    queryKey: [QUERY_KEYS.EVENTS],
+    queryFn: async () => {
+      const response = await getEvents()
+
+      return response.status == 'success' ? response.data || [] : []
     },
-    {
-      id: 2,
-      title: 'Contemporary Art Fair',
-      date: 'Feb 02, 2026',
-      location: 'New York, US',
-      type: 'Exhibition',
-    },
-    {
-      id: 3,
-      title: 'Digital Sculpture Summit',
-      date: 'Mar 10, 2026',
-      location: 'Berlin, DE',
-      type: 'Conference',
-    },
-  ]
+  })
+
+  const events = eventsQuery.data || []
+
+  if (eventsQuery.isLoading) {
+    return <Loader wrapperClassName={'h-full w-full'} />
+  }
+
+  if (events.length == 0) {
+    return (
+      <div
+        className={
+          'text-muted-foreground flex h-full w-full items-center justify-center text-sm/none'
+        }
+      >
+        No events
+      </div>
+    )
+  }
 
   return (
-    <div className="h-full overflow-hidden rounded-lg border border-zinc-200 bg-white font-sans shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <ScrollArea className="h-full w-full">
       <div className="p-2">
         {events.map((event) => (
           <div
@@ -44,11 +49,11 @@ const UpcomingEventsBlock: React.FC = () => {
           >
             <div className="flex items-start justify-between">
               <span className="text-[9px] font-bold tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
-                {event.type}
+                {event.tag}
               </span>
               <div className="flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400">
                 <Calendar size={10} />
-                {event.date}
+                {format(event.start_time, 'MMMM Do, YYYY')}
               </div>
             </div>
             <h3 className="text-xs leading-tight font-semibold text-zinc-800 transition-colors group-hover:text-black dark:text-zinc-200 dark:group-hover:text-white">
@@ -61,7 +66,7 @@ const UpcomingEventsBlock: React.FC = () => {
           </div>
         ))}
       </div>
-    </div>
+    </ScrollArea>
   )
 }
 

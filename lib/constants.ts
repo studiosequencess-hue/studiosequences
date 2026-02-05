@@ -40,4 +40,6 @@ export enum QUERY_KEYS {
   FOLLOW_STATUS = 'follow-status',
   FOLLOW_SUGGESTIONS = 'follow-suggestions',
   FOLLOWINGS = 'follow-count-users',
+  EVENTS = 'events',
+  EVENTS_CREATE = 'events-create',
 }

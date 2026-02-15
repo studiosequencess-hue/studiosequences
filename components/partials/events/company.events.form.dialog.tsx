@@ -71,6 +71,7 @@ const CompanyEventsFormDialog = () => {
   })
   const [startDateOpen, setStartDateOpen] = React.useState<boolean>(false)
   const [endDateOpen, setEndDateOpen] = React.useState<boolean>(false)
+  const [backgroundFile, setBackgroundFile] = React.useState<File | null>(null)
 
   const createEventMutation = useMutation({
     mutationKey: [QUERY_KEYS.EVENTS_CREATE],
@@ -88,11 +89,12 @@ const CompanyEventsFormDialog = () => {
   })
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log(data)
-    // createEventMutation.mutate({
-    //   ...data,
-    //   background_url: '',
-    // })
+    createEventMutation.mutate({
+      ...data,
+      background_url: '',
+      start_date: data.start_date.toISOString(),
+      end_date: data.end_date.toISOString(),
+    })
   }
 
   return (
@@ -138,14 +140,14 @@ const CompanyEventsFormDialog = () => {
                         {...field}
                         id="event-form-description"
                         placeholder="Enter description"
-                        className="min-h12 resize-none"
+                        className="min-h-16 resize-none"
                         aria-invalid={fieldState.invalid}
                       />
                       <InputGroupAddon
                         align="block-end"
-                        className={'bg-background/5 px-3 py-2'}
+                        className={'bg-background/5 w-full px-3 py-2'}
                       >
-                        <InputGroupText className="tabular-nums">
+                        <InputGroupText className="w-full text-right text-xs/none tabular-nums">
                           {field.value.length}/{MAX_DESCRIPTION} characters
                         </InputGroupText>
                       </InputGroupAddon>

@@ -8,7 +8,7 @@ import { getPathFromPublicUrl } from '@/lib/utils'
 const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '1024 * 1024 * 5')
 
 type UploadFileProps = {
-  user_id: string
+  id: string
   bucket: StorageBucketType
   file: File
   path: StoragePath
@@ -29,7 +29,10 @@ export async function uploadFile(
       }
     }
 
-    if (currentUserResponse.data.user.id != props.user_id) {
+    if (
+      props.path == StoragePath.User &&
+      currentUserResponse.data.user.id != props.id
+    ) {
       return {
         status: 'error',
         message: 'Invalid access permission. Please try again later.',
@@ -55,10 +58,7 @@ export async function uploadFile(
     const uploadResponse = await supabase.storage
       .from(props.bucket)
       .upload(
-        `${props.path}/${props.basename}.${ext}`.replace(
-          '{id}',
-          currentUserResponse.data.user.id,
-        ),
+        `${props.path.replace('{id}', props.id)}/${props.basename}.${ext}`,
         props.file,
         {
           upsert: true,
@@ -82,7 +82,7 @@ export async function uploadFile(
       data: publicUrlResponse.data.publicUrl,
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('uploadFile', e)
     return {
       status: 'error',
       message: 'Failed to fetch user. Please try again later.',

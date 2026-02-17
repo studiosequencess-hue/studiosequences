@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import {
   Sheet,
   SheetClose,
@@ -9,7 +10,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet'
 import { useCompanyEventsStore } from '@/store'
 import { Button } from '@/components/ui/button'
@@ -19,7 +19,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -39,12 +38,20 @@ import {
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
-import { createEvent } from '@/lib/actions.events'
+import { createEvent, updateEvent } from '@/lib/actions.events'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { QUERY_KEYS } from '@/lib/constants'
-import { CompanyEvent, FormCompanyEvent } from '@/lib/models'
+import { QUERY_KEYS, StorageBucketType, StoragePath } from '@/lib/constants'
+import { FormCompanyEvent } from '@/lib/models'
+import InputFile from '@/components/partials/input-file'
+import Placeholder from '@/public/images/placeholder.svg'
+import { uploadFile } from '@/lib/actions.storage'
+import { toast } from 'sonner'
+import { Spinner } from '@/components/ui/spinner'
 
 const MAX_DESCRIPTION = 300
+const MAX_FILE_SIZE = parseInt(
+  process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '1024 * 1024 * 5',
+)
 
 const formSchema = z.object({
   title: z.string().min(1, 'Too short').max(255, 'Too long'),
@@ -71,17 +78,60 @@ const CompanyEventsFormDialog = () => {
   })
   const [startDateOpen, setStartDateOpen] = React.useState<boolean>(false)
   const [endDateOpen, setEndDateOpen] = React.useState<boolean>(false)
+  const backgroundFileInputRef = React.useRef<HTMLInputElement>(null)
   const [backgroundFile, setBackgroundFile] = React.useState<File | null>(null)
 
   const createEventMutation = useMutation({
     mutationKey: [QUERY_KEYS.EVENTS_CREATE],
     mutationFn: async (data: FormCompanyEvent) => {
-      const response = await createEvent({ event: data })
+      if (backgroundFile && backgroundFile.size > MAX_FILE_SIZE) {
+        return toast.error(
+          `File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit.`,
+        )
+      }
 
-      return response.status == 'success'
+      const eventResponse = await createEvent({ event: data })
+
+      if (
+        eventResponse.status == 'success' &&
+        eventResponse.data &&
+        backgroundFile != null
+      ) {
+        const uploadResponse = await uploadFile({
+          bucket: StorageBucketType.Events,
+          file: backgroundFile,
+          path: StoragePath.Events,
+          basename: 'event',
+          id: eventResponse.data.id.toString(),
+        })
+
+        if (uploadResponse.status == 'success') {
+          const updateInfoResponse = await updateEvent({
+            event_id: eventResponse.data.id,
+            event: {
+              background_url: uploadResponse.data,
+            },
+          })
+
+          if (updateInfoResponse.status == 'error') {
+            toast.error(updateInfoResponse.message)
+          } else {
+            toast.success(updateInfoResponse.message)
+          }
+        } else {
+          toast.error(uploadResponse.message)
+        }
+      } else {
+        toast.error(eventResponse.message)
+      }
+
+      return eventResponse.status == 'success'
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.EVENTS] })
+      form.reset()
+      setBackgroundFile(null)
+      setFormOpen(false)
     },
     onError: (err) => {
       console.error('Failed to create event:', err.message)
@@ -104,10 +154,33 @@ const CompanyEventsFormDialog = () => {
           <SheetTitle>New Event</SheetTitle>
           <SheetDescription className={'hidden'} />
         </SheetHeader>
-
-        <ScrollArea className={'h-[calc(100vh-200px)] w-full p-3'}>
+        <ScrollArea className={'h-[calc(100vh-125px)] w-full p-3'}>
           <form id="event-form">
             <FieldGroup>
+              <div className="relative h-40 w-full">
+                <Image
+                  src={
+                    backgroundFile
+                      ? URL.createObjectURL(backgroundFile)
+                      : Placeholder
+                  }
+                  alt="event-image"
+                  fill
+                  className="z-10 cursor-pointer object-cover"
+                  onClick={() => {
+                    backgroundFileInputRef.current?.click()
+                  }}
+                />
+                <InputFile
+                  ref={backgroundFileInputRef}
+                  accept={'image/*'}
+                  disabled={createEventMutation.isPending}
+                  className={'hidden'}
+                  onFileUpload={(file) => {
+                    setBackgroundFile(file)
+                  }}
+                />
+              </div>
               <Controller
                 name="title"
                 control={form.control}
@@ -384,9 +457,10 @@ const CompanyEventsFormDialog = () => {
           <Button
             size={'sm'}
             variant={'secondary'}
+            disabled={createEventMutation.isPending}
             onClick={form.handleSubmit(handleSubmit)}
           >
-            Add event
+            {createEventMutation.isPending ? <Spinner /> : 'Add event'}
           </Button>
           <SheetClose asChild>
             <Button size={'sm'} variant={'outline'}>

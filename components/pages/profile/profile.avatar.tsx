@@ -32,7 +32,7 @@ const ProfileAvatar: React.FC<Props> = ({ editable }) => {
       bucket: StorageBucketType.Images,
       file: file,
       path: StoragePath.User,
-      user_id: user.id,
+      id: user.id,
       basename: 'avatar',
     })
 

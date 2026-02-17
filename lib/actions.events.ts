@@ -15,8 +15,8 @@ export async function getEvents() {
       const fetchResponse = await supabase
         .from('events')
         .select('*, user:user_id(*)')
-        .gt('end_time', now)
-        .order('start_time', { ascending: true })
+      // .gt('end_time', now)
+      // .order('start_time', { ascending: true })
 
       if (fetchResponse.error) {
         return {
@@ -38,9 +38,9 @@ type CreateEventProps = {
   event: FormCompanyEvent
 }
 export async function createEvent(props: CreateEventProps) {
-  return ServerRequest<boolean, CreateEventProps>(
+  return ServerRequest<CompanyEvent, CreateEventProps>(
     'createEvent',
-    async (): Promise<ServerResponse<boolean>> => {
+    async (): Promise<ServerResponse<CompanyEvent>> => {
       const supabase = await createClient()
       const userResponse = await getUser()
 
@@ -51,12 +51,16 @@ export async function createEvent(props: CreateEventProps) {
         }
       }
 
-      const fetchResponse = await supabase.from('events').insert([
-        {
-          ...props.event,
-          user_id: userResponse.data.id,
-        },
-      ])
+      const fetchResponse = await supabase
+        .from('events')
+        .insert([
+          {
+            ...props.event,
+            user_id: userResponse.data.id,
+          },
+        ])
+        .select()
+        .single()
 
       if (fetchResponse.error) {
         return {
@@ -68,7 +72,54 @@ export async function createEvent(props: CreateEventProps) {
       return {
         status: 'success',
         message: 'Successfully created event.',
-        data: true,
+        data: {
+          ...fetchResponse.data,
+          user: userResponse.data,
+        },
+      }
+    },
+  )
+}
+
+type updateEventProps = {
+  event_id: CompanyEvent['id']
+  event: Partial<FormCompanyEvent>
+}
+export async function updateEvent(props: updateEventProps) {
+  return ServerRequest<CompanyEvent, CreateEventProps>(
+    'updateEvent',
+    async (): Promise<ServerResponse<CompanyEvent>> => {
+      const supabase = await createClient()
+      const userResponse = await getUser()
+
+      if (userResponse.status == 'error') {
+        return {
+          status: 'error',
+          message: userResponse.message,
+        }
+      }
+
+      const fetchResponse = await supabase
+        .from('events')
+        .update({ ...props.event })
+        .eq('id', props.event_id)
+        .select()
+        .single()
+
+      if (fetchResponse.error) {
+        return {
+          status: 'error',
+          message: fetchResponse.error.message,
+        }
+      }
+
+      return {
+        status: 'success',
+        message: 'Successfully updated event.',
+        data: {
+          ...fetchResponse.data,
+          user: userResponse.data,
+        },
       }
     },
   )

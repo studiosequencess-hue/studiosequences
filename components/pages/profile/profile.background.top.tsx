@@ -34,7 +34,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
       bucket: StorageBucketType.Images,
       file: file,
       path: StoragePath.User,
-      user_id: currentUser.id,
+      id: currentUser.id,
       basename: 'background-top',
     })
 

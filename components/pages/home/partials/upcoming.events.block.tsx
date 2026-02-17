@@ -53,7 +53,7 @@ const UpcomingEventsBlock: React.FC = () => {
               </span>
               <div className="flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400">
                 <Calendar size={10} />
-                {format(event.start_time, 'MMMM Do, YYYY')}
+                {format(event.start_date, 'MMM dd, yyyy')}
               </div>
             </div>
             <h3 className="text-xs leading-tight font-semibold text-zinc-800 transition-colors group-hover:text-black dark:text-zinc-200 dark:group-hover:text-white">

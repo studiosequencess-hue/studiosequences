@@ -38,7 +38,7 @@ import {
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
-import { createEvent, updateEvent } from '@/lib/actions.events'
+import { upsertEvent, updateEvent } from '@/lib/actions.events'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS, StorageBucketType, StoragePath } from '@/lib/constants'
 import { FormCompanyEvent } from '@/lib/models'
@@ -47,6 +47,7 @@ import Placeholder from '@/public/images/placeholder.svg'
 import { uploadFile } from '@/lib/actions.storage'
 import { toast } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
+import { getTimeForInput } from '@/lib/utils'
 
 const MAX_DESCRIPTION = 300
 const MAX_FILE_SIZE = parseInt(
@@ -64,7 +65,7 @@ const formSchema = z.object({
 
 const CompanyEventsFormDialog = () => {
   const queryClient = useQueryClient()
-  const { formOpen, setFormOpen } = useCompanyEventsStore()
+  const { formOpen, setFormOpen, selectedEvent } = useCompanyEventsStore()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -90,7 +91,12 @@ const CompanyEventsFormDialog = () => {
         )
       }
 
-      const eventResponse = await createEvent({ event: data })
+      const eventResponse = await upsertEvent({
+        event: {
+          ...data,
+          id: selectedEvent?.id,
+        },
+      })
 
       if (
         eventResponse.status == 'success' &&
@@ -147,11 +153,31 @@ const CompanyEventsFormDialog = () => {
     })
   }
 
+  React.useEffect(() => {
+    if (formOpen) {
+      form.reset()
+      form.setValue('title', selectedEvent?.title || '')
+      form.setValue('description', selectedEvent?.description || '')
+      form.setValue('location', selectedEvent?.location || '')
+      form.setValue('tag', selectedEvent?.tag || '')
+      form.setValue(
+        'start_date',
+        selectedEvent?.start_date
+          ? new Date(selectedEvent.start_date)
+          : new Date(),
+      )
+      form.setValue(
+        'end_date',
+        selectedEvent?.end_date ? new Date(selectedEvent.end_date) : new Date(),
+      )
+    }
+  }, [formOpen])
+
   return (
     <Sheet open={formOpen} onOpenChange={setFormOpen}>
       <SheetContent className={'w-96 gap-0'}>
         <SheetHeader>
-          <SheetTitle>New Event</SheetTitle>
+          <SheetTitle>{selectedEvent ? 'Edit event' : 'New Event'}</SheetTitle>
           <SheetDescription className={'hidden'} />
         </SheetHeader>
         <ScrollArea className={'h-[calc(100vh-125px)] w-full p-3'}>
@@ -162,7 +188,7 @@ const CompanyEventsFormDialog = () => {
                   src={
                     backgroundFile
                       ? URL.createObjectURL(backgroundFile)
-                      : Placeholder
+                      : selectedEvent?.background_url || Placeholder
                   }
                   alt="event-image"
                   fill
@@ -333,7 +359,7 @@ const CompanyEventsFormDialog = () => {
                           type="time"
                           id="time-picker-optional"
                           step="1"
-                          defaultValue="00:00:00"
+                          defaultValue={getTimeForInput(field.value)}
                           className="bg-background text-foreground appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                           onChange={(e) => {
                             const value = e.currentTarget.value
@@ -422,7 +448,7 @@ const CompanyEventsFormDialog = () => {
                           type="time"
                           id="time-picker-optional"
                           step="1"
-                          defaultValue="00:00:00"
+                          defaultValue={getTimeForInput(field.value)}
                           className="bg-background text-foreground appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                           onChange={(e) => {
                             const value = e.currentTarget.value
@@ -460,7 +486,13 @@ const CompanyEventsFormDialog = () => {
             disabled={createEventMutation.isPending}
             onClick={form.handleSubmit(handleSubmit)}
           >
-            {createEventMutation.isPending ? <Spinner /> : 'Add event'}
+            {createEventMutation.isPending ? (
+              <Spinner />
+            ) : selectedEvent ? (
+              'Update event'
+            ) : (
+              'Add event'
+            )}
           </Button>
           <SheetClose asChild>
             <Button size={'sm'} variant={'outline'}>

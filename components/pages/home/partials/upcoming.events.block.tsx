@@ -4,14 +4,16 @@ import React from 'react'
 import { Calendar, MapPin, Plus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CompanyEvent } from '@/lib/models'
-import { QUERY_KEYS } from '@/lib/constants'
+import { QUERY_KEYS, UserRole } from '@/lib/constants'
 import { getEvents } from '@/lib/actions.events'
 import { format } from 'date-fns'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Loader from '@/components/partials/loader'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useCompanyEventsStore } from '@/store'
 
 const UpcomingEventsBlock: React.FC = () => {
+  const { user, loading: userLoading } = useAuthStore()
+  const { setFormOpen, setPreviewOpen } = useCompanyEventsStore()
   const eventsQuery = useQuery<CompanyEvent[]>({
     queryKey: [QUERY_KEYS.EVENTS],
     queryFn: async () => {
@@ -41,27 +43,36 @@ const UpcomingEventsBlock: React.FC = () => {
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="p-2">
+      <div className={'flex flex-col'}>
         {events.map((event) => (
           <div
             key={event.id}
-            className="group flex cursor-pointer flex-col gap-1 rounded-lg border-l-2 border-transparent p-3 transition-colors hover:border-blue-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            className="group hover:bg-accent-blue flex cursor-pointer flex-col gap-1 p-3 transition-colors"
+            onClick={() => {
+              if (userLoading || !user) return
+              if (
+                user.role == UserRole.Admin.toString() ||
+                event.user_id == user.id
+              ) {
+                setFormOpen(true, event)
+              } else {
+                setPreviewOpen(true, event)
+              }
+            }}
           >
-            <div className="flex items-start justify-between">
-              <span className="text-[9px] font-bold tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
-                {event.tag}
-              </span>
-              <div className="flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400">
+            <div className="grid w-full grid-cols-2 text-xs/none">
+              <span className="truncate font-bold">{event.tag}</span>
+              <div className="text-accent-blue group-hover:text-foreground flex items-center justify-end gap-1 text-[10px] font-bold">
                 <Calendar size={10} />
-                {format(event.start_date, 'MMM dd, yyyy')}
+                <span>{format(event.start_date, 'MMM dd, yyyy')}</span>
               </div>
             </div>
-            <h3 className="text-xs leading-tight font-semibold text-zinc-800 transition-colors group-hover:text-black dark:text-zinc-200 dark:group-hover:text-white">
+            <h3 className="line-clamp-2 text-xs/none font-semibold">
               {event.title}
             </h3>
-            <div className="mt-1 flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-muted-foreground group-hover:text-foreground flex items-center gap-1 text-[10px]">
               <MapPin size={10} />
-              {event.location}
+              <span>{event.location}</span>
             </div>
           </div>
         ))}

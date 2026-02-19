@@ -11,6 +11,8 @@ import { QUERY_KEYS } from '@/lib/constants'
 import { getEvents } from '@/lib/actions.events'
 import { CompanyEvent } from '@/lib/models'
 import { format } from 'date-fns'
+import { Badge } from '@/components/ui/badge'
+import { useCompanyEventsStore } from '@/store'
 
 enum ScrollDirection {
   Left = -1,
@@ -41,6 +43,7 @@ const EventsSlider = () => {
       left: false,
       right: false,
     })
+  const { setPreviewOpen } = useCompanyEventsStore()
 
   const eventsQuery = useQuery<CompanyEvent[]>({
     queryKey: [QUERY_KEYS.EVENTS],
@@ -120,6 +123,7 @@ const EventsSlider = () => {
             <div
               key={event.id}
               className="group w-48 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+              onClick={() => setPreviewOpen(true, event)}
             >
               <div className="relative h-28 overflow-hidden">
                 {event.background_url ? (
@@ -132,33 +136,36 @@ const EventsSlider = () => {
                 ) : (
                   <div className={'bg-accent-sage h-full w-full'} />
                 )}
-                <div className="absolute top-2 left-2">
-                  <span className="rounded-md bg-white/90 px-2 py-1 text-[9px] font-bold tracking-wider text-zinc-800 uppercase backdrop-blur-sm dark:bg-black/90 dark:text-zinc-200">
+                <div className="absolute top-2 right-2 left-2">
+                  <Badge variant="default" className="shrink-0 truncate">
                     {event.tag}
-                  </span>
+                  </Badge>
                 </div>
               </div>
 
-              <div className="p-3">
-                <h3 className="mb-2 line-clamp-1 text-[13px] leading-tight font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="flex flex-col gap-2 p-3">
+                <h3 className="text-background line-clamp-1 text-[13px] leading-tight font-bold">
                   {event.title}
                 </h3>
 
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-background flex items-center gap-1.5 text-[10px]">
                     <Calendar size={12} className="text-blue-500" />
-                    <span>{format(event.start_time, 'MM dd, yyyy')}</span>
+                    <span className={'truncate'}>
+                      {format(event.start_date, 'MMM dd, yyyy')}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
-                    <MapPin size={12} className="text-zinc-400" />
+                  <div className="text-background flex items-center gap-1.5 text-[10px]">
+                    <Calendar size={12} className="text-blue-500" />
+                    <span className={'truncate'}>
+                      {format(event.end_date, 'MMM dd, yyyy')}
+                    </span>
+                  </div>
+                  <div className="text-background flex items-center gap-1.5 text-[10px]">
+                    <MapPin size={12} className="truncate" />
                     <span className="truncate">{event.location}</span>
                   </div>
                 </div>
-
-                <button className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-zinc-100 py-1.5 text-[10px] font-bold text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
-                  <Ticket size={12} />
-                  Get Tickets
-                </button>
               </div>
             </div>
           ))}

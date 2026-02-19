@@ -15,8 +15,8 @@ export async function getEvents() {
       const fetchResponse = await supabase
         .from('events')
         .select('*, user:user_id(*)')
-      // .gt('end_time', now)
-      // .order('start_time', { ascending: true })
+        .gt('end_date', now)
+        .order('start_date', { ascending: true })
 
       if (fetchResponse.error) {
         return {
@@ -35,9 +35,11 @@ export async function getEvents() {
 }
 
 type CreateEventProps = {
-  event: FormCompanyEvent
+  event: FormCompanyEvent & {
+    id?: CompanyEvent['id']
+  }
 }
-export async function createEvent(props: CreateEventProps) {
+export async function upsertEvent(props: CreateEventProps) {
   return ServerRequest<CompanyEvent, CreateEventProps>(
     'createEvent',
     async (): Promise<ServerResponse<CompanyEvent>> => {
@@ -53,12 +55,10 @@ export async function createEvent(props: CreateEventProps) {
 
       const fetchResponse = await supabase
         .from('events')
-        .insert([
-          {
-            ...props.event,
-            user_id: userResponse.data.id,
-          },
-        ])
+        .upsert({
+          ...props.event,
+          user_id: userResponse.data.id,
+        })
         .select()
         .single()
 

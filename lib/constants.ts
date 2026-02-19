@@ -43,5 +43,6 @@ export enum QUERY_KEYS {
   FOLLOW_SUGGESTIONS = 'follow-suggestions',
   FOLLOWINGS = 'follow-count-users',
   EVENTS = 'events',
-  EVENTS_CREATE = 'events-create',
+  EVENTS_UPSERT = 'events-upsert',
+  EVENTS_DELETE = 'events-delete',
 }

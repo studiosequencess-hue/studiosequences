@@ -38,7 +38,7 @@ import {
 import { ChevronDownIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
-import { upsertEvent, updateEvent } from '@/lib/actions.events'
+import { upsertEvent, updateEvent, deleteEvent } from '@/lib/actions.events'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS, StorageBucketType, StoragePath } from '@/lib/constants'
 import { FormCompanyEvent } from '@/lib/models'
@@ -83,7 +83,7 @@ const CompanyEventsFormDialog = () => {
   const [backgroundFile, setBackgroundFile] = React.useState<File | null>(null)
 
   const createEventMutation = useMutation({
-    mutationKey: [QUERY_KEYS.EVENTS_CREATE],
+    mutationKey: [QUERY_KEYS.EVENTS_UPSERT],
     mutationFn: async (data: FormCompanyEvent) => {
       if (backgroundFile && backgroundFile.size > MAX_FILE_SIZE) {
         return toast.error(
@@ -144,6 +144,32 @@ const CompanyEventsFormDialog = () => {
     },
   })
 
+  const deleteEventMutation = useMutation({
+    mutationKey: [QUERY_KEYS.EVENTS_DELETE],
+    mutationFn: async () => {
+      if (!selectedEvent) return null
+      const response = await deleteEvent({
+        event_id: selectedEvent.id,
+      })
+
+      if (response.status == 'success') {
+        setFormOpen(false)
+        toast.success(response.message)
+      } else {
+        toast.error(response.message)
+      }
+
+      return response.status == 'success'
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.EVENTS] })
+    },
+  })
+
+  const isFormProcessing = React.useMemo(() => {
+    return createEventMutation.isPending || deleteEventMutation.isPending
+  }, [createEventMutation.isPending, deleteEventMutation.isPending])
+
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     createEventMutation.mutate({
       ...data,
@@ -200,7 +226,7 @@ const CompanyEventsFormDialog = () => {
                 <InputFile
                   ref={backgroundFileInputRef}
                   accept={'image/*'}
-                  disabled={createEventMutation.isPending}
+                  disabled={isFormProcessing}
                   className={'hidden'}
                   onFileUpload={(file) => {
                     setBackgroundFile(file)
@@ -479,11 +505,11 @@ const CompanyEventsFormDialog = () => {
           </form>
         </ScrollArea>
 
-        <SheetFooter className={'grid w-full grid-cols-2'}>
+        <SheetFooter className={'grid w-full grid-cols-3'}>
           <Button
             size={'sm'}
             variant={'secondary'}
-            disabled={createEventMutation.isPending}
+            disabled={isFormProcessing}
             onClick={form.handleSubmit(handleSubmit)}
           >
             {createEventMutation.isPending ? (
@@ -493,6 +519,14 @@ const CompanyEventsFormDialog = () => {
             ) : (
               'Add event'
             )}
+          </Button>
+          <Button
+            size={'sm'}
+            variant={'destructive'}
+            disabled={isFormProcessing}
+            onClick={() => deleteEventMutation.mutate()}
+          >
+            {deleteEventMutation.isPending ? <Spinner /> : 'Delete event'}
           </Button>
           <SheetClose asChild>
             <Button size={'sm'} variant={'outline'}>

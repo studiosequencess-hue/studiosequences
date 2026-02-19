@@ -81,11 +81,11 @@ export async function upsertEvent(props: CreateEventProps) {
   )
 }
 
-type updateEventProps = {
+type UupdateEventProps = {
   event_id: CompanyEvent['id']
   event: Partial<FormCompanyEvent>
 }
-export async function updateEvent(props: updateEventProps) {
+export async function updateEvent(props: UupdateEventProps) {
   return ServerRequest<CompanyEvent, CreateEventProps>(
     'updateEvent',
     async (): Promise<ServerResponse<CompanyEvent>> => {
@@ -120,6 +120,44 @@ export async function updateEvent(props: updateEventProps) {
           ...fetchResponse.data,
           user: userResponse.data,
         },
+      }
+    },
+  )
+}
+
+type DeleteEventProps = {
+  event_id: CompanyEvent['id']
+}
+export async function deleteEvent(props: DeleteEventProps) {
+  return ServerRequest<boolean, DeleteEventProps>(
+    'deleteEvent',
+    async (): Promise<ServerResponse<boolean>> => {
+      const supabase = await createClient()
+      const userResponse = await getUser()
+
+      if (userResponse.status == 'error') {
+        return {
+          status: 'error',
+          message: userResponse.message,
+        }
+      }
+
+      const deleteResponse = await supabase.from('events').delete().match({
+        id: props.event_id,
+        user_id: userResponse.data.id,
+      })
+
+      if (deleteResponse.error) {
+        return {
+          status: 'error',
+          message: deleteResponse.error.message,
+        }
+      }
+
+      return {
+        status: 'success',
+        message: 'Successfully deleted event.',
+        data: true,
       }
     },
   )

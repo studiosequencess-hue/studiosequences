@@ -1,6 +1,5 @@
 'use server'
 
-import { createClient } from '@/lib/supabase.server'
 import {
   Project,
   ProjectFile,
@@ -53,7 +52,7 @@ export async function getPersonalProjects(): Promise<
       status: 'success',
       message: 'Successfully fetched projects.',
       data: {
-        projects: formattedProjects as Project[],
+        projects: formattedProjects,
         total,
       },
     }

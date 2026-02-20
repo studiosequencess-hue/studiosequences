@@ -1,6 +1,6 @@
 import { Database } from '@/lib/supabase.types'
 import { User as SupabaseUser } from '@supabase/auth-js'
-import { projects, projectFiles, projectMembers } from '@/db/schema'
+import { projects, projectFiles, projectMembers, users } from '@/db/schema'
 
 export interface UserImage {
   url: string
@@ -32,7 +32,7 @@ export type ServerResponse<T> = ServerResponseSuccess<T> | ServerResponseError
 export type Tables<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Row']
 
-export type DBUser = Tables<'users'>
+export type DBUser = typeof users.$inferSelect
 
 export type User = Pick<
   SupabaseUser,

@@ -2,49 +2,59 @@
 
 import { createClient } from '@/lib/supabase.server'
 import {
-  ProjectFormFile,
   Project,
   ProjectFile,
   ProjectMember,
   ServerResponse,
   User,
-  Collection,
 } from '@/lib/models'
+import { db } from '@/db/client'
+import { eq, sql, asc } from 'drizzle-orm'
+import { projects, projectFiles, projectMembers } from '@/db/schema'
 import { getUser } from '@/lib/actions.auth'
 
 export async function getPersonalProjects(): Promise<
   ServerResponse<{ projects: Project[]; total: number }>
 > {
   try {
-    const supabase = await createClient()
     const userResponse = await getUser()
-
     if (userResponse.status === 'error') {
       return userResponse
     }
 
-    const projectsResponse = await supabase
-      .from('projects')
-      .select('*, files:project_files(*), files_count:project_files(count)', {
-        count: 'exact',
-      })
-      .eq('user_id', userResponse.data.id)
-      .order('position', { ascending: true })
-      .order('id', { ascending: true })
+    // Fetch projects with files relation
+    const projectsData = await db.query.projects.findMany({
+      where: eq(projects.user_id, userResponse.data.id),
+      orderBy: [asc(projects.position), asc(projects.id)],
+      with: {
+        files: true,
+        members: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    })
 
-    if (projectsResponse.error) {
-      return {
-        status: 'error',
-        message: projectsResponse.error.message,
-      }
-    }
+    // Get total count
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(projects)
+      .where(eq(projects.user_id, userResponse.data.id))
+
+    const total = countResult[0]?.count || 0
+
+    const formattedProjects = projectsData.map((project) => ({
+      ...project,
+      files_count: [{ count: project.files?.length || 0 }],
+    }))
 
     return {
       status: 'success',
       message: 'Successfully fetched projects.',
       data: {
-        projects: projectsResponse.data,
-        total: projectsResponse.count || 0,
+        projects: formattedProjects as Project[],
+        total,
       },
     }
   } catch (e) {
@@ -65,45 +75,51 @@ export async function getAllProjectsByUserId(
   props: GetAllProjectsProps,
 ): Promise<ServerResponse<{ projects: Project[]; total: number }>> {
   try {
-    const supabase = await createClient()
+    const offset = props.pageIndex * props.pageSize
 
-    const from = props.pageIndex * props.pageSize
-    const to = from + props.pageSize - 1
-
-    const projectsResponse = await supabase
-      .from('projects')
-      .select(
-        '*, files:project_files(*), files_count:project_files(count), members:project_members(*), members_count:project_members(count)',
-        {
-          count: 'exact',
+    const projectsData = await db.query.projects.findMany({
+      where: eq(projects.user_id, props.userId),
+      orderBy: [asc(projects.position), asc(projects.id)],
+      limit: props.pageSize,
+      offset: offset,
+      with: {
+        files: true,
+        members: {
+          with: {
+            user: true,
+          },
         },
-      )
-      .eq('user_id', props.userId)
-      .order('position', { ascending: true })
-      .order('id', { ascending: true })
-      .range(from, to)
-      .limit(1, { foreignTable: 'project_files' })
+      },
+    })
 
-    if (projectsResponse.error) {
-      return {
-        status: 'error',
-        message: projectsResponse.error.message,
-      }
-    }
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(projects)
+      .where(eq(projects.user_id, props.userId))
+
+    const total = countResult[0]?.count || 0
+
+    // Format to match original shape with counts and limit files to 1
+    const formattedProjects = projectsData.map((project) => ({
+      ...project,
+      files: project.files?.slice(0, 1) || [], // Limit to 1 file as per original
+      files_count: [{ count: project.files?.length || 0 }],
+      members_count: [{ count: project.members?.length || 0 }],
+    }))
 
     return {
       status: 'success',
       message: 'Successfully fetched projects.',
       data: {
-        projects: projectsResponse.data,
-        total: projectsResponse.count || 0,
+        projects: formattedProjects as Project[],
+        total,
       },
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('getAllProjectsByUserId', e)
     return {
       status: 'error',
-      message: 'Failed to fetch user. Please try again later.',
+      message: 'Failed to fetch all projects for user. Please try again later.',
     }
   }
 }
@@ -115,27 +131,18 @@ export async function getProjectFilesById(
   props: GetProjectFilesByIdProps,
 ): Promise<ServerResponse<ProjectFile[]>> {
   try {
-    const supabase = await createClient()
-
-    const projectFilesResponse = await supabase
-      .from('project_files')
-      .select('*')
-      .eq('project_id', props.id)
-
-    if (projectFilesResponse.error) {
-      return {
-        status: 'error',
-        message: projectFilesResponse.error.message,
-      }
-    }
+    const files = await db
+      .select()
+      .from(projectFiles)
+      .where(eq(projectFiles.project_id, props.id))
 
     return {
       status: 'success',
-      message: 'Successfully fetched projects.',
-      data: projectFilesResponse.data,
+      message: 'Successfully fetched projects files.',
+      data: files as ProjectFile[],
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('getProjectFilesById', e)
     return {
       status: 'error',
       message: 'Failed to fetch project files. Please try again later.',
@@ -150,24 +157,17 @@ export async function getProjectMembersById(
   props: GetProjectMembersByIdProps,
 ): Promise<ServerResponse<ProjectMember[]>> {
   try {
-    const supabase = await createClient()
-
-    const projectMembersResponse = await supabase
-      .from('project_members')
-      .select('*, user:users(*)')
-      .eq('project_id', props.id)
-
-    if (projectMembersResponse.error) {
-      return {
-        status: 'error',
-        message: projectMembersResponse.error.message,
-      }
-    }
+    const members = await db.query.projectMembers.findMany({
+      where: eq(projectMembers.project_id, props.id),
+      with: {
+        user: true,
+      },
+    })
 
     return {
       status: 'success',
-      message: 'Successfully fetched projects.',
-      data: projectMembersResponse.data,
+      message: 'Successfully fetched project members.',
+      data: members as ProjectMember[],
     }
   } catch (e) {
     console.log('getProjectMembersById', e)
@@ -189,103 +189,86 @@ export async function createProject(
   props: CreateProjectProps,
 ): Promise<ServerResponse<Project>> {
   try {
-    const supabase = await createClient()
-    const currentUserResponse = await supabase.auth.getUser()
-
-    if (currentUserResponse.error) {
+    const currentUserResponse = await getUser()
+    if (currentUserResponse.status == 'error') {
       return {
         status: 'error',
-        message: currentUserResponse.error.message,
+        message: currentUserResponse.message,
       }
     }
 
-    const insertProjectResponse = await supabase
-      .from('projects')
-      .insert([
-        {
-          title: props.title,
-          description: props.description,
-          is_sensitive: props.is_sensitive,
-          position: -1,
-          user_id: currentUserResponse.data.user.id,
-        },
-      ])
-      .select(
-        '*, files_count:project_files(count), members_count:project_members(count)',
-      )
-      .single()
+    // Insert project
+    const insertProjectResponse = await db
+      .insert(projects)
+      .values({
+        title: props.title,
+        description: props.description,
+        is_sensitive: props.is_sensitive,
+        position: -1,
+        user_id: currentUserResponse.data.id,
+      })
+      .returning()
 
-    if (insertProjectResponse.error) {
+    if (!insertProjectResponse[0]) {
       return {
         status: 'error',
-        message: insertProjectResponse.error.message,
+        message: 'Failed to create project',
       }
     }
 
+    const projectId = insertProjectResponse[0].id
+
+    // Insert files and members in parallel
     const [insertFilesResponse, insertMembersResponse] = await Promise.all([
-      supabase
-        .from('project_files')
-        .insert(
+      db
+        .insert(projectFiles)
+        .values(
           props.files.map((file) => ({
             title: file.title,
             description: file.description,
             url: file.url,
-            project_id: insertProjectResponse.data.id,
+            project_id: projectId,
             name: file.name,
             type: file.type,
           })),
         )
-        .select(),
-      supabase
-        .from('project_members')
-        .insert(
+        .returning(),
+      db
+        .insert(projectMembers)
+        .values(
           props.members.map((member) => ({
             department: member.department,
             user_id: member.user_id,
-            project_id: insertProjectResponse.data.id,
+            project_id: projectId,
           })),
         )
-        .select(),
+        .returning(),
     ])
-
-    if (insertFilesResponse.error) {
-      return {
-        status: 'error',
-        message: insertFilesResponse.error.message,
-      }
-    }
-
-    if (insertMembersResponse.error) {
-      return {
-        status: 'error',
-        message: insertMembersResponse.error.message,
-      }
-    }
 
     return {
       status: 'success',
       message: 'Successfully created project.',
       data: {
-        ...insertProjectResponse.data,
-        files: insertFilesResponse.data,
-        members: insertMembersResponse.data,
+        ...insertProjectResponse[0],
+        files: insertFilesResponse,
+        members: insertMembersResponse,
         files_count: [
           {
-            count: insertFilesResponse.data.length,
+            count: insertFilesResponse.length,
           },
         ],
         members_count: [
           {
-            count: insertMembersResponse.data.length,
+            count: insertMembersResponse.length,
           },
         ],
-      },
+      } as Project,
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('createProject', e)
     return {
       status: 'error',
-      message: 'Failed to fetch user. Please try again later.',
+      message: 'Failed to create project. Please try again later.',
     }
   }
 }
@@ -301,124 +284,86 @@ export async function updateProject(
   props: UpdateProjectProps,
 ): Promise<ServerResponse<Project>> {
   try {
-    const supabase = await createClient()
-    const currentUserResponse = await supabase.auth.getUser()
-
-    if (currentUserResponse.error) {
-      return {
-        status: 'error',
-        message: currentUserResponse.error.message,
-      }
+    const currentUserResponse = await getUser()
+    if (currentUserResponse.status == 'error') {
+      return currentUserResponse
     }
 
-    const updateProjectResponse = await supabase
-      .from('projects')
-      .update({
+    // Update project
+    const updateProjectResponse = await db
+      .update(projects)
+      .set({
         title: props.title,
         description: props.description,
         is_sensitive: props.is_sensitive,
       })
-      .eq('id', props.id)
-      .select(
-        '*, files_count:project_files(count), members_count:project_members(count)',
-      )
-      .single()
+      .where(eq(projects.id, props.id))
+      .returning()
 
-    if (updateProjectResponse.error) {
+    if (!updateProjectResponse[0]) {
       return {
         status: 'error',
-        message: updateProjectResponse.error.message,
+        message: 'Project not found',
       }
     }
 
-    const [deleteFilesResponse, deleteMembersResponse] = await Promise.all([
-      supabase.from('project_files').delete().eq('project_id', props.id),
-      supabase.from('project_members').delete().eq('project_id', props.id),
+    // Delete old files and members (manual cleanup before re-inserting)
+    await Promise.all([
+      db.delete(projectFiles).where(eq(projectFiles.project_id, props.id)),
+      db.delete(projectMembers).where(eq(projectMembers.project_id, props.id)),
     ])
 
-    if (deleteFilesResponse.error) {
-      return {
-        status: 'error',
-        message: deleteFilesResponse.error.message,
-      }
-    }
-
-    if (deleteMembersResponse.error) {
-      return {
-        status: 'error',
-        message: deleteMembersResponse.error.message,
-      }
-    }
-
+    // Insert new files and members
     const [updateFilesResponse, updateMembersResponse] = await Promise.all([
-      supabase
-        .from('project_files')
-        .insert(
+      db
+        .insert(projectFiles)
+        .values(
           props.files.map((file) => ({
             title: file.title,
             description: file.description,
             url: file.url,
-            project_id: updateProjectResponse.data.id,
+            project_id: props.id,
             name: file.name,
             type: file.type,
           })),
         )
-        .select(),
-      supabase
-        .from('project_members')
-        .insert(
+        .returning(),
+      db
+        .insert(projectMembers)
+        .values(
           props.members.map((member) => ({
             department: member.department,
             user_id: member.user_id,
-            project_id: updateProjectResponse.data.id,
+            project_id: props.id,
           })),
         )
-        .select(),
+        .returning(),
     ])
-
-    if (updateFilesResponse.error) {
-      return {
-        status: 'error',
-        message: updateFilesResponse.error.message,
-      }
-    }
-
-    if (updateMembersResponse.error) {
-      return {
-        status: 'error',
-        message: updateMembersResponse.error.message,
-      }
-    }
-
-    // cleanupProjectOrphanFiles({
-    //   folderPath: `projects/${currentUserResponse.data.user.id}`,
-    //   existingFiles: props.files.map((file) => file.name),
-    // })
 
     return {
       status: 'success',
       message: 'Successfully updated project.',
       data: {
-        ...updateProjectResponse.data,
-        files: updateFilesResponse.data,
-        members: updateMembersResponse.data,
+        ...updateProjectResponse[0],
+        files: updateFilesResponse,
+        members: updateMembersResponse,
         files_count: [
           {
-            count: updateFilesResponse.data.length,
+            count: updateFilesResponse.length,
           },
         ],
         members_count: [
           {
-            count: updateMembersResponse.data.length,
+            count: updateMembersResponse.length,
           },
         ],
-      },
+      } as Project,
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('updateProject', e)
     return {
       status: 'error',
-      message: 'Failed to fetch user. Please try again later.',
+      message: 'Failed to update project. Please try again later.',
     }
   }
 }
@@ -428,27 +373,13 @@ export async function deleteProject(
   props: DeleteProjectProps,
 ): Promise<ServerResponse<boolean>> {
   try {
-    const supabase = await createClient()
-    const currentUserResponse = await supabase.auth.getUser()
-
-    if (currentUserResponse.error) {
-      return {
-        status: 'error',
-        message: currentUserResponse.error.message,
-      }
+    const currentUserResponse = await getUser()
+    if (currentUserResponse.status == 'error') {
+      return currentUserResponse
     }
 
-    const deleteProjectResponse = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', props.id)
-
-    if (deleteProjectResponse.error) {
-      return {
-        status: 'error',
-        message: deleteProjectResponse.error.message,
-      }
-    }
+    // Delete project - files and members delete automatically via cascade
+    await db.delete(projects).where(eq(projects.id, props.id))
 
     // cleanupProjectOrphanFiles({
     //   folderPath: `projects/${currentUserResponse.data.user.id}`,
@@ -465,70 +396,6 @@ export async function deleteProject(
     return {
       status: 'error',
       message: 'Failed to fetch user. Please try again later.',
-    }
-  }
-}
-
-type CleanupProjectOrphanFiles = {
-  folderPath: string
-  existingFiles: string[]
-}
-export const cleanupProjectOrphanFiles = async (
-  props: CleanupProjectOrphanFiles,
-): Promise<ServerResponse<number>> => {
-  try {
-    const supabase = await createClient()
-    const listFilesResponse = await supabase.storage
-      .from('files')
-      .list(props.folderPath)
-
-    if (listFilesResponse.error) {
-      return {
-        status: 'error',
-        message: listFilesResponse.error.message,
-      }
-    }
-
-    const storageFiles = listFilesResponse.data
-    if (!storageFiles || storageFiles.length === 0) {
-      return {
-        status: 'error',
-        message: 'No files found in storage folder.',
-      }
-    }
-
-    const filesToDelete = storageFiles
-      .filter((file) => !props.existingFiles.includes(file.name))
-      .map((file) => `${props.folderPath}/${file.name}`)
-
-    if (filesToDelete.length === 0) {
-      return {
-        status: 'error',
-        message: `No files were deleted from storage folder.`,
-      }
-    }
-
-    const deleteFilesResponse = await supabase.storage
-      .from('files')
-      .remove(filesToDelete)
-
-    if (deleteFilesResponse.error) {
-      return {
-        status: 'error',
-        message: deleteFilesResponse.error.message,
-      }
-    }
-
-    return {
-      status: 'success',
-      message: `${deleteFilesResponse.data.length} out of ${filesToDelete.length} files were deleted from storage folder.`,
-      data: deleteFilesResponse.data.length,
-    }
-  } catch (error) {
-    console.error('Cleanup failed:', error)
-    return {
-      status: 'error',
-      message: 'Failed to cleanup orphaned files. Please try again later.',
     }
   }
 }

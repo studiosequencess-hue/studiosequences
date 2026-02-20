@@ -9,10 +9,7 @@ import {
 } from '@/store'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
 import Link from 'next/link'
-import { IoSearch } from 'react-icons/io5'
 import { FaMessage } from 'react-icons/fa6'
 import { MdNotifications } from 'react-icons/md'
 import { BsBriefcaseFill } from 'react-icons/bs'
@@ -25,7 +22,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import HeaderSearchbar from '@/components/partials/header/header.searchbar'
 import { Plus } from 'lucide-react'
 import { usePostsDialogStore } from '@/store/post.dialog.store'

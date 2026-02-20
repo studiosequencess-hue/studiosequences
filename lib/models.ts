@@ -1,6 +1,14 @@
 import { Database } from '@/lib/supabase.types'
 import { User as SupabaseUser } from '@supabase/auth-js'
-import { projects, projectFiles, projectMembers, users } from '@/db/schema'
+import {
+  projects,
+  projectFiles,
+  projectMembers,
+  users,
+  collections,
+  collectionProjects,
+} from '@/db/schema'
+import { InferSelectModel } from 'drizzle-orm'
 
 export interface UserImage {
   url: string
@@ -82,11 +90,9 @@ export type SignUpData = {
   company_name: string
 }
 
-export type Project = typeof projects.$inferSelect & {
+export type Project = InferSelectModel<typeof projects> & {
   files: ProjectFile[]
-  files_count: {
-    count: number
-  }[]
+  files_count?: { count: number }[]
   members?: ProjectMember[]
   members_count?: {
     count: number
@@ -94,7 +100,7 @@ export type Project = typeof projects.$inferSelect & {
   is_revealed?: boolean
 }
 
-export type ProjectFile = typeof projectFiles.$inferSelect
+export type ProjectFile = InferSelectModel<typeof projectFiles>
 
 export type ProjectMember = typeof projectMembers.$inferSelect & {
   user?: DBUser | null
@@ -124,10 +130,11 @@ type PostBaseMedia = Pick<PostFile, 'name' | 'type'>
 
 export type PostFormFile = PostBaseMedia & (FileMedia | URLMedia)
 
-export type Collection = Tables<'collections'> & {
+export type Collection = InferSelectModel<typeof collections> & {
   projects: Project[]
 }
-export type CollectionProject = Tables<'collection_projects'>
+
+export type CollectionProject = InferSelectModel<typeof collectionProjects>
 
 export type CompanyEvent = Tables<'events'> & {
   user: DBUser | null

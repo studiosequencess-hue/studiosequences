@@ -1,53 +1,51 @@
 'use server'
 
-import { createClient } from '@/lib/supabase.server'
-import {
-  ProjectFormFile,
-  Project,
-  ProjectFile,
-  ProjectMember,
-  ServerResponse,
-  User,
-  Collection,
-} from '@/lib/models'
+import { Project, ServerResponse, Collection } from '@/lib/models'
 import { getUser } from '@/lib/actions.auth'
+import { db } from '@/db/client'
+import { collections, collectionProjects } from '@/db/schema'
+import { eq, asc } from 'drizzle-orm'
 
 export async function getPersonalCollections(): Promise<
   ServerResponse<Collection[]>
 > {
   try {
-    const supabase = await createClient()
     const userResponse = await getUser()
-
     if (userResponse.status === 'error') {
       return userResponse
     }
 
-    const collectionsResponse = await supabase
-      .from('collections')
-      .select(
-        '*, collection_projects(*, project:projects(*, files:project_files(*), files_count:project_files(count)))',
-        { count: 'exact' },
-      )
-      .eq('user_id', userResponse.data.id)
-      .order('created_at', { ascending: true })
+    // Fetch collections with nested relations
+    const collectionsData = await db.query.collections.findMany({
+      where: eq(collections.user_id, userResponse.data.id),
+      orderBy: [asc(collections.created_at)],
+      with: {
+        collectionProjects: {
+          with: {
+            project: {
+              with: {
+                files: true,
+              },
+            },
+          },
+        },
+      },
+    })
 
-    if (collectionsResponse.error) {
-      return {
-        status: 'error',
-        message: collectionsResponse.error.message,
-      }
-    }
+    const formattedCollections: Collection[] = collectionsData.map(
+      (collection) => ({
+        ...collection,
+        projects:
+          collection.collectionProjects
+            ?.map((cp) => cp.project)
+            .filter((p): p is Project => !!p) || [],
+      }),
+    )
 
     return {
       status: 'success',
       message: 'Successfully fetched collections.',
-      data: collectionsResponse.data.map((collection) => ({
-        ...collection,
-        projects: collection.collection_projects
-          .map((item) => item.project)
-          .filter((item) => !!item),
-      })),
+      data: formattedCollections,
     }
   } catch (e) {
     console.log('getPersonalCollections', e)
@@ -63,31 +61,26 @@ export async function createCollection(
   props: CreateCollectionProps,
 ): Promise<ServerResponse<Collection>> {
   try {
-    const supabase = await createClient()
     const userResponse = await getUser()
-
     if (userResponse.status === 'error') {
       return userResponse
     }
 
-    const collectionsResponse = await supabase
-      .from('collections')
-      .insert([
-        {
-          name: props.name,
-          user_id: userResponse.data.id,
-        },
-      ])
-      .select(
-        '*, collection_projects(*, project:projects(*, files:project_files(*), files_count:project_files(count)))',
-      )
-      .single()
+    // Insert collection
+    const insertResponse = await db
+      .insert(collections)
+      .values({
+        name: props.name,
+        user_id: userResponse.data.id,
+      })
+      .returning()
 
-    if (collectionsResponse.error) {
-      console.log('createCollection', collectionsResponse.error)
+    const newCollection = insertResponse[0]
+
+    if (!newCollection) {
       return {
         status: 'error',
-        message: collectionsResponse.error.message,
+        message: 'Failed to create collection',
       }
     }
 
@@ -95,10 +88,8 @@ export async function createCollection(
       status: 'success',
       message: 'Successfully created collection.',
       data: {
-        ...collectionsResponse.data,
-        projects: collectionsResponse.data.collection_projects
-          .map((item) => item.project)
-          .filter((item) => !!item),
+        ...newCollection,
+        projects: [],
       },
     }
   } catch (e) {
@@ -118,32 +109,25 @@ export async function addProjectsToCollection(
   props: AddProjectsToCollectionProps,
 ): Promise<ServerResponse<boolean>> {
   try {
-    const supabase = await createClient()
     const userResponse = await getUser()
-
     if (userResponse.status === 'error') {
       return userResponse
     }
 
-    await supabase.from('collection_projects').delete().match({
-      collection_id: props.collectionId,
-    })
-    const addProjectsToCollectionsResponse = await supabase
-      .from('collection_projects')
-      .insert(
-        props.projectIds.map((projectId) => ({
-          project_id: projectId,
-          collection_id: props.collectionId,
-        })),
-      )
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(collectionProjects)
+        .where(eq(collectionProjects.collection_id, props.collectionId))
 
-    if (addProjectsToCollectionsResponse.error) {
-      console.log('createCollection', addProjectsToCollectionsResponse.error)
-      return {
-        status: 'error',
-        message: addProjectsToCollectionsResponse.error.message,
+      if (props.projectIds.length > 0) {
+        await tx.insert(collectionProjects).values(
+          props.projectIds.map((projectId) => ({
+            project_id: projectId,
+            collection_id: props.collectionId,
+          })),
+        )
       }
-    }
+    })
 
     return {
       status: 'success',
@@ -151,10 +135,10 @@ export async function addProjectsToCollection(
       data: true,
     }
   } catch (e) {
-    console.log('createCollection', e)
+    console.log('addProjectsToCollection', e)
     return {
       status: 'error',
-      message: 'Failed to create collection. Please try again later.',
+      message: 'Failed to add projects to collection. Please try again later.',
     }
   }
 }
@@ -166,16 +150,12 @@ export async function deleteCollection(
   props: DeleteCollectionProps,
 ): Promise<ServerResponse<boolean>> {
   try {
-    const supabase = await createClient()
     const userResponse = await getUser()
-
     if (userResponse.status === 'error') {
       return userResponse
     }
 
-    await supabase.from('collections').delete().match({
-      id: props.id,
-    })
+    await db.delete(collections).where(eq(collections.id, props.id))
 
     return {
       status: 'success',
@@ -183,10 +163,10 @@ export async function deleteCollection(
       data: true,
     }
   } catch (e) {
-    console.log('createCollection', e)
+    console.log('deleteCollection', e)
     return {
       status: 'error',
-      message: 'Failed to create collection. Please try again later.',
+      message: 'Failed to delete collection. Please try again later.',
     }
   }
 }

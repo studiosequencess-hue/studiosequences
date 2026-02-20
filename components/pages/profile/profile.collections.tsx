@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import { Collection, Project } from '@/lib/models'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { getPersonalProjects } from '@/lib/actions.projects'
 import { QUERY_KEYS } from '@/lib/constants'
 import Placeholder from '@/public/images/placeholder.svg'
 import CollectionFormDialog from '@/components/partials/collections/collection.form.dialog'
@@ -22,10 +21,8 @@ import {
 } from '@/lib/actions.collections'
 import Image from 'next/image'
 import CollectionProjectsFormDialog from '@/components/partials/collections/collection.projects.form.dialog'
-import Loader from '@/components/partials/loader'
 import { Spinner } from '@/components/ui/spinner'
 import ReactPlayer from 'react-player'
-import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
 type ViewMode = 'collections' | 'projects' | 'detail'
@@ -48,9 +45,8 @@ type Props = {
 
 const ProfileCollections: React.FC<Props> = (props) => {
   const [view, setView] = useState<ViewMode>('collections')
-  const [selecteCollection, setSelecteCollection] = useState<Collection | null>(
-    null,
-  )
+  const [selectedCollection, setSelectedCollection] =
+    useState<Collection | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [collectionFormOpen, setCollectionFormOpen] = useState<boolean>(false)
@@ -71,18 +67,21 @@ const ProfileCollections: React.FC<Props> = (props) => {
   })
 
   const collectionDeleteMutation = useMutation({
-    mutationKey: [QUERY_KEYS.PERSONAL_COLLECTION_DELETE, selecteCollection?.id],
+    mutationKey: [
+      QUERY_KEYS.PERSONAL_COLLECTION_DELETE,
+      selectedCollection?.id,
+    ],
     mutationFn: async () => {
-      if (!selecteCollection) return false
+      if (!selectedCollection) return false
 
       const response = await deleteCollection({
-        id: selecteCollection.id,
+        id: selectedCollection.id,
       })
 
       if (response.status == 'success') {
         toast.success(response.message)
         setView('collections')
-        setSelecteCollection(null)
+        setSelectedCollection(null)
         setSelectedProject(null)
       } else {
         toast.error(response.message)
@@ -106,7 +105,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
   }
 
   const handleCollectionClick = (album: Collection) => {
-    setSelecteCollection(album)
+    setSelectedCollection(album)
     setView('projects')
   }
 
@@ -125,7 +124,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
       setSelectedProject(null)
     } else if (view === 'projects') {
       setView('collections')
-      setSelecteCollection(null)
+      setSelectedCollection(null)
     }
   }
 
@@ -169,9 +168,9 @@ const ProfileCollections: React.FC<Props> = (props) => {
   }
 
   React.useEffect(() => {
-    if (selecteCollection) {
-      setSelecteCollection(
-        collectionsQuery.data?.find((c) => c.id == selecteCollection.id) ||
+    if (selectedCollection) {
+      setSelectedCollection(
+        collectionsQuery.data?.find((c) => c.id == selectedCollection.id) ||
           null,
       )
     }
@@ -186,11 +185,11 @@ const ProfileCollections: React.FC<Props> = (props) => {
           collectionsQuery.refetch()
         }}
       />
-      {selecteCollection && (
+      {selectedCollection && (
         <CollectionProjectsFormDialog
           open={collectionProjectsFormOpen}
           setOpen={setCollectionProjectsFormOpen}
-          collection={selecteCollection}
+          collection={selectedCollection}
           onSuccess={() => {
             collectionsQuery.refetch()
           }}
@@ -213,14 +212,14 @@ const ProfileCollections: React.FC<Props> = (props) => {
               <div>
                 <h1 className="text-lg font-bold tracking-tight">
                   {view === 'collections' && 'Collections'}
-                  {view === 'projects' && selecteCollection?.name}
+                  {view === 'projects' && selectedCollection?.name}
                   {view === 'detail' && selectedProject?.title}
                 </h1>
                 <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">
                   {view === 'collections' &&
                     `${filteredCollections.length} Collections`}
                   {view === 'projects' &&
-                    `${selecteCollection?.projects.length} Projects`}
+                    `${selectedCollection?.projects.length} Projects`}
                   {view === 'detail' &&
                     `${selectedProject?.files.length} Files`}
                 </span>
@@ -335,7 +334,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
         )}
 
         {/* VIEW: PROJECTS IN ALBUM */}
-        {view === 'projects' && selecteCollection && (
+        {view === 'projects' && selectedCollection && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {props.editable && (
               <div onClick={handleProjectAdd} className="group cursor-pointer">
@@ -344,7 +343,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
                 </div>
               </div>
             )}
-            {selecteCollection.projects.map((project) => {
+            {selectedCollection.projects.map((project) => {
               const projectPreview = getProjectPreview(project)
 
               return (
@@ -423,7 +422,7 @@ const ProfileCollections: React.FC<Props> = (props) => {
                 onClick={handleBack}
                 className="flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-500 uppercase transition-colors hover:text-white"
               >
-                <ChevronLeft size={16} /> Back to {selecteCollection?.name}
+                <ChevronLeft size={16} /> Back to {selectedCollection?.name}
               </button>
             </div>
           </div>

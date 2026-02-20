@@ -1,5 +1,6 @@
 import { Database } from '@/lib/supabase.types'
 import { User as SupabaseUser } from '@supabase/auth-js'
+import { projects, projectFiles, projectMembers } from '@/db/schema'
 
 export interface UserImage {
   url: string
@@ -81,7 +82,7 @@ export type SignUpData = {
   company_name: string
 }
 
-export type Project = Tables<'projects'> & {
+export type Project = typeof projects.$inferSelect & {
   files: ProjectFile[]
   files_count: {
     count: number
@@ -93,9 +94,9 @@ export type Project = Tables<'projects'> & {
   is_revealed?: boolean
 }
 
-export type ProjectFile = Tables<'project_files'>
+export type ProjectFile = typeof projectFiles.$inferSelect
 
-export type ProjectMember = Tables<'project_members'> & {
+export type ProjectMember = typeof projectMembers.$inferSelect & {
   user?: DBUser | null
 }
 

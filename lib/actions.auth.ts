@@ -13,9 +13,15 @@ import {
 } from '@/lib/models'
 import { DEFAULT_USER, DEFAULT_USER_INFO } from '@/lib/defaults'
 import lodash from 'lodash'
-import { getBaseURL } from '@/lib/utils'
-import { getUserById, getUserByUsername } from '@/lib/actions.user'
+import { getBaseURL, prepareData } from '@/lib/utils'
+import {
+  getUserById,
+  getUserByUsername,
+  updateUserInfo,
+} from '@/lib/actions.user'
 import { UserRole } from '@/lib/constants'
+import { db } from '@/db/client'
+import { users } from '@/db/schema'
 
 export async function getUser(): Promise<ServerResponse<User>> {
   try {
@@ -276,30 +282,18 @@ export async function saveUserInfo(
   userInfo: DBUser,
 ): Promise<ServerResponse<DBUser>> {
   try {
-    const supabase = await createClient()
-
-    const { error } = await supabase.from('users').insert({
-      ...userInfo,
-    })
-
-    if (error) {
-      console.log('saveUserInfo error', error)
-      return {
-        status: 'error',
-        message: 'Failed to save user info.',
-      }
-    }
+    await db.insert(users).values(prepareData(userInfo))
 
     return {
       status: 'success',
-      message: 'Successfully signed out.',
+      message: 'Successfully saved user info.',
       data: userInfo,
     }
   } catch (e) {
-    console.log('signOut', e)
+    console.log('saveUserInfo', e)
     return {
       status: 'error',
-      message: 'Failed to sign in user. Please try again later.',
+      message: 'Failed to save user info. Please try again later.',
     }
   }
 }

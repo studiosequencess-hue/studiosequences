@@ -1,30 +1,23 @@
 'use server'
 
-import { createClient } from '@/lib/supabase.server'
+import { db } from '@/db/client'
+import { users } from '@/db/schema'
+import { eq, or, and, sql } from 'drizzle-orm'
 import { ServerResponse, User, DBUser } from '@/lib/models'
 import { DEFAULT_USER_INFO } from '@/lib/defaults'
 import deepmerge from 'deepmerge'
 import { UserRole } from '@/lib/constants'
+import { getUser } from '@/lib/actions.auth'
+import { prepareData } from '@/lib/utils'
 
 export async function getOnlyCompanies(): Promise<ServerResponse<DBUser[]>> {
   try {
-    const supabase = await createClient()
-    const fetchResponse = await supabase
-      .from('users')
-      .select('*')
-      .eq('role', 'company')
-
-    if (fetchResponse.error) {
-      return {
-        status: 'error',
-        message: fetchResponse.error.message,
-      }
-    }
+    const data = await db.select().from(users).where(eq(users.role, 'company'))
 
     return {
       status: 'success',
       message: 'Successfully fetched companies.',
-      data: fetchResponse.data,
+      data: data,
     }
   } catch (e) {
     console.log('getOnlyCompanies', e)
@@ -39,13 +32,9 @@ export async function getUserById(
   id: User['id'],
 ): Promise<ServerResponse<DBUser>> {
   try {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
+    const data = await db.select().from(users).where(eq(users.id, id)).limit(1)
 
-    if (error || !data || data.length == 0) {
+    if (!data || data.length === 0) {
       return {
         status: 'error',
         message: 'No such user found.',
@@ -55,10 +44,10 @@ export async function getUserById(
     return {
       status: 'success',
       message: 'Successfully fetched user.',
-      data: deepmerge(DEFAULT_USER_INFO, data[0]),
+      data: deepmerge(DEFAULT_USER_INFO, data[0] as DBUser),
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('getUserById', e)
     return {
       status: 'error',
       message: 'Failed to fetch user. Please try again later.',
@@ -70,13 +59,13 @@ export async function getUserByUsername(
   username: User['username'],
 ): Promise<ServerResponse<DBUser>> {
   try {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', username)
+    const data = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1)
 
-    if (error || !data || data.length == 0) {
+    if (!data || data.length === 0) {
       return {
         status: 'error',
         message: 'No such user found.',
@@ -86,10 +75,10 @@ export async function getUserByUsername(
     return {
       status: 'success',
       message: 'Successfully fetched user.',
-      data: deepmerge(DEFAULT_USER_INFO, data[0]),
+      data: deepmerge(DEFAULT_USER_INFO, data[0] as DBUser),
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('getUserByUsername', e)
     return {
       status: 'error',
       message: 'Failed to fetch user. Please try again later.',
@@ -101,16 +90,23 @@ export async function searchAllUsers(
   value: string,
 ): Promise<ServerResponse<DBUser[]>> {
   try {
-    const supabase = await createClient()
-    const { data, count, error } = await supabase
-      .from('users')
-      .select('*', { count: 'exact' })
-      .or(
-        `email.ilike.%${value}%,username.ilike.%${value}%,company_name.ilike.%${value}%,first_name.ilike.%${value}%,last_name.ilike.%${value}%`,
-      )
-      .range(0, 9)
+    const searchPattern = `%${value}%`
 
-    if (error || !data || data.length == 0) {
+    const data = await db
+      .select()
+      .from(users)
+      .where(
+        or(
+          sql`lower(${users.email}) like lower(${searchPattern})`,
+          sql`lower(${users.username}) like lower(${searchPattern})`,
+          sql`lower(${users.company_name}) like lower(${searchPattern})`,
+          sql`lower(${users.first_name}) like lower(${searchPattern})`,
+          sql`lower(${users.last_name}) like lower(${searchPattern})`,
+        ),
+      )
+      .limit(10)
+
+    if (!data || data.length === 0) {
       return {
         status: 'error',
         message: 'No user or companies found.',
@@ -120,10 +116,10 @@ export async function searchAllUsers(
     return {
       status: 'success',
       message: 'Successfully found users.',
-      data: data,
+      data: data as DBUser[],
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('searchAllUsers', e)
     return {
       status: 'error',
       message: 'Failed to fetch user. Please try again later.',
@@ -135,15 +131,23 @@ export async function searchOnlyUsers(
   value: string,
 ): Promise<ServerResponse<DBUser[]>> {
   try {
-    const supabase = await createClient()
-    const { data, count, error } = await supabase
-      .from('users')
-      .select('*', { count: 'exact' })
-      .or(`email.ilike.%${value}%,username.ilike.%${value}%`)
-      .eq('role', 'user')
-      .range(0, 9)
+    const searchPattern = `%${value}%`
 
-    if (error || !data || data.length == 0) {
+    const data = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.role, 'user'),
+          or(
+            sql`lower(${users.email}) like lower(${searchPattern})`,
+            sql`lower(${users.username}) like lower(${searchPattern})`,
+          ),
+        ),
+      )
+      .limit(10)
+
+    if (!data || data.length === 0) {
       return {
         status: 'error',
         message: 'No user or companies found.',
@@ -153,10 +157,10 @@ export async function searchOnlyUsers(
     return {
       status: 'success',
       message: 'Successfully found users.',
-      data: data,
+      data: data as DBUser[],
     }
   } catch (e) {
-    console.log('searchUsersOnly', e)
+    console.log('searchOnlyUsers', e)
     return {
       status: 'error',
       message: 'Failed to fetch users. Please try again later.',
@@ -167,35 +171,38 @@ export async function searchOnlyUsers(
 type UpdateUserInfoProps = Partial<DBUser> & {
   user_id: User['id']
 }
+
 export async function updateUserInfo(
   props: UpdateUserInfoProps,
 ): Promise<ServerResponse<boolean>> {
   try {
     const { user_id, ...newUserInfo } = props
 
-    const supabase = await createClient()
-    const [currentUserResponse, userByIdResponse] = await Promise.all([
-      supabase.auth.getUser(),
-      getUserById(user_id),
-    ])
-
-    if (currentUserResponse.error) {
-      return {
-        status: 'error',
-        message: currentUserResponse.error.message,
-      }
+    const userResponse = await getUser()
+    if (userResponse.status == 'error') {
+      return userResponse
     }
+    const currentUser = userResponse.data
 
-    if (userByIdResponse.status == 'error') {
+    const userByIdResponse = await getUserById(user_id)
+    if (userByIdResponse.status === 'error') {
       return {
         status: 'error',
         message: userByIdResponse.message,
       }
     }
+    const user = userByIdResponse.data
+
+    if (currentUser.id != user.id) {
+      return {
+        status: 'error',
+        message: 'Not authorized. Try again.',
+      }
+    }
 
     if (
-      currentUserResponse.data.user.role != UserRole.Admin.toString() &&
-      currentUserResponse.data.user.id != userByIdResponse.data.id
+      user.role !== UserRole.Admin.toString() &&
+      user.id !== userByIdResponse.data.id
     ) {
       return {
         status: 'error',
@@ -203,17 +210,11 @@ export async function updateUserInfo(
       }
     }
 
-    const updateResponse = await supabase
-      .from('users')
-      .update(newUserInfo)
-      .eq('id', user_id)
-
-    if (updateResponse.error) {
-      return {
-        status: 'error',
-        message: updateResponse.error.message,
-      }
-    }
+    // Update user
+    await db
+      .update(users)
+      .set(prepareData(newUserInfo))
+      .where(eq(users.id, user_id))
 
     return {
       status: 'success',
@@ -221,10 +222,10 @@ export async function updateUserInfo(
       data: true,
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('updateUserInfo', e)
     return {
       status: 'error',
-      message: 'Failed to fetch user. Please try again later.',
+      message: 'Failed to update user. Please try again later.',
     }
   }
 }

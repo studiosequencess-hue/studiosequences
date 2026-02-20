@@ -83,3 +83,17 @@ export function getTimeForInput(date: Date): string {
 
   return `${hours}:${minutes}:${seconds}`
 }
+
+export function prepareData<T extends Record<string, unknown>>(
+  obj: T,
+): { [K in keyof T]: Exclude<T[K], null> } {
+  const result = {} as Record<string, unknown>
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== null) {
+      result[key] = value
+    }
+  }
+
+  return result as { [K in keyof T]: Exclude<T[K], null> }
+}

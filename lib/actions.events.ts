@@ -1,37 +1,36 @@
 'use server'
 
-import { createClient } from '@/lib/supabase.server'
 import { ServerResponse, CompanyEvent, FormCompanyEvent } from '@/lib/models'
 import { ServerRequest } from '@/lib/actions'
 import { getUser } from '@/lib/actions.auth'
+import { db } from '@/db/client'
+import { events } from '@/db/schema'
+import { gt, asc, eq, and } from 'drizzle-orm'
 
-export async function getEvents() {
-  return ServerRequest<CompanyEvent[]>(
-    'getEvents',
-    async (): Promise<ServerResponse<CompanyEvent[]>> => {
-      const supabase = await createClient()
-      const now = new Date().toISOString()
+export async function getEvents(): Promise<ServerResponse<CompanyEvent[]>> {
+  try {
+    const now = new Date()
 
-      const fetchResponse = await supabase
-        .from('events')
-        .select('*, user:user_id(*)')
-        .gt('end_date', now)
-        .order('start_date', { ascending: true })
+    const eventsData = await db.query.events.findMany({
+      where: gt(events.end_date, now),
+      orderBy: [asc(events.start_date)],
+      with: {
+        user: true,
+      },
+    })
 
-      if (fetchResponse.error) {
-        return {
-          status: 'error',
-          message: fetchResponse.error.message,
-        }
-      }
-
-      return {
-        status: 'success',
-        message: 'Successfully fetched events.',
-        data: fetchResponse.data,
-      }
-    },
-  )
+    return {
+      status: 'success',
+      message: 'Successfully fetched events.',
+      data: eventsData,
+    }
+  } catch (e) {
+    console.log('getEvents', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch events. Please try again later.',
+    }
+  }
 }
 
 type CreateEventProps = {
@@ -43,9 +42,7 @@ export async function upsertEvent(props: CreateEventProps) {
   return ServerRequest<CompanyEvent, CreateEventProps>(
     'createEvent',
     async (): Promise<ServerResponse<CompanyEvent>> => {
-      const supabase = await createClient()
       const userResponse = await getUser()
-
       if (userResponse.status == 'error') {
         return {
           status: 'error',
@@ -53,27 +50,22 @@ export async function upsertEvent(props: CreateEventProps) {
         }
       }
 
-      const fetchResponse = await supabase
-        .from('events')
-        .upsert({
-          ...props.event,
-          user_id: userResponse.data.id,
-        })
-        .select()
-        .single()
+      const { id, ...eventData } = props.event
 
-      if (fetchResponse.error) {
-        return {
-          status: 'error',
-          message: fetchResponse.error.message,
-        }
-      }
+      const eventResult = await db
+        .insert(events)
+        .values({ ...props.event, user_id: userResponse.data.id })
+        .onConflictDoUpdate({
+          target: events.id,
+          set: { ...eventData, user_id: userResponse.data.id },
+        })
+        .returning()
 
       return {
         status: 'success',
         message: 'Successfully created event.',
         data: {
-          ...fetchResponse.data,
+          ...eventResult[0],
           user: userResponse.data,
         },
       }
@@ -81,17 +73,15 @@ export async function upsertEvent(props: CreateEventProps) {
   )
 }
 
-type UupdateEventProps = {
+type UpdateEventProps = {
   event_id: CompanyEvent['id']
   event: Partial<FormCompanyEvent>
 }
-export async function updateEvent(props: UupdateEventProps) {
-  return ServerRequest<CompanyEvent, CreateEventProps>(
+export async function updateEvent(props: UpdateEventProps) {
+  return ServerRequest<CompanyEvent, UpdateEventProps>(
     'updateEvent',
     async (): Promise<ServerResponse<CompanyEvent>> => {
-      const supabase = await createClient()
       const userResponse = await getUser()
-
       if (userResponse.status == 'error') {
         return {
           status: 'error',
@@ -99,17 +89,16 @@ export async function updateEvent(props: UupdateEventProps) {
         }
       }
 
-      const fetchResponse = await supabase
-        .from('events')
-        .update({ ...props.event })
-        .eq('id', props.event_id)
-        .select()
-        .single()
+      const fetchResponse = await db
+        .update(events)
+        .set(props.event)
+        .where(eq(events.id, props.event_id))
+        .returning()
 
-      if (fetchResponse.error) {
+      if (!fetchResponse || fetchResponse.length === 0) {
         return {
           status: 'error',
-          message: fetchResponse.error.message,
+          message: 'Event not found',
         }
       }
 
@@ -117,7 +106,7 @@ export async function updateEvent(props: UupdateEventProps) {
         status: 'success',
         message: 'Successfully updated event.',
         data: {
-          ...fetchResponse.data,
+          ...fetchResponse[0],
           user: userResponse.data,
         },
       }
@@ -132,9 +121,7 @@ export async function deleteEvent(props: DeleteEventProps) {
   return ServerRequest<boolean, DeleteEventProps>(
     'deleteEvent',
     async (): Promise<ServerResponse<boolean>> => {
-      const supabase = await createClient()
       const userResponse = await getUser()
-
       if (userResponse.status == 'error') {
         return {
           status: 'error',
@@ -142,17 +129,14 @@ export async function deleteEvent(props: DeleteEventProps) {
         }
       }
 
-      const deleteResponse = await supabase.from('events').delete().match({
-        id: props.event_id,
-        user_id: userResponse.data.id,
-      })
-
-      if (deleteResponse.error) {
-        return {
-          status: 'error',
-          message: deleteResponse.error.message,
-        }
-      }
+      await db
+        .delete(events)
+        .where(
+          and(
+            eq(events.id, props.event_id),
+            eq(events.user_id, userResponse.data.id),
+          ),
+        )
 
       return {
         status: 'success',

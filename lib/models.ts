@@ -7,6 +7,7 @@ import {
   users,
   collections,
   collectionProjects,
+  events,
 } from '@/db/schema'
 import { InferSelectModel } from 'drizzle-orm'
 
@@ -136,7 +137,7 @@ export type Collection = InferSelectModel<typeof collections> & {
 
 export type CollectionProject = InferSelectModel<typeof collectionProjects>
 
-export type CompanyEvent = Tables<'events'> & {
+export type CompanyEvent = InferSelectModel<typeof events> & {
   user: DBUser | null
 }
 export type FormCompanyEvent = Omit<

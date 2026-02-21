@@ -216,3 +216,35 @@ export async function getMyStories(): Promise<
     return { status: 'error', message: 'Failed to fetch stories' }
   }
 }
+
+// 6. Delete Story
+export async function deleteStory(
+  storyId: number,
+): Promise<ServerResponse<boolean>> {
+  try {
+    const userResponse = await getUser()
+    if (userResponse.status === 'error') {
+      return userResponse
+    }
+
+    // Verify ownership before deleting (optional but recommended)
+    const story = await db.query.stories.findFirst({
+      where: eq(stories.id, storyId),
+    })
+
+    if (!story) {
+      return { status: 'error', message: 'Story not found' }
+    }
+
+    if (story.user_id !== userResponse.data.id) {
+      return { status: 'error', message: 'Not authorized to delete this story' }
+    }
+
+    await db.delete(stories).where(eq(stories.id, storyId))
+
+    return { status: 'success', message: 'Story deleted', data: true }
+  } catch (e) {
+    console.error('deleteStory', e)
+    return { status: 'error', message: 'Failed to delete story' }
+  }
+}

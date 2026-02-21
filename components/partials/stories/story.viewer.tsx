@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { getUserStories, markStoryAsViewed } from '@/lib/actions.stories'
+import {
+  deleteStory,
+  getUserStories,
+  markStoryAsViewed,
+} from '@/lib/actions.stories'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +17,8 @@ import { StoryWithUser } from '@/lib/models'
 import UserAvatar from '@/components/partials/user-avatar'
 import { getUserInitials } from '@/lib/utils'
 import ReactPlayer from 'react-player'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Trash2 } from 'lucide-react'
+import { useAuthStore } from '@/store'
 
 interface StoryViewerDialogProps {
   userId: string | null
@@ -30,39 +35,20 @@ const StoryViewerDialog = ({
   onNextUser,
   onPrevUser,
 }: StoryViewerDialogProps) => {
+  const { user } = useAuthStore()
   const [stories, setStories] = useState<StoryWithUser[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const progressInterval = useRef<NodeJS.Timeout | null>(null)
   const STORY_DURATION = 5000
 
   const currentStory = stories[currentIndex]
-
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => {
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current)
-      }
-    }
-  }, [])
-
-  // Load stories when userId changes
-  useEffect(() => {
-    if (userId && isOpen) {
-      loadUserStories()
-    } else {
-      // Reset state when closed
-      setStories([])
-      setCurrentIndex(0)
-      setProgress(0)
-      setError(null)
-    }
-  }, [userId, isOpen])
+  const isOwner = user && user.id === currentStory?.user.id
 
   const loadUserStories = async () => {
     if (!userId) return
@@ -90,6 +76,62 @@ const StoryViewerDialog = ({
       setLoading(false)
     }
   }
+
+  const handleDelete = async () => {
+    if (!currentStory || !isOwner) return
+
+    setIsDeleting(true)
+    setIsPaused(true) // Pause while deleting
+
+    try {
+      const result = await deleteStory(currentStory.id)
+      if (result.status === 'success') {
+        // Remove from local state
+        const newStories = stories.filter((_, idx) => idx !== currentIndex)
+
+        if (newStories.length === 0) {
+          // No more stories, close dialog
+          handleClose()
+        } else {
+          // Move to next or prev
+          setStories(newStories)
+          if (currentIndex >= newStories.length) {
+            setCurrentIndex(newStories.length - 1)
+          }
+          setProgress(0)
+        }
+      } else {
+        alert(result.message || 'Failed to delete')
+      }
+    } catch (e) {
+      console.error('Delete error:', e)
+    } finally {
+      setIsDeleting(false)
+      setIsPaused(false)
+    }
+  }
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current)
+      }
+    }
+  }, [])
+
+  // Load stories when userId changes
+  useEffect(() => {
+    if (userId && isOpen) {
+      loadUserStories()
+    } else {
+      // Reset state when closed
+      setStories([])
+      setCurrentIndex(0)
+      setProgress(0)
+      setError(null)
+    }
+  }, [userId, isOpen])
 
   // Auto progress
   useEffect(() => {
@@ -299,6 +341,23 @@ const StoryViewerDialog = ({
                     </svg>
                   </div>
                 </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-center p-4 pb-8">
+              {isOwner && (
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2 rounded-full bg-red-500/80 px-6 py-2 text-white backdrop-blur-sm transition-colors hover:bg-red-600 disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Trash2 size={20} />
+                  )}
+                  <span className="text-sm/none font-medium">Delete Story</span>
+                </button>
               )}
             </div>
           </div>

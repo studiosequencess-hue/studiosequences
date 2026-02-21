@@ -9,6 +9,12 @@ import {
   collectionProjects,
   events,
   stories,
+  postLikes,
+  posts,
+  postFiles,
+  postComments,
+  postProjects,
+  userPostBookmarks,
 } from '@/db/schema'
 import { InferSelectModel } from 'drizzle-orm'
 
@@ -114,7 +120,7 @@ type ProjectBaseMedia = Pick<
 >
 export type ProjectFormFile = ProjectBaseMedia & (FileMedia | URLMedia)
 
-export type Post = Tables<'posts'> & {
+export type Post = InferSelectModel<typeof posts> & {
   user: DBUser
   likes?: PostLike[]
   comments?: PostComment[]
@@ -122,11 +128,11 @@ export type Post = Tables<'posts'> & {
   projects?: Project[]
   user_liked?: boolean
 }
-export type PostLike = Tables<'post_likes'>
-export type PostComment = Tables<'post_comments'>
-export type PostFile = Tables<'post_files'>
-export type PostProject = Tables<'post_projects'>
-export type UserPostBookmarks = Tables<'user_post_bookmarks'>
+export type PostLike = InferSelectModel<typeof postLikes>
+export type PostComment = InferSelectModel<typeof postComments>
+export type PostFile = InferSelectModel<typeof postFiles>
+export type PostProject = InferSelectModel<typeof postProjects>
+export type UserPostBookmarks = InferSelectModel<typeof userPostBookmarks>
 
 type PostBaseMedia = Pick<PostFile, 'name' | 'type'>
 

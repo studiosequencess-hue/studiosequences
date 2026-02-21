@@ -1,10 +1,17 @@
 'use server'
 
-import { createClient } from '@/lib/supabase.server'
 import { Post, PostFile, PostProject, ServerResponse, User } from '@/lib/models'
-import { POST_VISIBILITY, POSTS_LIST_TYPE } from '@/lib/constants'
+import {
+  POST_VISIBILITY,
+  POSTS_LIST_TYPE,
+  StorageBucketType,
+} from '@/lib/constants'
 import { getPathFromPublicUrl } from '@/lib/utils'
+import { db } from '@/db/client'
 import { getUser } from '@/lib/actions.auth'
+import { posts, postLikes, postFiles, postProjects } from '@/db/schema'
+import { eq, desc, and, inArray, sql } from 'drizzle-orm'
+import { createClient } from '@/lib/supabase.server'
 
 type GetPostsProps = {
   type: POSTS_LIST_TYPE
@@ -16,55 +23,89 @@ export async function getPosts(
   props: GetPostsProps,
 ): Promise<ServerResponse<Post[]>> {
   try {
-    const supabase = await createClient()
+    const offset = props.pageIndex * props.pageSize
+    const limit = props.pageSize
 
-    const from = props.pageIndex * props.pageSize
-    const to = from + props.pageSize - 1
+    const currentUser = await getUser()
+    const currentUserId =
+      currentUser.status === 'success' ? currentUser.data.id : null
 
-    const postsResponse =
-      props.type == POSTS_LIST_TYPE.PERSONAL
-        ? props.userId
-          ? await supabase
-              .from('posts')
-              .select(
-                '*, files:post_files(*), user:users(*), post_projects(project:projects(*,files:project_files(*), files_count:project_files(count))), user_liked:post_likes!left(id)',
-              )
-              .eq('user_id', props.userId)
-              .order('created_at', { ascending: false })
-              .range(from, to)
-          : {
-              error: { message: 'Invalid user. Please try again later.' },
-            }
-        : await supabase
-            .from('posts')
-            .select(
-              '*, files:post_files(*), user:users(*), post_projects(project:projects(*, files:project_files(*), files_count:project_files(count))), user_liked:post_likes!left(id)',
-            )
-            .eq('visibility', POST_VISIBILITY.PUBLIC)
-            .order('created_at', { ascending: false })
-            .range(from, to)
-
-    if (postsResponse.error) {
+    if (props.type === POSTS_LIST_TYPE.PERSONAL && !props.userId) {
       return {
         status: 'error',
-        message: postsResponse.error.message,
+        message: 'Invalid user. Please try again later.',
       }
     }
+
+    // Build where clause
+    const whereClause =
+      props.type === POSTS_LIST_TYPE.PERSONAL
+        ? eq(posts.user_id, props.userId!)
+        : eq(posts.visibility, POST_VISIBILITY.PUBLIC)
+
+    // Get posts
+    const postsData = await db.query.posts.findMany({
+      where: whereClause,
+      orderBy: [desc(posts.created_at)],
+      limit,
+      offset,
+      with: {
+        files: true,
+        user: true,
+        projects: {
+          with: {
+            project: {
+              with: {
+                files: true,
+              },
+            },
+          },
+        },
+        // If you have a likes relation defined, you can check it here
+        // But for existence check, we do it separately below
+      },
+    })
+
+    // Get all post IDs to check likes in batch
+    const postIds = postsData.map((p) => p.id)
+
+    let likedPostIds = new Set<number>()
+
+    if (currentUserId && postIds.length > 0) {
+      const likes = await db
+        .select({ postId: postLikes.post_id })
+        .from(postLikes)
+        .where(
+          and(
+            inArray(postLikes.post_id, postIds),
+            eq(postLikes.user_id, currentUserId),
+          ),
+        )
+      likedPostIds = new Set(likes.map((l) => l.postId))
+    }
+
+    // Format response
+    const formattedPosts = postsData.map((post) => ({
+      ...post,
+      user_liked: likedPostIds.has(post.id),
+      projects:
+        post.projects?.map((pp) => ({
+          ...pp.project,
+          files: pp.project?.files,
+          files_count: [{ count: pp.project?.files?.length || 0 }],
+        })) || [],
+    }))
 
     return {
       status: 'success',
       message: 'Successfully fetched posts.',
-      data: postsResponse.data.map((post) => ({
-        ...post,
-        user_liked: post.user_liked.length > 0,
-        projects: post.post_projects.map((project) => ({ ...project.project })),
-      })),
+      data: formattedPosts as Post[],
     }
   } catch (e) {
-    console.log('getUser', e)
+    console.log('getPosts', e)
     return {
       status: 'error',
-      message: 'Failed to fetch user. Please try again later.',
+      message: 'Failed to fetch posts. Please try again later.',
     }
   }
 }
@@ -76,40 +117,53 @@ export async function getPostById(
   props: GetPostByIdProps,
 ): Promise<ServerResponse<Post>> {
   try {
-    const supabase = await createClient()
-    const userResponse = await supabase.auth.getUser()
-    if (userResponse.error) {
+    const userResponse = await getUser()
+    if (userResponse.status === 'error') {
       return {
         status: 'error',
-        message: userResponse.error.message,
+        message: userResponse.message,
       }
     }
 
-    const postResponse = await supabase
-      .from('posts')
-      .select(
-        '*, files:post_files(*), user:users(*), post_projects(project:projects(*, files:project_files(*), files_count:project_files(count)))',
-      )
-      .match({ id: props.id, user_id: userResponse.data.user.id })
-      .single()
+    // Fetch post with relations, verifying ownership
+    const post = await db.query.posts.findFirst({
+      where: and(
+        eq(posts.id, props.id),
+        eq(posts.user_id, userResponse.data.id),
+      ),
+      with: {
+        files: true,
+        user: true,
+        projects: {
+          with: {
+            project: {
+              with: {
+                files: true,
+              },
+            },
+          },
+        },
+      },
+    })
 
-    if (postResponse.error) {
-      console.log('getPostById', postResponse.error)
+    if (!post) {
       return {
         status: 'error',
-        message: postResponse.error.message,
+        message: 'Post not found',
       }
     }
 
     return {
       status: 'success',
-      message: 'Successfully fetched posts.',
+      message: 'Successfully fetched post.',
       data: {
-        ...postResponse.data,
-        projects: postResponse.data.post_projects.map((p) => ({
-          ...p.project,
-        })),
-      },
+        ...post,
+        projects:
+          post.projects?.map((pp) => ({
+            ...pp.project,
+            files_count: [{ count: pp.project?.files?.length || 0 }],
+          })) || [],
+      } as Post,
     }
   } catch (e) {
     console.log('getPostById', e)
@@ -128,100 +182,108 @@ export async function upsertPost(
   props: CreatePostProps,
 ): Promise<ServerResponse<Post>> {
   try {
-    const supabase = await createClient()
     const currentUserResponse = await getUser()
-
-    if (currentUserResponse.status == 'error') {
+    if (currentUserResponse.status === 'error') {
       return {
         status: 'error',
         message: currentUserResponse.message,
       }
     }
 
-    const insertPostResponse = await supabase
-      .from('posts')
-      .upsert({
-        id: props.id,
-        content: props.content,
-        visibility: props.visibility,
-        user_id: currentUserResponse.data.id,
-        comments_count: 0,
-        likes_count: 0,
-      })
-      .select('*, files:post_files(*)')
-      .single()
+    const supabase = await createClient()
+    const userId = currentUserResponse.data.id
+    const isUpdate = props.id !== -1 && props.id !== undefined
 
-    if (insertPostResponse.error) {
-      return {
-        status: 'error',
-        message: insertPostResponse.error.message,
+    // Start transaction
+    const result = await db.transaction(async (tx) => {
+      let postId: number
+
+      if (isUpdate) {
+        // Update existing post
+        const [updatedPost] = await tx
+          .update(posts)
+          .set({
+            content: props.content,
+            visibility: props.visibility,
+          })
+          .where(and(eq(posts.id, props.id), eq(posts.user_id, userId)))
+          .returning({ id: posts.id })
+
+        if (!updatedPost) {
+          throw new Error('Post not found')
+        }
+        postId = updatedPost.id
+
+        // Get existing files for storage cleanup
+        const existingFiles = await tx
+          .select({ url: postFiles.url })
+          .from(postFiles)
+          .where(eq(postFiles.post_id, postId))
+
+        // Delete old relations
+        await tx.delete(postFiles).where(eq(postFiles.post_id, postId))
+        await tx.delete(postProjects).where(eq(postProjects.post_id, postId))
+
+        // Delete files from storage (outside transaction, but after DB delete)
+        if (existingFiles.length > 0) {
+          const filePaths = existingFiles
+            .map((f) => getPathFromPublicUrl(f.url, StorageBucketType.Files))
+            .filter((p): p is string => p !== null)
+
+          if (filePaths.length > 0) {
+            await supabase.storage
+              .from(StorageBucketType.Files)
+              .remove(filePaths)
+          }
+        }
+      } else {
+        // Insert new post
+        const [newPost] = await tx
+          .insert(posts)
+          .values({
+            content: props.content,
+            visibility: props.visibility,
+            user_id: userId,
+            comments_count: 0,
+            likes_count: 0,
+          })
+          .returning({ id: posts.id })
+
+        postId = newPost.id
       }
-    }
 
-    if (props.id != -1) {
-      await Promise.all([
-        supabase.storage
-          .from('files')
-          .remove(
-            insertPostResponse.data.files
-              .map((f) => getPathFromPublicUrl(f.url, 'files'))
-              .filter((p) => p != null),
-          ),
-        supabase.from('post_files').delete().eq('post_id', props.id),
-        supabase.from('post_projects').delete().eq('post_id', props.id),
-      ])
-    }
-
-    const [insertFilesResponse, insertProjectsResponse] = await Promise.all([
-      supabase
-        .from('post_files')
-        .insert(
+      // Insert new files
+      if (props.files.length > 0) {
+        await tx.insert(postFiles).values(
           props.files.map((file) => ({
             name: file.name,
-            post_id: insertPostResponse.data.id,
+            post_id: postId,
             url: file.url,
             type: file.type,
           })),
         )
-        .select(),
-      // .select(
-      //   'projects:projects(*, files:project_files(*), files_count:project_files(count))',
-      // ),
-      supabase
-        .from('post_projects')
-        .insert(
+      }
+
+      // Insert new project relations
+      if (props.projects.length > 0) {
+        await tx.insert(postProjects).values(
           props.projects.map((project) => ({
             project_id: project.project_id,
-            post_id: insertPostResponse.data.id,
+            post_id: postId,
           })),
         )
-        .select(
-          `projects(*, files:project_files (*), files_count:project_files(count))`,
-        ),
-    ])
-
-    if (insertFilesResponse.error) {
-      return {
-        status: 'error',
-        message: insertFilesResponse.error.message,
       }
-    }
 
-    if (insertProjectsResponse.error) {
-      return {
-        status: 'error',
-        message: insertProjectsResponse.error.message,
-      }
-    }
-
-    return getPostById({
-      id: insertPostResponse.data.id,
+      return { postId }
     })
+
+    // Fetch and return the complete post
+    return await getPostById({ id: result.postId })
   } catch (e) {
-    console.log('createPost', e)
+    console.error('upsertPost', e)
     return {
       status: 'error',
-      message: 'Failed to fetch user. Please try again later.',
+      message: e instanceof Error ? e.message : 'Failed to save post',
     }
   }
 }
@@ -233,40 +295,39 @@ export async function deletePostById(
   props: DeletePostByIdProps,
 ): Promise<ServerResponse<Post>> {
   try {
-    const supabase = await createClient()
-    const userResponse = await supabase.auth.getUser()
-
-    if (userResponse.error) {
+    const userResponse = await getUser()
+    if (userResponse.status === 'error') {
       return {
         status: 'error',
-        message: userResponse.error.message,
+        message: userResponse.message,
       }
     }
 
-    const postResponse = await supabase
-      .from('posts')
-      .delete()
-      .eq('id', props.id)
-      .eq('user_id', userResponse.data.user.id)
-      .single()
+    // Delete post with ownership verification and return deleted data
+    const deletedPost = await db
+      .delete(posts)
+      .where(
+        and(eq(posts.id, props.id), eq(posts.user_id, userResponse.data.id)),
+      )
+      .returning()
 
-    if (postResponse.error) {
+    if (!deletedPost || deletedPost.length === 0) {
       return {
         status: 'error',
-        message: postResponse.error.message,
+        message: 'Post not found or you do not have permission to delete it',
       }
     }
 
     return {
       status: 'success',
       message: 'Successfully deleted post.',
-      data: postResponse.data,
+      data: deletedPost[0] as Post,
     }
   } catch (e) {
     console.log('deletePostById', e)
     return {
       status: 'error',
-      message: 'Failed to fetch post. Please try again later.',
+      message: 'Failed to delete post. Please try again later.',
     }
   }
 }
@@ -279,47 +340,60 @@ export async function toggleLikePostById(
   props: ToggleLikePostByIdProps,
 ): Promise<ServerResponse<boolean>> {
   try {
-    const supabase = await createClient()
-    const userResponse = await supabase.auth.getUser()
-
-    if (userResponse.error) {
+    const userResponse = await getUser()
+    if (userResponse.status === 'error') {
       return {
         status: 'error',
-        message: userResponse.error.message,
+        message: userResponse.message,
       }
     }
 
-    if (props.isLiked) {
-      const [postResponse] = await Promise.all([
-        supabase.rpc('handle_post_like', {
-          p_post_id: props.id,
-          p_user_id: userResponse.data.user.id,
-          p_is_liked: true,
-        }),
-      ])
+    const userId = userResponse.data.id
+    const postId = props.id
 
-      if (postResponse.error) {
-        return {
-          status: 'error',
-          message: postResponse.error.message,
+    await db.transaction(async (tx) => {
+      if (props.isLiked) {
+        // Like: Insert into post_likes and increment counter
+        try {
+          await tx.insert(postLikes).values({
+            post_id: postId,
+            user_id: userId,
+          })
+
+          await tx
+            .update(posts)
+            .set({
+              likes_count: sql`${posts.likes_count} + 1`,
+            })
+            .where(eq(posts.id, postId))
+        } catch (e) {
+          // Handle unique constraint violation (already liked)
+          if (e && typeof e === 'object' && 'code' in e && e.code === '23505') {
+            // Already liked, treat as success
+            return { status: 'success', message: 'Already liked', data: true }
+          }
+          console.error('toggleLikePostById', e)
+          return { status: 'error', message: 'Failed to mark as liked' }
+        }
+      } else {
+        // Unlike: Delete from post_likes and decrement counter
+        const deleteResult = await tx
+          .delete(postLikes)
+          .where(
+            and(eq(postLikes.post_id, postId), eq(postLikes.user_id, userId)),
+          )
+
+        // Only decrement if a row was actually deleted
+        if (deleteResult.rowCount && deleteResult.rowCount > 0) {
+          await tx
+            .update(posts)
+            .set({
+              likes_count: sql`GREATEST(${posts.likes_count} - 1, 0)`,
+            })
+            .where(eq(posts.id, postId))
         }
       }
-    } else {
-      const [postResponse] = await Promise.all([
-        supabase.rpc('handle_post_like', {
-          p_post_id: props.id,
-          p_user_id: userResponse.data.user.id,
-          p_is_liked: false,
-        }),
-      ])
-
-      if (postResponse.error) {
-        return {
-          status: 'error',
-          message: postResponse.error.message,
-        }
-      }
-    }
+    })
 
     return {
       status: 'success',
@@ -327,10 +401,10 @@ export async function toggleLikePostById(
       data: true,
     }
   } catch (e) {
-    console.log('deletePostById', e)
+    console.log('toggleLikePostById', e)
     return {
       status: 'error',
-      message: 'Failed to fetch post. Please try again later.',
+      message: 'Failed to toggle like. Please try again later.',
     }
   }
 }

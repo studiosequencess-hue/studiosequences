@@ -60,7 +60,7 @@ export const DEFAULT_PROJECT_MEMBER: ProjectMember = {
   user_id: '',
   project_id: -1,
   department: '',
-  created_at: new Date().toString(),
+  created_at: new Date(),
 }
 
 export const POSTS_PER_PAGE = 10

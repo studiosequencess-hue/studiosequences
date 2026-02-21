@@ -16,6 +16,7 @@ import { UserRole } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { useCompanyEventsStore } from '@/store'
+import { StoryRing } from '@/components/partials/stories/story.ring'
 
 type Props = {
   user: DBUser
@@ -60,7 +61,8 @@ const HomeContentAuthenticated: React.FC<Props> = ({ user }) => {
         </div>
       </div>
       <div className={'flex min-w-0 flex-col'}>
-        <StoriesSlider />
+        {/*<StoriesSlider />*/}
+        <StoryRing />
 
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className={'mx-auto flex w-fit gap-0 *:w-fit *:px-4'}>

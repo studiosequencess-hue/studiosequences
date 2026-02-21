@@ -63,12 +63,7 @@ export const stories = pgTable('stories', {
   }).notNull(),
 })
 
-export const storiesRelations = relations(stories, ({ one, many }) => ({
-  user: one(users, { fields: [stories.user_id], references: [users.id] }),
-  views: many(storyViews),
-}))
-
-export const storyViews = pgTable(
+export const story_views = pgTable(
   'story_views',
   {
     user_id: text('user_id')
@@ -86,10 +81,15 @@ export const storyViews = pgTable(
   }),
 )
 
-export const storyViewsRelations = relations(storyViews, ({ one }) => ({
-  user: one(users, { fields: [storyViews.user_id], references: [users.id] }),
+export const storiesRelations = relations(stories, ({ one, many }) => ({
+  user: one(users, { fields: [stories.user_id], references: [users.id] }),
+  views: many(story_views),
+}))
+
+export const storyViewsRelations = relations(story_views, ({ one }) => ({
+  user: one(users, { fields: [story_views.user_id], references: [users.id] }),
   story: one(stories, {
-    fields: [storyViews.story_id],
+    fields: [story_views.story_id],
     references: [stories.id],
   }),
 }))

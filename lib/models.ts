@@ -8,6 +8,7 @@ import {
   collections,
   collectionProjects,
   events,
+  stories,
 } from '@/db/schema'
 import { InferSelectModel } from 'drizzle-orm'
 
@@ -144,3 +145,13 @@ export type FormCompanyEvent = Omit<
   CompanyEvent,
   'id' | 'created_at' | 'user_id' | 'user'
 >
+
+export type Story = InferSelectModel<typeof stories>
+
+export type StoryWithUser = Story & {
+  user: Pick<
+    DBUser,
+    'id' | 'first_name' | 'last_name' | 'username' | 'avatar' | 'company_name'
+  >
+  has_unseen: boolean
+}

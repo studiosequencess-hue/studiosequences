@@ -1,6 +1,7 @@
 import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
+import { FaUser } from 'react-icons/fa6'
 
 type AvatarProps = React.ComponentProps<typeof Avatar>
 type AvatarImageProps = React.ComponentProps<typeof AvatarImage>
@@ -13,6 +14,7 @@ type Props = {
   rootClassName?: AvatarProps['className']
   imageClassName?: AvatarImageProps['className']
   fallbackClassName?: AvatarFallbackProps['className']
+  children?: React.ReactNode
 }
 
 const UserAvatar: React.FC<Props> = (props) => {
@@ -24,8 +26,10 @@ const UserAvatar: React.FC<Props> = (props) => {
         className={cn(props.imageClassName)}
       />
       <AvatarFallback className={cn(props.fallbackClassName)}>
-        {props.fallback || 'P'}
+        {props.fallback || <FaUser className={'size-4'} />}
       </AvatarFallback>
+
+      {props.children}
     </Avatar>
   )
 }

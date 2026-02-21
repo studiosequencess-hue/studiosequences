@@ -49,11 +49,11 @@ export function getProjectPreviewURL(files: ProjectFile[]): string {
 }
 
 export function getProjectFilesCount(project: Project): number {
-  if (project.files_count.length > 0) {
+  if (project.files_count && project.files_count.length > 0) {
     return project.files_count[0].count
   }
 
-  return 0
+  return project.files.length || 0
 }
 
 export function getProjectMembersCount(project: Project): number {
@@ -76,6 +76,15 @@ export function getUserFullName(user: DBUser): string {
   )
 }
 
+export function getUserInitials(...args: (string | null)[]): string {
+  return args
+    .filter((i) => i != null)
+    .filter((i) => i.length > 0)
+    .map((i) => i[0])
+    .join('')
+    .trim()
+}
+
 export function getTimeForInput(date: Date): string {
   const hours = date.getHours().toString().padStart(2, '0')
   const minutes = date.getMinutes().toString().padStart(2, '0')
@@ -96,4 +105,14 @@ export function prepareData<T extends Record<string, unknown>>(
   }
 
   return result as { [K in keyof T]: Exclude<T[K], null> }
+}
+
+export function prepareFileType(type: string | null): 'image' | 'video' {
+  if (!type) return 'image'
+
+  if (['image', 'video'].includes(type)) {
+    return type as 'image' | 'video'
+  }
+
+  return 'image'
 }

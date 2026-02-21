@@ -16,6 +16,7 @@ export enum StorageBucketType {
   Videos = 'videos',
   Files = 'files',
   Events = 'events',
+  Stories = 'stories',
 }
 
 export enum POST_VISIBILITY {
@@ -45,4 +46,6 @@ export enum QUERY_KEYS {
   EVENTS = 'events',
   EVENTS_UPSERT = 'events-upsert',
   EVENTS_DELETE = 'events-delete',
+  STORIES_FEED = 'stories-feed',
+  STORIES_MY = 'stories-my',
 }

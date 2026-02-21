@@ -30,7 +30,7 @@ export async function getFollowings(props: GetFollowingsProps) {
         }
       }
 
-      const followings: DBUser[] = fetchResponse.data.map((f) => f.following)
+      const followings = fetchResponse.data.map((f) => f.following)
 
       return {
         status: 'success',

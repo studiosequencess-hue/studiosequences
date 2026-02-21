@@ -174,8 +174,8 @@ const CompanyEventsFormDialog = () => {
     createEventMutation.mutate({
       ...data,
       background_url: '',
-      start_date: data.start_date.toISOString(),
-      end_date: data.end_date.toISOString(),
+      start_date: data.start_date,
+      end_date: data.end_date,
     })
   }
 

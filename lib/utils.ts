@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { Project, ProjectFile, DBUser } from '@/lib/models'
+import { Project, ProjectFile, UserGeneralInfo } from '@/lib/models'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -65,7 +65,7 @@ export function getProjectMembersCount(project: Project): number {
   return 0
 }
 
-export function getUserFullName(user: DBUser): string {
+export function getUserFullName(user: UserGeneralInfo): string {
   return (
     [user.first_name, user.last_name]
       .filter((i) => i)
@@ -83,6 +83,7 @@ export function getUserInitials(...args: (string | null)[]): string {
     .map((i) => i[0])
     .join('')
     .trim()
+    .toUpperCase()
 }
 
 export function getTimeForInput(date: Date): string {

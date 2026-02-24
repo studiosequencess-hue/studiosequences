@@ -4,6 +4,7 @@ import { useProjectsStore } from './projects.store'
 import { usePostsDialogStore } from './post.dialog.store'
 import { useCompanyEventsStore } from './company.events.store'
 import { useAuthStore } from './auth.store'
+import { useConversationsStore } from './conversations.store'
 
 export {
   useAuthStore,
@@ -12,4 +13,5 @@ export {
   useProjectsStore,
   usePostsDialogStore,
   useCompanyEventsStore,
+  useConversationsStore,
 }

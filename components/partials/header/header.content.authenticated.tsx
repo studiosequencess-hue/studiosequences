@@ -55,6 +55,7 @@ const HeaderContentAuthenticated = () => {
 
   React.useEffect(() => {
     router.prefetch('/')
+    router.prefetch('/messages')
   }, [])
 
   return (
@@ -130,6 +131,7 @@ const HeaderContentAuthenticated = () => {
               className={
                 'group relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full'
               }
+              onClick={() => router.push('/messages')}
             >
               <FaMessage
                 size={18}

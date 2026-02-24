@@ -6,6 +6,7 @@ import {
   boolean,
   varchar,
   doublePrecision,
+  integer,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
@@ -421,3 +422,121 @@ export const followsRelations = relations(follows, ({ one }) => ({
     relationName: 'following',
   }),
 }))
+
+export const conversations = pgTable('conversations', {
+  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+  created_at: timestamp('created_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp('updated_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+  is_group: boolean('is_group').default(false),
+  name: text('name'),
+})
+
+export const conversation_participants = pgTable(
+  'conversation_participants',
+  {
+    id: bigint('id', { mode: 'number' })
+      .generatedAlwaysAsIdentity()
+      .primaryKey(),
+    conversation_id: bigint('conversation_id', { mode: 'number' })
+      .references(() => conversations.id, { onDelete: 'cascade' })
+      .notNull(),
+    user_id: text('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    joined_at: timestamp('joined_at', { withTimezone: true, mode: 'date' })
+      .defaultNow()
+      .notNull(),
+    role: text('role').default('member'), // 'admin', 'member'
+  },
+  (table) => ({
+    unq: { columns: [table.conversation_id, table.user_id] } as const,
+  }),
+)
+
+export const messages = pgTable('messages', {
+  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+  conversation_id: bigint('conversation_id', { mode: 'number' })
+    .references(() => conversations.id, { onDelete: 'cascade' })
+    .notNull(),
+  sender_id: text('sender_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  content: text('content'),
+  created_at: timestamp('created_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp('updated_at', { withTimezone: true, mode: 'date' }),
+  is_deleted: boolean('is_deleted').default(false),
+})
+
+export const message_attachments = pgTable('message_attachments', {
+  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+  message_id: bigint('message_id', { mode: 'number' })
+    .references(() => messages.id, { onDelete: 'cascade' })
+    .notNull(),
+  url: text('url').notNull(),
+  name: text('name').notNull(),
+  type: text('type').notNull(), // 'image', 'video', 'file'
+  size: integer('size'),
+  created_at: timestamp('created_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+})
+
+export const conversation_requests = pgTable('conversation_requests', {
+  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+  user_id: text('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  company_id: text('company_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  status: text('status').default('pending').notNull(), // 'pending', 'approved', 'rejected'
+  message: text('message'), // Initial message from user
+  created_at: timestamp('created_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp('updated_at', { withTimezone: true, mode: 'date' }),
+})
+
+export const conversationsRelations = relations(conversations, ({ many }) => ({
+  participants: many(conversation_participants),
+  messages: many(messages),
+}))
+
+export const conversationParticipantsRelations = relations(
+  conversation_participants,
+  ({ one }) => ({
+    conversation: one(conversations, {
+      fields: [conversation_participants.conversation_id],
+      references: [conversations.id],
+    }),
+    user: one(users, {
+      fields: [conversation_participants.user_id],
+      references: [users.id],
+    }),
+  }),
+)
+
+export const messagesRelations = relations(messages, ({ one, many }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversation_id],
+    references: [conversations.id],
+  }),
+  sender: one(users, { fields: [messages.sender_id], references: [users.id] }),
+  attachments: many(message_attachments),
+}))
+
+export const messageAttachmentsRelations = relations(
+  message_attachments,
+  ({ one }) => ({
+    message: one(messages, {
+      fields: [message_attachments.message_id],
+      references: [messages.id],
+    }),
+  }),
+)

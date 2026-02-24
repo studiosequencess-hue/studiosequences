@@ -1,4 +1,3 @@
-import { Database } from '@/lib/supabase.types'
 import { User as SupabaseUser } from '@supabase/auth-js'
 import {
   projects,
@@ -15,6 +14,8 @@ import {
   postComments,
   postProjects,
   userPostBookmarks,
+  conversations,
+  messages,
 } from '@/db/schema'
 import { InferSelectModel } from 'drizzle-orm'
 
@@ -45,10 +46,7 @@ type ServerResponseError = {
 
 export type ServerResponse<T> = ServerResponseSuccess<T> | ServerResponseError
 
-export type Tables<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Row']
-
-export type DBUser = typeof users.$inferSelect
+export type DBUser = InferSelectModel<typeof users>
 
 export type User = Pick<
   SupabaseUser,
@@ -66,6 +64,23 @@ export type User = Pick<
 
 export type DBUserWithFollowStatus = DBUser & {
   is_following: boolean
+}
+
+export type UserGeneralInfo = Pick<
+  DBUser,
+  | 'id'
+  | 'username'
+  | 'first_name'
+  | 'last_name'
+  | 'avatar'
+  | 'role'
+  | 'company_name'
+  | 'email'
+>
+
+export type UserGeneralInfoSearchResult = UserGeneralInfo & {
+  has_pending_request: boolean
+  has_conversation: boolean
 }
 
 export type SignInEmailData = {
@@ -161,3 +176,24 @@ export type StoryWithUser = Story & {
   >
   has_unseen: boolean
 }
+
+export type Conversation = InferSelectModel<typeof conversations> & {
+  participants: Array<{
+    user_id: string
+    user: Pick<
+      DBUser,
+      | 'id'
+      | 'username'
+      | 'first_name'
+      | 'last_name'
+      | 'company_name'
+      | 'avatar'
+      | 'role'
+      | 'email'
+    >
+  }>
+  last_message?: Pick<Message, 'content' | 'created_at' | 'sender_id'>
+  unread_count?: number
+}
+
+export type Message = InferSelectModel<typeof messages>

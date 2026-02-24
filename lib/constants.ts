@@ -1,3 +1,6 @@
+export const MAX_FILE_SIZE = 5 * 1024 * 1024
+export const MAX_FILE_SIZE_MB = 5
+
 export enum UserRole {
   User = 'user',
   Company = 'company',
@@ -17,6 +20,7 @@ export enum StorageBucketType {
   Files = 'files',
   Events = 'events',
   Stories = 'stories',
+  Messages = 'messages',
 }
 
 export enum POST_VISIBILITY {
@@ -48,4 +52,8 @@ export enum QUERY_KEYS {
   EVENTS_DELETE = 'events-delete',
   STORIES_FEED = 'stories-feed',
   STORIES_MY = 'stories-my',
+  CONVERSATIONS = 'conversations',
+  SEARCH_USERS = 'search-users',
+  CONVERSATIONS_START_CHAT = 'conversations-start-chat',
+  MESSAGES = 'messages',
 }

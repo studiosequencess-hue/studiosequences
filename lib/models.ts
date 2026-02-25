@@ -196,4 +196,14 @@ export type Conversation = InferSelectModel<typeof conversations> & {
   unread_count?: number
 }
 
-export type Message = InferSelectModel<typeof messages>
+export type Message = InferSelectModel<typeof messages> & {
+  attachments: MessageAttachment[]
+  sender: UserGeneralInfo
+}
+
+export type MessageAttachment = {
+  url: string
+  name: string
+  type: string
+  size: number | null
+}

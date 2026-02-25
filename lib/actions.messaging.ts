@@ -15,6 +15,8 @@ import { getUser } from '@/lib/actions.auth'
 import { MAX_FILE_SIZE, StorageBucketType, UserRole } from '@/lib/constants'
 import {
   Conversation,
+  Message,
+  MessageAttachment,
   ServerResponse,
   UserGeneralInfoSearchResult,
 } from '@/lib/models'
@@ -135,13 +137,8 @@ export async function getOrCreateConversation(
 export async function sendMessage(
   conversationId: number,
   content: string,
-  attachments: Array<{
-    url: string
-    name: string
-    type: string
-    size: number
-  }> = [],
-) {
+  attachments: Array<MessageAttachment> = [],
+): Promise<ServerResponse<Message>> {
   const userRes = await getUser()
   if (userRes.status === 'error') return userRes
 
@@ -192,7 +189,15 @@ export async function sendMessage(
     .set({ updated_at: new Date() })
     .where(eq(conversations.id, conversationId))
 
-  return { status: 'success', data: message[0] }
+  return {
+    status: 'success',
+    message: 'Successfully sent message.',
+    data: {
+      ...message[0],
+      attachments,
+      sender: userRes.data,
+    },
+  }
 }
 
 // 3. Get Messages
@@ -200,7 +205,7 @@ export async function getMessages(
   conversationId: number,
   limit = 50,
   offset = 0,
-) {
+): Promise<ServerResponse<Message[]>> {
   const userRes = await getUser()
   if (userRes.status === 'error') return userRes
 
@@ -234,13 +239,68 @@ export async function getMessages(
           first_name: true,
           last_name: true,
           avatar: true,
+          email: true,
+          company_name: true,
+          role: true,
         },
       },
       attachments: true,
     },
   })
 
-  return { status: 'success', data: msgs }
+  return {
+    status: 'success',
+    message: 'Successfully fetched messages',
+    data: msgs,
+  }
+}
+
+export async function getMessageById(
+  messageId: number,
+): Promise<ServerResponse<Message>> {
+  const userRes = await getUser()
+  if (userRes.status === 'error') return userRes
+
+  const message = await db.query.messages.findFirst({
+    where: eq(messages.id, messageId),
+    with: {
+      sender: {
+        columns: {
+          id: true,
+          username: true,
+          first_name: true,
+          last_name: true,
+          company_name: true,
+          avatar: true,
+          email: true,
+          role: true,
+        },
+      },
+      attachments: true,
+    },
+  })
+
+  if (!message) {
+    return { status: 'error', message: 'Message not found' }
+  }
+
+  // Verify user has access to this conversation
+  const participant = await db.query.conversation_participants.findFirst({
+    where: and(
+      eq(conversation_participants.conversation_id, message.conversation_id),
+      eq(conversation_participants.user_id, userRes.data.id),
+    ),
+  })
+
+  if (!participant) {
+    return { status: 'error', message: 'Access denied' }
+  }
+
+  return {
+    status: 'success',
+    message: 'Successfully fetched message',
+    data: message,
+  }
 }
 
 export const getMessagesCached = unstable_cache(

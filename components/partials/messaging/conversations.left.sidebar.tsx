@@ -7,7 +7,7 @@ import { Plus } from 'lucide-react'
 import { useAuthStore, useConversationsStore } from '@/store'
 import Link from 'next/link'
 import UserAvatar from '@/components/partials/user-avatar'
-import { getUserInitials } from '@/lib/utils'
+import { getUserFullName, getUserInitials } from '@/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/lib/constants'
 import { getUserConversations } from '@/lib/actions.messaging'
@@ -24,6 +24,10 @@ const ConversationLeftSidebar = () => {
       return response.status == 'success' ? response.data : []
     },
   })
+
+  React.useEffect(() => {
+    loadConversationsMutation.mutate()
+  }, [])
 
   if (loadConversationsMutation.isPending || userLoading) {
     return <Loader wrapperClassName={'h-full w-full'} />
@@ -47,7 +51,7 @@ const ConversationLeftSidebar = () => {
   const conversations = loadConversationsMutation.data || []
 
   return (
-    <div className="border-foreground/25 flex h-full w-full grow flex-col border-r">
+    <div className="flex h-full w-full grow flex-col">
       <div className="border-foreground/25 flex items-center justify-between gap-2 border-b p-2">
         <h1 className="text-sm/none font-bold">Messages</h1>
         <Button
@@ -77,10 +81,8 @@ const ConversationLeftSidebar = () => {
               <button
                 key={conv.id}
                 onClick={() => setConversation(conv)}
-                className={`flex w-full items-center gap-3 border-b p-4 text-left transition ${
-                  isSelected
-                    ? 'border-blue-200 bg-blue-50'
-                    : 'bg-white hover:bg-gray-100'
+                className={`border-foreground/25 flex w-full items-center gap-3 border-b p-2 text-left transition ${
+                  isSelected ? 'bg-foreground/10' : 'bg-foreground/0'
                 }`}
               >
                 <UserAvatar
@@ -89,15 +91,15 @@ const ConversationLeftSidebar = () => {
                     other?.first_name || null,
                     other?.last_name || null,
                     other?.company_name || null,
-                    other?.username || null,
                   )}
-                  rootClassName={'size-10'}
+                  rootClassName={'size-8'}
+                  fallbackClassName={'text-xs/none'}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">
-                    {other?.first_name} {other?.last_name}
+                    {other ? getUserFullName(other) : 'Anonymous'}
                   </div>
-                  <div className="truncate text-xs text-gray-500">
+                  <div className="truncate text-xs/none text-gray-500">
                     {conv.last_message?.content || 'New conversation'}
                   </div>
                 </div>
@@ -112,7 +114,7 @@ const ConversationLeftSidebar = () => {
 
 export default function WithWrapper() {
   return (
-    <div className={'max-w-80 grow'}>
+    <div className={'border-foreground/25 max-w-64 min-w-64 grow border-r'}>
       <ConversationLeftSidebar />
     </div>
   )

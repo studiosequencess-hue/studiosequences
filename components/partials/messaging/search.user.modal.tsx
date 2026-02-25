@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React from 'react'
 import {
   Dialog,
   DialogContent,
@@ -17,14 +17,16 @@ import SearchUserResult from '@/components/partials/messaging/search.user.result
 import { useConversationsStore } from '@/store'
 import { UserGeneralInfoSearchResult } from '@/lib/models'
 
-type TabOption = Extract<UserRole, 'user' | 'company'> | 'all'
+type TabOption = 'user' | 'company' | 'all'
 
 const SearchUsersModal = () => {
   const { newConversationDialogOpen, setNewConversationDialogOpen } =
     useConversationsStore()
-  const [query, setQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<TabOption>('all')
-  const [results, setResults] = useState<UserGeneralInfoSearchResult[]>([])
+  const [query, setQuery] = React.useState('')
+  const [activeTab, setActiveTab] = React.useState<TabOption>('all')
+  const [results, setResults] = React.useState<UserGeneralInfoSearchResult[]>(
+    [],
+  )
 
   const [debouncedQuery] = useDebouncedValue(query, {
     wait: 500,
@@ -37,7 +39,7 @@ const SearchUsersModal = () => {
 
       const res = await searchUsers(
         queryValue,
-        activeTab === 'all' ? undefined : activeTab,
+        activeTab === 'all' ? undefined : (activeTab as UserRole),
       )
       return res.status == 'success' ? res.data : []
     },
@@ -46,7 +48,13 @@ const SearchUsersModal = () => {
     },
   })
 
-  useEffect(() => {
+  const filteredResults = React.useMemo(() => {
+    return results.filter((u) =>
+      activeTab == 'all' ? true : u.role == activeTab,
+    )
+  }, [results, activeTab])
+
+  React.useEffect(() => {
     searchMutation.mutate(debouncedQuery)
   }, [debouncedQuery])
 
@@ -82,12 +90,12 @@ const SearchUsersModal = () => {
             <div className="text-muted-foreground py-4 text-center">
               Searching...
             </div>
-          ) : results.length === 0 ? (
+          ) : filteredResults.length === 0 ? (
             <div className="text-muted-foreground py-4 text-center">
               {query ? 'No results found' : 'Type to search'}
             </div>
           ) : (
-            results.map((user) => (
+            filteredResults.map((user) => (
               <SearchUserResult
                 key={`search-result-${user.id}`}
                 user={user}

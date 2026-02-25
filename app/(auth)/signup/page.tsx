@@ -36,6 +36,7 @@ import { useRouter } from 'next/navigation'
 import { HiOutlineAtSymbol } from 'react-icons/hi2'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import InputPhoneNumber from '@/components/partials/input-contact'
 
 const formSchema = z
   .object({
@@ -355,10 +356,9 @@ const SignupPage = () => {
                           </span>
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type={'tel'}
-                            placeholder={'(555) 123-4567 or 5551234567'}
-                            {...field}
+                          <InputPhoneNumber
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         <FormMessage />

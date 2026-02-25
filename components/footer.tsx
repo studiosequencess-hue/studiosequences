@@ -3,37 +3,31 @@ import Link from 'next/link'
 
 const Footer = () => {
   return (
-    <footer className="bg-primary-dark text-primary-light px-6 py-8">
-      <div className="mx-auto max-w-7xl text-center">
-        <h3 className="font-display mb-4 text-2xl font-bold">
-          Studio Sequence
-        </h3>
-        <p className="mb-6 text-gray-400">
-          Connecting creative professionals worldwide
-        </p>
-        <div className="mb-8 flex justify-center space-x-6">
-          <Link
-            href="/"
-            className="text-gray-400 transition-colors hover:text-white"
-          >
-            Privacy
-          </Link>
-          <Link
-            href="/"
-            className="text-gray-400 transition-colors hover:text-white"
-          >
-            Terms
-          </Link>
-          <Link
-            href="/"
-            className="text-gray-400 transition-colors hover:text-white"
-          >
-            Contact
-          </Link>
-        </div>
-        <p className="text-sm text-gray-500">
-          &copy; 2024 Studio Sequence. All rights reserved.
-        </p>
+    <footer className="bg-primary-dark text-primary-light flex flex-col items-center justify-between gap-3 px-6 py-8 text-center lg:flex-row">
+      <div className={'flex flex-col items-center gap-3 lg:flex-row'}>
+        <h3 className="font-bold">Studio Sequence</h3>
+        <p className="text-muted-foreground">Flare app all rights preserved</p>
+      </div>
+      <p>Connecting creative professionals worldwide</p>
+      <div className="flex flex-col items-center gap-3 lg:flex-row">
+        <Link
+          href="/"
+          className="text-muted-foreground transition-colors hover:text-white"
+        >
+          Privacy
+        </Link>
+        <Link
+          href="/"
+          className="text-muted-foreground transition-colors hover:text-white"
+        >
+          Terms
+        </Link>
+        <Link
+          href="/"
+          className="text-muted-foreground transition-colors hover:text-white"
+        >
+          Contact
+        </Link>
       </div>
     </footer>
   )

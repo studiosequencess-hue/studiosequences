@@ -132,7 +132,7 @@ const SignupPage = () => {
 
     if (response.status == 'success') {
       toast.success(response.message)
-      router.push('/login')
+      router.push('/')
     } else {
       toast.error(response.message)
     }

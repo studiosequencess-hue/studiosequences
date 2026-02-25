@@ -9,15 +9,11 @@ import {
 } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
 import { searchAllUsers } from '@/lib/actions.user'
-import { DBUser } from '@/lib/models'
-import { toast } from 'sonner'
-import debounce from 'debounce'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -27,91 +23,76 @@ import {
 } from '@/components/ui/command'
 import { UserRole } from '@/lib/constants'
 import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store'
+import { useQuery } from '@tanstack/react-query'
+import { useDebouncedValue } from '@tanstack/react-pacer'
+import { cn } from '@/lib/utils'
 
 const HeaderSearchbar = () => {
-  const { user } = useAuthStore()
   const [searchValue, setSearchValue] = useState('')
-  const [results, setResults] = React.useState<DBUser[]>([])
-  const [searching, setSearching] = React.useState<boolean>(false)
   const searchInputRef = React.useRef<HTMLInputElement>(null)
   const router = useRouter()
 
-  const searchHandler = async () => {
-    if (searching) return
-    if (searchValue.length == 0) return
-    setSearching(true)
+  const [debouncedSearchValue] = useDebouncedValue(searchValue, {
+    wait: 500,
+  })
 
-    const usersResponse = await searchAllUsers(searchValue)
+  const searchQuery = useQuery({
+    queryKey: ['search-users', debouncedSearchValue],
+    queryFn: async () => {
+      if (!debouncedSearchValue) return []
 
-    if (usersResponse.status == 'error') {
-      toast.error(usersResponse.message)
-    } else {
-      setResults(usersResponse.data.filter((item) => item.id != user?.id))
-    }
+      const response = await searchAllUsers(debouncedSearchValue)
 
-    setSearching(false)
-  }
-
-  const debouncedSearchHandler = debounce(searchHandler, 500)
+      return response.status == 'success' ? response.data : []
+    },
+    placeholderData: (previousData) => previousData,
+  })
 
   const users = React.useMemo(() => {
-    return results.filter((item) => item.role == UserRole.User.toString())
-  }, [results])
+    return (searchQuery.data || []).filter(
+      (item) => item.role == UserRole.User.toString(),
+    )
+  }, [searchQuery.data])
 
   const companies = React.useMemo(() => {
-    return results.filter((item) => item.role == UserRole.Company.toString())
-  }, [results])
+    return (searchQuery.data || []).filter(
+      (item) => item.role == UserRole.Company.toString(),
+    )
+  }, [searchQuery.data])
 
   React.useEffect(() => {
-    results.forEach((item) => {
+    ;(searchQuery.data || []).forEach((item) => {
       router.prefetch(`/users/${item.id}`)
     })
-  }, [results, router])
+  }, [searchQuery.data, router])
 
   return (
-    <Popover
-      open={results.length > 0}
-      onOpenChange={(state) => {
-        if (!state) {
-          setResults([])
-        }
-      }}
-      modal={true}
-    >
+    <Popover open={(searchQuery.data || []).length > 0}>
       <PopoverTrigger asChild>
         <InputGroup className={'w-96'}>
           <InputGroupInput
             ref={searchInputRef}
             placeholder="Search..."
             onChange={(e) => setSearchValue(e.target.value.trim())}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                debouncedSearchHandler()
-              }
-            }}
           />
           <InputGroupAddon>
             <IoSearch />
           </InputGroupAddon>
           <InputGroupAddon align={'inline-end'}>
-            {searching ? (
-              <Spinner />
-            ) : (
-              <Button
-                size={'sm'}
-                variant={'secondary'}
-                onClick={() => {
-                  debouncedSearchHandler()
-                }}
-              >
-                Search
-              </Button>
-            )}
+            <Spinner
+              className={cn(
+                searchQuery.isFetching ? 'opacity-100' : 'opacity-0',
+              )}
+            />
           </InputGroupAddon>
         </InputGroup>
       </PopoverTrigger>
-      <PopoverContent align={'start'} side={'bottom'} className={'w-96 p-1'}>
+      <PopoverContent
+        align={'start'}
+        side={'bottom'}
+        className={'w-96 p-1'}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Command>
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
@@ -121,7 +102,6 @@ const HeaderSearchbar = () => {
                   <CommandItem
                     key={`results-users-${itemIndex}`}
                     onSelect={() => {
-                      setResults([])
                       router.push(`/users/${item.id}`)
                       if (searchInputRef.current) {
                         searchInputRef.current.value = ''
@@ -153,7 +133,6 @@ const HeaderSearchbar = () => {
                   <CommandItem
                     key={`results-companies-${itemIndex}`}
                     onSelect={() => {
-                      setResults([])
                       router.push(`/users/${item.id}`)
                       if (searchInputRef.current) {
                         searchInputRef.current.value = ''

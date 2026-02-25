@@ -139,11 +139,11 @@ const HeaderContentAuthenticated = () => {
                   'text-foreground group-hover:text-foreground/80 transition-colors'
                 }
               />
-              <div
-                className={
-                  'bg-accent-blue absolute top-[55%] left-[55%] z-1 h-2.5 w-2.5 rounded-full text-xs/none'
-                }
-              />
+              {/*<div*/}
+              {/*  className={*/}
+              {/*    'bg-accent-blue absolute top-[55%] left-[55%] z-1 h-2.5 w-2.5 rounded-full text-xs/none'*/}
+              {/*  }*/}
+              {/*/>*/}
             </div>
           }
           content={'Messages'}

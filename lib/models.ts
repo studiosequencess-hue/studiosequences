@@ -142,6 +142,7 @@ export type Post = InferSelectModel<typeof posts> & {
   files?: PostFile[]
   projects?: Project[]
   user_liked?: boolean
+  user_bookmarked?: boolean
 }
 export type PostLike = InferSelectModel<typeof postLikes>
 export type PostComment = InferSelectModel<typeof postComments>

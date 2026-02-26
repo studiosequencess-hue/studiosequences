@@ -56,4 +56,7 @@ export enum QUERY_KEYS {
   SEARCH_USERS = 'search-users',
   CONVERSATIONS_START_CHAT = 'conversations-start-chat',
   MESSAGES = 'messages',
+  BOOKMARK = 'bookmark',
+  BOOKMARKS = 'bookmarks',
+  TOGGLE_BOOKMARK_POST = 'toggle-bookmark-post',
 }

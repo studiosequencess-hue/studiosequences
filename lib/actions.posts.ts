@@ -9,7 +9,13 @@ import {
 import { getPathFromPublicUrl } from '@/lib/utils'
 import { db } from '@/db/client'
 import { getUser } from '@/lib/actions.auth'
-import { posts, postLikes, postFiles, postProjects } from '@/db/schema'
+import {
+  posts,
+  postLikes,
+  postFiles,
+  postProjects,
+  userPostBookmarks,
+} from '@/db/schema'
 import { eq, desc, and, inArray, sql } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase.server'
 
@@ -61,8 +67,7 @@ export async function getPosts(
             },
           },
         },
-        // If you have a likes relation defined, you can check it here
-        // But for existence check, we do it separately below
+        bookmarks: true,
       },
     })
 
@@ -85,9 +90,10 @@ export async function getPosts(
     }
 
     // Format response
-    const formattedPosts = postsData.map((post) => ({
+    const formattedPosts: Post[] = postsData.map((post) => ({
       ...post,
       user_liked: likedPostIds.has(post.id),
+      user_bookmarked: post.bookmarks.length > 0,
       projects:
         post.projects?.map((pp) => ({
           ...pp.project,
@@ -100,6 +106,75 @@ export async function getPosts(
       status: 'success',
       message: 'Successfully fetched posts.',
       data: formattedPosts as Post[],
+    }
+  } catch (e) {
+    console.log('getPosts', e)
+    return {
+      status: 'error',
+      message: 'Failed to fetch posts. Please try again later.',
+    }
+  }
+}
+
+type GetBookmarksProps = {
+  pageSize: number
+  pageIndex: number
+  userId?: User['id']
+}
+export async function getBookmarks(
+  props: GetBookmarksProps,
+): Promise<ServerResponse<Post[]>> {
+  try {
+    const offset = props.pageIndex * props.pageSize
+    const limit = props.pageSize
+
+    const currentUser = await getUser()
+    const currentUserId =
+      currentUser.status === 'success' ? currentUser.data.id : null
+
+    // Build where clause
+    const whereClause = eq(userPostBookmarks.user_id, props.userId!)
+
+    // Get posts
+    const bookmarksData = await db.query.userPostBookmarks.findMany({
+      where: whereClause,
+      orderBy: [desc(userPostBookmarks.created_at)],
+      limit,
+      offset,
+      with: {
+        post: {
+          with: {
+            files: true,
+            projects: {
+              with: {
+                project: {
+                  with: {
+                    files: true,
+                  },
+                },
+              },
+            },
+            user: true,
+          },
+        },
+      },
+    })
+
+    // Format response
+    const formattedPosts = bookmarksData.map((b) => ({
+      ...b.post,
+      projects:
+        b.post.projects?.map((pp) => ({
+          ...pp.project,
+          files: pp.project?.files,
+          files_count: [{ count: pp.project?.files?.length || 0 }],
+        })) || [],
+    }))
+
+    return {
+      status: 'success',
+      message: 'Successfully fetched posts.',
+      data: formattedPosts,
     }
   } catch (e) {
     console.log('getPosts', e)
@@ -405,6 +480,77 @@ export async function toggleLikePostById(
     return {
       status: 'error',
       message: 'Failed to toggle like. Please try again later.',
+    }
+  }
+}
+
+type ToggleBookmarkPostByIdProps = {
+  id: Post['id']
+  isBookmarked: boolean
+}
+export async function toggleBookmarkPostById(
+  props: ToggleBookmarkPostByIdProps,
+): Promise<ServerResponse<boolean>> {
+  try {
+    const userResponse = await getUser()
+    if (userResponse.status === 'error') {
+      return userResponse
+    }
+
+    const userId = userResponse.data.id
+    const postId = props.id
+
+    await db.transaction(async (tx) => {
+      if (props.isBookmarked) {
+        // Like: Insert into userPostBookmarks
+        try {
+          await tx.insert(userPostBookmarks).values({
+            post_id: postId,
+            user_id: userId,
+          })
+        } catch (e) {
+          // Handle unique constraint violation (already liked)
+          if (e && typeof e === 'object' && 'code' in e && e.code === '23505') {
+            // Already liked, treat as success
+            return {
+              status: 'success',
+              message: 'Already bookmarked',
+              data: true,
+            }
+          }
+          console.error('toggleBookmarkPostById', e)
+          return { status: 'error', message: 'Failed to bookmark' }
+        }
+      } else {
+        // Unlike: Delete from post_likes and decrement counter
+        const deleteResult = await tx
+          .delete(postLikes)
+          .where(
+            and(eq(postLikes.post_id, postId), eq(postLikes.user_id, userId)),
+          )
+
+        // Only decrement if a row was actually deleted
+        if (deleteResult.rowCount && deleteResult.rowCount > 0) {
+          await tx
+            .update(posts)
+            .set({
+              likes_count: sql`GREATEST(${posts.likes_count} - 1, 0)`,
+            })
+            .where(eq(posts.id, postId))
+        }
+      }
+    })
+
+    return {
+      status: 'success',
+      message: `Successfully ${props.isBookmarked ? 'bookmarked' : 'un-bookmarked'} post.`,
+      data: true,
+    }
+  } catch (e) {
+    console.log('toggleBookmarkPostById', e)
+    return {
+      status: 'error',
+      message: 'Failed to toggle bookmark. Please try again later.',
     }
   }
 }

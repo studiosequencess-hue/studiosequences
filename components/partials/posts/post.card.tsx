@@ -2,13 +2,11 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { Post, PostFile, PostFormFile } from '@/lib/models'
+import { Post, PostFile } from '@/lib/models'
 import { format } from 'date-fns'
-import { MessageCircle, Share2 } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { BsThreeDotsVertical } from 'react-icons/bs'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +29,7 @@ import ReactPlayer from 'react-player'
 import { toast } from 'sonner'
 import PostEditDialog from '@/components/partials/posts/post.edit.dialog'
 import UserAvatar from '@/components/partials/user-avatar'
+import PostCardBookmarkButton from '@/components/partials/posts/post.card.bookmark.button'
 
 type Props = {
   post: Post
@@ -256,13 +255,16 @@ const PostCard: React.FC<Props> = (props) => {
           {/*  <span>{props.post.comments_count}</span>*/}
           {/*</button>*/}
         </div>
-        <div
-          className={
-            'text-foreground hover:text-foreground/80 flex cursor-pointer items-center gap-1.5'
-          }
-          onClick={handleShare}
-        >
-          <Share2 size={14} className={'text-accent-blue'} />
+        <div className={'flex items-center gap-2'}>
+          <PostCardBookmarkButton post={props.post} />
+          <div
+            className={
+              'text-foreground hover:text-foreground/80 flex cursor-pointer items-center gap-1.5'
+            }
+            onClick={handleShare}
+          >
+            <Share2 size={14} className={'text-accent-blue'} />
+          </div>
         </div>
       </div>
     </div>

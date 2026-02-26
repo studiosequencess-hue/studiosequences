@@ -71,7 +71,7 @@ const PostCard: React.FC<Props> = (props) => {
       ])
 
       setLiked((prevLiked) => !prevLiked)
-      setLikesCount((prev) => (liked ? prev - 1 : prev + 1))
+      setLikesCount((prev) => (liked ? Math.max(prev - 1, 0) : prev + 1))
 
       return { previousPost }
     },

@@ -8,6 +8,7 @@ import ProjectsDialogs from '@/components/partials/projects/projects.dialogs'
 import Providers from '@/components/providers'
 import CompanyEventsDialogs from '@/components/partials/events/company.events.dialogs'
 import ConversationsDialogs from '@/components/partials/messaging/conversations.dialogs'
+import CommentsDialogs from '@/components/partials/comments/comments.dialogs'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -37,6 +38,7 @@ export default function RootLayout({
             <ProjectsDialogs />
             <CompanyEventsDialogs />
             <ConversationsDialogs />
+            <CommentsDialogs />
           </div>
         </Providers>
       </body>

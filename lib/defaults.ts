@@ -66,3 +66,5 @@ export const DEFAULT_PROJECT_MEMBER: ProjectMember = {
 export const POSTS_PER_PAGE = 10
 
 export const FOLLOW_SUGGESTIONS_LIMIT = 10
+
+export const COMMENTS_PER_POST = 50

@@ -4,7 +4,7 @@ import React from 'react'
 import Image from 'next/image'
 import { Post, PostFile } from '@/lib/models'
 import { format } from 'date-fns'
-import { Share2 } from 'lucide-react'
+import { MessageCircle, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { BsThreeDotsVertical } from 'react-icons/bs'
 import {
@@ -20,7 +20,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from '@/components/ui/carousel'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useCommentsStore } from '@/store'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deletePostById, toggleLikePostById } from '@/lib/actions.posts'
 import { POST_VISIBILITY, QUERY_KEYS } from '@/lib/constants'
@@ -38,6 +38,7 @@ type Props = {
 
 const PostCard: React.FC<Props> = (props) => {
   const { user, loading } = useAuthStore()
+  const { setIsOpen } = useCommentsStore()
   const queryClient = useQueryClient()
   const [liked, setLiked] = React.useState(props.post.user_liked)
   const [likesCount, setLikesCount] = React.useState(props.post.likes_count)
@@ -233,9 +234,7 @@ const PostCard: React.FC<Props> = (props) => {
 
       <div className="flex items-center gap-4 border-t border-slate-50 p-4">
         <div
-          className={
-            'flex grow items-center justify-between gap-4 text-sm/none'
-          }
+          className={'flex grow items-center justify-start gap-4 text-sm/none'}
         >
           <div
             className={
@@ -248,12 +247,15 @@ const PostCard: React.FC<Props> = (props) => {
             ) : (
               <FaRegHeart size={14} />
             )}
-            <span>{likesCount}</span>
+            <span>{Math.max(likesCount, 0)}</span>
           </div>
-          {/*<button className="hover:text-accent-blue flex items-center gap-1.5 text-sm transition-colors">*/}
-          {/*  <MessageCircle className="h-4 w-4" />*/}
-          {/*  <span>{props.post.comments_count}</span>*/}
-          {/*</button>*/}
+          <div
+            className="text-foreground hover:text-foreground/80 flex cursor-pointer items-center gap-1.5"
+            onClick={() => setIsOpen(true, props.post)}
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span>{props.post.comments_count}</span>
+          </div>
         </div>
         <div className={'flex items-center gap-2'}>
           <PostCardBookmarkButton post={props.post} />

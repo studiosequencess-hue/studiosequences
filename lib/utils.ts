@@ -1,9 +1,22 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { Project, ProjectFile, UserGeneralInfo } from '@/lib/models'
+import { DBUser, Project, ProjectFile, UserGeneralInfo } from '@/lib/models'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function getUserGeneralInfo(user: DBUser): UserGeneralInfo {
+  return {
+    id: user.id,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    company_name: user.company_name,
+    role: user.role,
+    email: user.email,
+    avatar: user.avatar,
+    username: user.username,
+  }
 }
 
 export function getRandomInt(min: number, max: number) {

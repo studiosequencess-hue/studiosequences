@@ -4,7 +4,7 @@ import React from 'react'
 import PostCard from '@/components/partials/posts/post.card'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getBookmarks } from '@/lib/actions.posts'
-import { POSTS_PER_PAGE } from '@/lib/defaults'
+import { COMMENTS_PER_POST, POSTS_PER_PAGE } from '@/lib/defaults'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store'
@@ -17,7 +17,7 @@ const TabBookmarks = () => {
     queryKey: [QUERY_KEYS.BOOKMARKS],
     initialPageParam: {
       pageIndex: 0,
-      pageSize: POSTS_PER_PAGE,
+      pageSize: COMMENTS_PER_POST,
     },
     queryFn: async ({ pageParam: params }) => {
       const response = await getBookmarks({

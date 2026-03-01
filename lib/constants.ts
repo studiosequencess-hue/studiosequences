@@ -59,4 +59,8 @@ export enum QUERY_KEYS {
   BOOKMARK = 'bookmark',
   BOOKMARKS = 'bookmarks',
   TOGGLE_BOOKMARK_POST = 'toggle-bookmark-post',
+  COMMENTS = 'comments',
+  COMMENTS_INSERT = 'comments-insert',
+  COMMENTS_UPDATE = 'comments-update',
+  COMMENTS_DELETE = 'comments-delete',
 }

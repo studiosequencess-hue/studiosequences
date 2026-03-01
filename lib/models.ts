@@ -145,7 +145,9 @@ export type Post = InferSelectModel<typeof posts> & {
   user_bookmarked?: boolean
 }
 export type PostLike = InferSelectModel<typeof postLikes>
-export type PostComment = InferSelectModel<typeof postComments>
+export type PostComment = InferSelectModel<typeof postComments> & {
+  user: UserGeneralInfo
+}
 export type PostFile = InferSelectModel<typeof postFiles>
 export type PostProject = InferSelectModel<typeof postProjects>
 export type UserPostBookmarks = InferSelectModel<typeof userPostBookmarks>

@@ -8,22 +8,17 @@ import {
   SignInEmailData,
   SignInUsernameData,
   SignUpData,
-  User,
   DBUser,
 } from '@/lib/models'
 import { DEFAULT_USER, DEFAULT_USER_INFO } from '@/lib/defaults'
 import lodash from 'lodash'
 import { getBaseURL, prepareData } from '@/lib/utils'
-import {
-  getUserById,
-  getUserByUsername,
-  updateUserInfo,
-} from '@/lib/actions.user'
+import { getUserById, getUserByUsername } from '@/lib/actions.user'
 import { UserRole } from '@/lib/constants'
 import { db } from '@/db/client'
 import { users } from '@/db/schema'
 
-export async function getUser(): Promise<ServerResponse<User>> {
+export async function getUser(): Promise<ServerResponse<DBUser>> {
   try {
     const supabase = await createClient()
     const currentUserResponse = await supabase.auth.getUser()
@@ -64,7 +59,7 @@ export async function getUser(): Promise<ServerResponse<User>> {
 
 export async function signInWithEmailPassword(
   signInData: SignInEmailData,
-): Promise<ServerResponse<User>> {
+): Promise<ServerResponse<DBUser>> {
   try {
     const supabase = await createClient()
 
@@ -97,7 +92,7 @@ export async function signInWithEmailPassword(
 
 export async function signInWithUsernamePassword(
   signInData: SignInUsernameData,
-): Promise<ServerResponse<User>> {
+): Promise<ServerResponse<DBUser>> {
   try {
     const supabase = await createClient()
 
@@ -244,7 +239,7 @@ export async function sendPasswordResetRequest(
 
 export async function resetPassword(
   passwordResetData: PasswordResetData,
-): Promise<ServerResponse<User>> {
+): Promise<ServerResponse<DBUser>> {
   try {
     const supabase = await createClient()
 

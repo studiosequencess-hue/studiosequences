@@ -1,16 +1,16 @@
 import { create } from 'zustand'
-import { User } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 
 interface AuthState {
-  user: User | null
-  setUser: (user: User | null) => void
+  user: DBUser | null
+  setUser: (user: DBUser | null) => void
   loading: boolean
   setLoading: (loading: boolean) => void
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
-  setUser: (user: User | null) => set({ user }),
+  setUser: (user) => set({ user }),
   loading: true,
   setLoading: (loading: boolean) => set({ loading }),
 }))

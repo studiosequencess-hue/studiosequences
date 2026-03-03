@@ -11,10 +11,10 @@ import { cn, getUserFullName, getUserInitials } from '@/lib/utils'
 import InputFile from '@/components/partials/input-file'
 import { Spinner } from '@/components/ui/spinner'
 import UserAvatar from '@/components/partials/user-avatar'
-import { User } from '@/lib/models'
+import { DBUser } from '@/lib/models'
 
 type Props = {
-  user: User
+  user: DBUser
 }
 
 const ProfileAvatar: React.FC<Props> = ({ user }) => {

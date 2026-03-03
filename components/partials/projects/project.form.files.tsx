@@ -119,7 +119,7 @@ const ProjectFormFiles: React.FC<Props> = ({
               'border-foreground w-full rounded-sm border',
               user?.role == UserRole.Company
                 ? 'h-[calc(100vh-450px)]'
-                : 'h-[calc(100vh-300px)]',
+                : 'h-[calc(100vh-400px)]',
             )}
           >
             <div className={'flex flex-col'}>

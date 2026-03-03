@@ -9,8 +9,10 @@ import { Story, StoryWithUser } from '@/lib/models'
 import UserAvatar from '@/components/partials/user-avatar'
 import { FaUser } from 'react-icons/fa6'
 import { getUserInitials } from '@/lib/utils'
+import { useAuthStore } from '@/store'
 
 export function StoryRing() {
+  const { user } = useAuthStore()
   const [stories, setStories] = useState<StoryWithUser[]>([])
   const [myStories, setMyStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
@@ -101,14 +103,13 @@ export function StoryRing() {
             }
           >
             <div
-              className={`rounded-full p-0.5 ${myStories.length > 0 ? 'bg-linear-to-tr from-yellow-400 via-red-500 to-purple-500' : 'bg-gray-300'}`}
+              className={`rounded-full p-0.5 ${myStories.length > 0 ? 'bg-linear-to-tr from-yellow-400 via-red-500 to-purple-500' : ''}`}
             >
-              <div className="rounded-full bg-white p-0.5">
-                <UserAvatar
-                  rootClassName={'size-16'}
-                  fallback={<FaUser className={'size-6'} />}
-                />
-              </div>
+              <UserAvatar
+                src={user?.avatar}
+                rootClassName={'size-16'}
+                fallback={<FaUser className={'size-6'} />}
+              />
             </div>
 
             <button

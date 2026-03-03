@@ -199,14 +199,18 @@ export async function createProject(
     // Insert project
     const insertProjectResponse = await db
       .insert(projects)
-      .values({
-        title: props.title,
-        description: props.description,
-        is_sensitive: props.is_sensitive,
-        position: -1,
-        user_id: currentUserResponse.data.id,
-      })
+      .values([
+        {
+          title: props.title,
+          description: props.description,
+          is_sensitive: props.is_sensitive,
+          position: -1,
+          user_id: currentUserResponse.data.id,
+        },
+      ])
       .returning()
+
+    console.log('createProject', insertProjectResponse)
 
     if (!insertProjectResponse[0]) {
       return {
@@ -217,32 +221,48 @@ export async function createProject(
 
     const projectId = insertProjectResponse[0].id
 
+    const insertFilesPromise =
+      props.files && props.files.length > 0
+        ? db
+            .insert(projectFiles)
+            .values(
+              props.files.map((file) => ({
+                title: file.title,
+                description: file.description,
+                url: file.url,
+                project_id: projectId,
+                name: file.name,
+                type: file.type,
+              })),
+            )
+            .returning()
+        : new Promise<ProjectFile[]>((resolve) => {
+            setTimeout(() => resolve([]), 500)
+          })
+
+    const insertMembersPromise =
+      props.members && props.members.length > 0
+        ? db
+            .insert(projectMembers)
+            .values(
+              props.members.map((member) => ({
+                department: member.department,
+                user_id: member.user_id,
+                project_id: projectId,
+              })),
+            )
+            .returning()
+        : new Promise<ProjectMember[]>((resolve) => {
+            setTimeout(() => resolve([]), 500)
+          })
+
     // Insert files and members in parallel
     const [insertFilesResponse, insertMembersResponse] = await Promise.all([
-      db
-        .insert(projectFiles)
-        .values(
-          props.files.map((file) => ({
-            title: file.title,
-            description: file.description,
-            url: file.url,
-            project_id: projectId,
-            name: file.name,
-            type: file.type,
-          })),
-        )
-        .returning(),
-      db
-        .insert(projectMembers)
-        .values(
-          props.members.map((member) => ({
-            department: member.department,
-            user_id: member.user_id,
-            project_id: projectId,
-          })),
-        )
-        .returning(),
+      insertFilesPromise,
+      insertMembersPromise,
     ])
+
+    console.log('createProject', insertFilesResponse, insertMembersResponse)
 
     return {
       status: 'success',

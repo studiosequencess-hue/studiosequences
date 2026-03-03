@@ -7,35 +7,24 @@ import { deleteFile, uploadFile } from '@/lib/actions.storage'
 import { StorageBucketType, StoragePath } from '@/lib/constants'
 import { toast } from 'sonner'
 import { updateUserInfo } from '@/lib/actions.user'
-import { cn } from '@/lib/utils'
+import { cn, getUserFullName, getUserInitials } from '@/lib/utils'
 import InputFile from '@/components/partials/input-file'
 import { Spinner } from '@/components/ui/spinner'
 import UserAvatar from '@/components/partials/user-avatar'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-
-type AvatarProps = React.ComponentProps<typeof Avatar>
-type AvatarImageProps = React.ComponentProps<typeof AvatarImage>
-type AvatarFallbackProps = React.ComponentProps<typeof AvatarFallback>
+import { User } from '@/lib/models'
 
 type Props = {
-  editable: boolean
-  src?: AvatarImageProps['src'] | null
-  alt?: AvatarImageProps['alt']
-  fallback?: AvatarFallbackProps['children']
-  rootClassName?: AvatarProps['className']
-  imageClassName?: AvatarImageProps['className']
-  fallbackClassName?: AvatarFallbackProps['className']
+  user: User
 }
 
-const ProfileAvatar: React.FC<Props> = (props) => {
-  const { user, setUser } = useAuthStore()
+const ProfileAvatar: React.FC<Props> = ({ user }) => {
+  const { setUser } = useAuthStore()
   const ref = React.useRef<HTMLInputElement>(null)
   const [editing, setEditing] = React.useState<boolean>(false)
 
   const handleFileUpload = async (file: File) => {
     if (editing) return
     if (!user) return
-    if (!props.editable) return
 
     setEditing(true)
 
@@ -79,7 +68,6 @@ const ProfileAvatar: React.FC<Props> = (props) => {
     if (editing) return
     if (!user) return
     if (!user.avatar) return
-    if (!props.editable) return
 
     setEditing(true)
 
@@ -117,15 +105,17 @@ const ProfileAvatar: React.FC<Props> = (props) => {
 
   return (
     <UserAvatar
-      src={props.src}
-      alt={props.alt}
-      fallback={props.fallback}
-      rootClassName={cn(
-        'group absolute top-44 left-20 z-20 h-40 w-40 -translate-y-1/2',
-        props.rootClassName,
+      src={user.avatar || ''}
+      alt={getUserFullName(user)}
+      fallback={getUserInitials(
+        user.first_name,
+        user.last_name,
+        user.company_name,
       )}
-      fallbackClassName={cn('text-5xl/none', props.fallbackClassName)}
-      imageClassName={props.imageClassName}
+      rootClassName={cn(
+        'group absolute top-44 left-20 z-20 size-40 -translate-y-1/2',
+      )}
+      fallbackClassName={cn('text-5xl/none')}
     >
       <React.Fragment>
         {user?.is_open_to_work && (
@@ -138,58 +128,54 @@ const ProfileAvatar: React.FC<Props> = (props) => {
           </div>
         )}
 
-        {props.editable && (
-          <div
-            className={cn(
-              'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
-              editing && 'opacity-100',
-            )}
-          >
-            {editing ? (
-              <Spinner
-                className={cn(
-                  'absolute top-1/2 left-1/2 size-6 -translate-1/2',
-                )}
-              />
-            ) : (
-              <div
-                className={
-                  'absolute inset-0 hidden flex-col items-center justify-center gap-2 group-hover:flex'
-                }
+        <div
+          className={cn(
+            'group bg-background/35 absolute inset-0 z-10 flex items-center justify-center text-sm/none opacity-0 transition-opacity hover:opacity-100',
+            editing && 'opacity-100',
+          )}
+        >
+          {editing ? (
+            <Spinner
+              className={cn('absolute top-1/2 left-1/2 size-6 -translate-1/2')}
+            />
+          ) : (
+            <div
+              className={
+                'absolute inset-0 hidden flex-col items-center justify-center gap-2 group-hover:flex'
+              }
+            >
+              <Button
+                size={'sm'}
+                variant={'secondary'}
+                onClick={() => {
+                  if (!ref.current) return
+
+                  ref.current.click()
+                }}
               >
+                change
+              </Button>
+
+              {user?.avatar && (
                 <Button
                   size={'sm'}
-                  variant={'secondary'}
-                  onClick={() => {
-                    if (!ref.current) return
-
-                    ref.current.click()
-                  }}
+                  variant={'destructive'}
+                  onClick={handleDelete}
                 >
-                  change
+                  delete
                 </Button>
-
-                {user?.avatar && (
-                  <Button
-                    size={'sm'}
-                    variant={'destructive'}
-                    onClick={handleDelete}
-                  >
-                    delete
-                  </Button>
-                )}
-              </div>
-            )}
-            <InputFile
-              ref={ref}
-              accept={'image/*'}
-              disabled={editing}
-              className={'hidden'}
-              multiple={false}
-              onFileUpload={handleFileUpload}
-            />
-          </div>
-        )}
+              )}
+            </div>
+          )}
+          <InputFile
+            ref={ref}
+            accept={'image/*'}
+            disabled={editing}
+            className={'hidden'}
+            multiple={false}
+            onFileUpload={handleFileUpload}
+          />
+        </div>
       </React.Fragment>
     </UserAvatar>
   )

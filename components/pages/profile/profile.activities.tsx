@@ -11,25 +11,12 @@ interface User {
   avatar: string
 }
 
-interface Activity {
-  id: number
-  user: User
-  type: 'posted_artwork' | 'started_following' | 'liked_artwork' | 'commented'
-  target: string
-  timestamp: string
-  content: string | null
-  previewImg: string | null
-  stats: {
-    likes: number
-    comments: number
-    shares: number
-  }
-}
+type Props = { editable: boolean }
 
-const ProfileActivities: React.FC = () => {
+const ProfileActivities: React.FC<Props> = (props) => {
   return (
     <div className={'flex flex-col gap-3'}>
-      <PostForm type={POSTS_LIST_TYPE.PERSONAL} />
+      {props.editable && <PostForm type={POSTS_LIST_TYPE.PERSONAL} />}
       <PostsInfiniteList type={POSTS_LIST_TYPE.PERSONAL} />
     </div>
   )

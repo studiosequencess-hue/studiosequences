@@ -1,6 +1,6 @@
 import React from 'react'
-import { DBUser } from '@/lib/models'
-import { cn } from '@/lib/utils'
+import { User } from '@/lib/models'
+import { cn, getUserInitials } from '@/lib/utils'
 import { HiBadgeCheck, HiOutlineBadgeCheck } from 'react-icons/hi'
 import HoverCard from '@/components/partials/hover-card'
 import ProfileDisplayName from '@/components/pages/profile/profile.display.name'
@@ -10,9 +10,10 @@ import ProfileBackgroundBottom from '@/components/pages/profile/profile.backgrou
 import ProfileAvatar from '@/components/pages/profile/profile.avatar'
 import ProfileExtraInfo from '@/components/pages/profile/profile.extra.info'
 import { UserRole } from '@/lib/constants'
+import UserAvatar from '@/components/partials/user-avatar'
 
 type Props = {
-  user: DBUser
+  user: User
   editable: boolean
 }
 
@@ -57,7 +58,23 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
         <ProfileExtraInfo user={user} editable={editable} />
         <ProfileBackgroundBottom user={user} editable={editable} />
       </div>
-      <ProfileAvatar editable={editable} />
+      {editable ? (
+        <ProfileAvatar user={user} />
+      ) : (
+        <UserAvatar
+          src={user.avatar}
+          fallback={getUserInitials(
+            user.first_name,
+            user.last_name,
+            user.company_name,
+          )}
+          rootClassName={
+            'group absolute top-44 left-20 z-20 size-40 -translate-y-1/2'
+          }
+          fallbackClassName={'text-5xl/none'}
+        />
+      )}
+      )
     </div>
   )
 }

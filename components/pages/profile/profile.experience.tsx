@@ -1,12 +1,6 @@
 'use client'
 
-import React, {
-  useRef,
-  useState,
-  MouseEvent,
-  ChangeEvent,
-  FormEvent,
-} from 'react'
+import React, { useRef, useState, MouseEvent, FormEvent } from 'react'
 import {
   Briefcase,
   MapPin,

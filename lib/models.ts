@@ -16,6 +16,7 @@ import {
   userPostBookmarks,
   conversations,
   messages,
+  userExperiences,
 } from '@/db/schema'
 import { InferSelectModel } from 'drizzle-orm'
 
@@ -210,3 +211,5 @@ export type MessageAttachment = {
   type: string
   size: number | null
 }
+
+export type UserExperience = InferSelectModel<typeof userExperiences>

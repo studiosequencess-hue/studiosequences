@@ -46,6 +46,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   events: many(events),
   followers: many(follows, { relationName: 'following' }),
   following: many(follows, { relationName: 'follower' }),
+  experiences: many(userExperiences),
 }))
 
 export const stories = pgTable('stories', {
@@ -537,6 +538,54 @@ export const messageAttachmentsRelations = relations(
     message: one(messages, {
       fields: [message_attachments.message_id],
       references: [messages.id],
+    }),
+  }),
+)
+
+export const userExperiences = pgTable('user_experiences', {
+  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+  user_id: text('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  title: text('title').notNull(),
+  company_name: text('company_name').notNull(),
+  employment_type: text('employment_type').notNull(),
+  start_date: timestamp('start_date', {
+    withTimezone: true,
+    mode: 'date',
+  }).notNull(),
+  end_date: timestamp('end_date', { withTimezone: true, mode: 'date' }),
+  description: text('description'),
+  skills: text('skills'),
+  created_at: timestamp('created_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+  updated_at: timestamp('updated_at', {
+    withTimezone: true,
+    mode: 'date',
+  }).defaultNow(),
+})
+
+export const userExperienceMedia = pgTable('experience_media', {
+  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+  experience_id: bigint('experience_id', { mode: 'number' })
+    .references(() => userExperiences.id, { onDelete: 'cascade' })
+    .notNull(),
+  url: text('url').notNull(),
+  name: text('name').notNull(),
+  type: text('type').notNull(),
+  size: bigint('size', { mode: 'number' }),
+  created_at: timestamp('created_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+})
+
+export const userExperiencesRelations = relations(
+  userExperiences,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [userExperiences.user_id],
+      references: [users.id],
     }),
   }),
 )

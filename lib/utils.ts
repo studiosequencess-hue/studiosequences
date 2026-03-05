@@ -1,6 +1,12 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { DBUser, Project, ProjectFile, UserGeneralInfo } from '@/lib/models'
+import {
+  DBUser,
+  Project,
+  ProjectFile,
+  UserExperience,
+  UserGeneralInfo,
+} from '@/lib/models'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -129,4 +135,28 @@ export function prepareFileType(type: string | null): 'image' | 'video' {
   }
 
   return 'image'
+}
+
+export function calculateDuration(start: string, end: string | null): string {
+  const startDate = new Date(start)
+  const endDate = end ? new Date(end) : new Date()
+
+  const months =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+    (endDate.getMonth() - startDate.getMonth())
+
+  const years = Math.floor(months / 12)
+  const remainingMonths = months % 12
+
+  if (years === 0) return `${remainingMonths} mos`
+  if (remainingMonths === 0) return `${years} yr${years > 1 ? 's' : ''}`
+  return `${years} yr ${remainingMonths} mos`
+}
+
+export function sortExperiences(
+  experiences: UserExperience[],
+): UserExperience[] {
+  return experiences.sort((a, b) => {
+    return new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  })
 }

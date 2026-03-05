@@ -64,3 +64,12 @@ export enum QUERY_KEYS {
   COMMENTS_UPDATE = 'comments-update',
   COMMENTS_DELETE = 'comments-delete',
 }
+
+export enum EMPLOYMENT_TYPE {
+  FULL_TIME = 'full-time',
+  PART_TIME = 'part-time',
+  CONTRACT = 'contract',
+  INTERNSHIP = 'internship',
+  FREELANCE = 'freelance',
+  SELF_EMPLOYED = 'self-employed',
+}

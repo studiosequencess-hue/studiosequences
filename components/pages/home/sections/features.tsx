@@ -136,7 +136,7 @@ const Features = () => {
       <div className="mx-auto max-w-6xl">
         <div className="mb-16 text-center">
           <h3 className="font-display mb-4 text-4xl font-bold">
-            Why Choose Studio Sequence?
+            Why Choose Flare?
           </h3>
           <p className="mx-auto max-w-2xl text-xl text-gray-600">
             Professional tools designed specifically for creative industries

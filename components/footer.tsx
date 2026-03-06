@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer className="bg-primary-dark text-primary-light flex flex-col items-center justify-between gap-3 px-6 py-8 text-center lg:flex-row">
       <div className={'flex flex-col items-center gap-3 lg:flex-row'}>
-        <h3 className="font-bold">Studio Sequence</h3>
+        <h3 className="font-bold">Flare</h3>
         <p className="text-muted-foreground">Flare app all rights preserved</p>
       </div>
       <p>Connecting creative professionals worldwide</p>

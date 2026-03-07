@@ -41,7 +41,7 @@ const PostCard: React.FC<Props> = (props) => {
   const { setIsOpen } = useCommentsStore()
   const queryClient = useQueryClient()
   const [liked, setLiked] = React.useState(props.post.user_liked)
-  const [likesCount, setLikesCount] = React.useState(props.post.likes_count)
+  const [likesCount, setLikesCount] = React.useState(props.post.likesCount)
   const [editOpen, setEditOpen] = React.useState(false)
 
   const deletePostMutation = useMutation({
@@ -155,7 +155,7 @@ const PostCard: React.FC<Props> = (props) => {
                 href={`/users/${props.post.user.id}`}
                 className="max-w-64 truncate font-bold"
               >
-                {[props.post.user.first_name, props.post.user.last_name]
+                {[props.post.user.firstName, props.post.user.lastName]
                   .join(' ')
                   .trim() || 'Anonymous'}
               </Link>
@@ -164,7 +164,7 @@ const PostCard: React.FC<Props> = (props) => {
               </span>
             </div>
             <span className="block text-xs/none">
-              {format(props.post.created_at, 'MMMM dd, yyyy')}
+              {format(props.post.createdAt, 'MMMM dd, yyyy')}
             </span>
           </div>
           <div className={'flex items-center gap-2'}>
@@ -254,7 +254,7 @@ const PostCard: React.FC<Props> = (props) => {
             onClick={() => setIsOpen(true, props.post)}
           >
             <MessageCircle className="h-4 w-4" />
-            <span>{props.post.comments_count}</span>
+            <span>{props.post.commentsCount}</span>
           </div>
         </div>
         <div className={'flex items-center gap-2'}>

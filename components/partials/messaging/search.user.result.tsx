@@ -108,11 +108,7 @@ const SearchUserResult: React.FC<Props> = ({ user, onClose }) => {
     >
       <UserAvatar
         src={user.avatar}
-        fallback={getUserInitials(
-          user.first_name,
-          user.last_name,
-          user.company_name,
-        )}
+        fallback={getUserInitials(user.firstName, user.lastName, user.lastName)}
         rootClassName={'size-10'}
       />
       <div className="flex-1">

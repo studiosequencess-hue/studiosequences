@@ -45,7 +45,7 @@ const ProfileBackgroundBottom: React.FC<Props> = ({ user, editable }) => {
 
       const updateInfoResponse = await updateUserInfo({
         user_id: currentUser.id,
-        background_bottom: `${url}?t=${new Date().getTime()}`,
+        backgroundBottom: `${url}?t=${new Date().getTime()}`,
       })
 
       if (updateInfoResponse.status == 'error') {
@@ -54,7 +54,7 @@ const ProfileBackgroundBottom: React.FC<Props> = ({ user, editable }) => {
         toast.success(updateInfoResponse.message)
         setUser({
           ...currentUser,
-          background_bottom: url,
+          backgroundBottom: url,
         })
       }
     }
@@ -69,19 +69,19 @@ const ProfileBackgroundBottom: React.FC<Props> = ({ user, editable }) => {
   const handleDelete = async () => {
     if (editing) return
     if (!currentUser) return
-    if (!currentUser.background_bottom) return
+    if (!currentUser.backgroundBottom) return
 
     setEditing(true)
 
     const [deleteResponse, updateInfoResponse] = await Promise.all([
       deleteFile({
-        user_id: currentUser.id,
+        userId: currentUser.id,
         bucket: StorageBucketType.Images,
-        publicUrl: currentUser.background_bottom,
+        publicUrl: currentUser.backgroundBottom,
       }),
       updateUserInfo({
         user_id: currentUser.id,
-        background_bottom: '',
+        backgroundBottom: '',
       }),
     ])
 
@@ -98,7 +98,7 @@ const ProfileBackgroundBottom: React.FC<Props> = ({ user, editable }) => {
       toast.success('Background deleted successfully')
       setUser({
         ...currentUser,
-        background_bottom: '',
+        backgroundBottom: '',
       })
     }
 
@@ -107,10 +107,10 @@ const ProfileBackgroundBottom: React.FC<Props> = ({ user, editable }) => {
 
   return (
     <div className={'absolute inset-0 h-full w-full grow'}>
-      {user?.background_bottom && (
+      {user?.backgroundBottom && (
         <div className={'absolute inset-0'}>
           <Image
-            src={user.background_bottom}
+            src={user.backgroundBottom}
             alt={'background-image-bottom'}
             layout="fill"
             objectFit="cover"
@@ -144,7 +144,7 @@ const ProfileBackgroundBottom: React.FC<Props> = ({ user, editable }) => {
                 change
               </Button>
 
-              {currentUser?.background_bottom && (
+              {currentUser?.backgroundBottom && (
                 <Button
                   size={'sm'}
                   variant={'destructive'}

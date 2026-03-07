@@ -97,7 +97,7 @@ const ConversationsChatArea = () => {
   }
 
   const otherUser = conversation?.participants?.find(
-    (p) => p.user_id !== user.id,
+    (p) => p.userId !== user.id,
   )?.user
 
   return (
@@ -107,9 +107,9 @@ const ConversationsChatArea = () => {
         <UserAvatar
           src={otherUser?.avatar}
           fallback={getUserInitials(
-            otherUser?.first_name || null,
-            otherUser?.last_name || null,
-            otherUser?.company_name || null,
+            otherUser?.firstName || null,
+            otherUser?.lastName || null,
+            otherUser?.lastName || null,
           )}
           rootClassName={'size-8'}
           fallbackClassName={'text-xs/none'}
@@ -130,11 +130,11 @@ const ConversationsChatArea = () => {
           </div>
         ) : (
           messages.map((msg) => {
-            const isMe = msg.sender_id === user.id
+            const isMe = msg.senderId === user.id
             const showAvatar =
               !isMe &&
               (!messages[messages.indexOf(msg) - 1] ||
-                messages[messages.indexOf(msg) - 1].sender_id !== msg.sender_id)
+                messages[messages.indexOf(msg) - 1].senderId !== msg.senderId)
 
             return (
               <div
@@ -146,9 +146,9 @@ const ConversationsChatArea = () => {
                   <UserAvatar
                     src={msg.sender.avatar}
                     fallback={getUserInitials(
-                      msg.sender.first_name,
-                      msg.sender.last_name,
-                      msg.sender.company_name,
+                      msg.sender.firstName,
+                      msg.sender.lastName,
+                      msg.sender.lastName,
                     )}
                   />
                 )}
@@ -158,9 +158,9 @@ const ConversationsChatArea = () => {
                   className={`max-w-[70%] ${isMe ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'} rounded-2xl px-4 py-2 shadow-sm`}
                 >
                   {/* Sender name in groups (optional) */}
-                  {!isMe && conversation?.is_group && (
+                  {!isMe && conversation?.isGroup && (
                     <div className="mb-1 text-xs font-medium opacity-70">
-                      {msg.sender?.first_name || msg.sender?.username}
+                      {msg.sender?.firstName || msg.sender?.username}
                     </div>
                   )}
 
@@ -189,7 +189,7 @@ const ConversationsChatArea = () => {
                   <div
                     className={`mt-1 text-right text-xs ${isMe ? 'text-blue-100' : 'text-gray-400'}`}
                   >
-                    {new Date(msg.created_at).toLocaleTimeString([], {
+                    {new Date(msg.createdAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}

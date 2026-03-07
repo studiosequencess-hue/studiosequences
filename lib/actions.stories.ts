@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/db/client'
-import { stories, story_views, follows } from '@/db/schema'
+import { stories, storyViews, follows } from '@/drizzle/schema'
 import { eq, and, desc, inArray, gt } from 'drizzle-orm'
 import { getUser } from '@/lib/actions.auth'
 import type { ServerResponse, StoryWithUser } from '@/lib/models'
@@ -16,15 +16,15 @@ export async function createStory(
       return userResponse
     }
 
-    const expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
 
     const result = await db
       .insert(stories)
       .values({
-        user_id: userResponse.data.id,
+        userId: userResponse.data.id,
         url,
         type,
-        expires_at,
+        expiresAt,
       })
       .returning({ id: stories.id })
 
@@ -53,16 +53,16 @@ export async function getStoriesFeed(): Promise<
       return userResponse
     }
 
-    const current_user_id = userResponse.data.id
+    const current_userId = userResponse.data.id
     const now = new Date()
 
     // Get IDs of users that current user follows
     const following = await db
-      .select({ following_id: follows.following_id })
+      .select({ followingId: follows.followingId })
       .from(follows)
-      .where(eq(follows.follower_id, current_user_id))
+      .where(eq(follows.followerId, current_userId))
 
-    const followingIds = following.map((f) => f.following_id)
+    const followingIds = following.map((f) => f.followingId)
 
     if (followingIds.length === 0) {
       return { status: 'success', message: 'No stories', data: [] }
@@ -71,18 +71,21 @@ export async function getStoriesFeed(): Promise<
     // Get active stories from followed users
     const activeStories = await db.query.stories.findMany({
       where: and(
-        inArray(stories.user_id, followingIds),
-        gt(stories.expires_at, now),
+        inArray(stories.userId, followingIds),
+        gt(stories.expiresAt.getSQL(), now),
       ),
-      orderBy: [desc(stories.created_at)],
+      orderBy: [desc(stories.createdAt)],
       with: {
         user: {
           columns: {
             id: true,
             username: true,
             avatar: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+            role: true,
+            email: true,
           },
         },
       },
@@ -95,22 +98,22 @@ export async function getStoriesFeed(): Promise<
     // Get which stories current user has viewed
     const storyIds = activeStories.map((s) => s.id)
     const views = await db
-      .select({ story_id: story_views.story_id })
-      .from(story_views)
+      .select({ storyId: storyViews.storyId })
+      .from(storyViews)
       .where(
         and(
-          inArray(story_views.story_id, storyIds),
-          eq(story_views.user_id, current_user_id),
+          inArray(storyViews.storyId, storyIds),
+          eq(storyViews.userId, current_userId),
         ),
       )
 
-    const viewedSet = new Set(views.map((v) => v.story_id))
+    const viewedSet = new Set(views.map((v) => v.storyId))
 
     // Group by user and check unseen status
     const userMap = new Map<string, StoryWithUser>()
 
     for (const story of activeStories) {
-      const userId = story.user_id
+      const userId = story.userId
       const has_unseen = !viewedSet.has(story.id)
 
       if (!userMap.has(userId)) {
@@ -143,8 +146,11 @@ export async function getUserStories(
     const now = new Date()
 
     const userStories = await db.query.stories.findMany({
-      where: and(eq(stories.user_id, userId), gt(stories.expires_at, now)),
-      orderBy: [desc(stories.created_at)],
+      where: and(
+        eq(stories.userId, userId),
+        gt(stories.expiresAt.getSQL(), now),
+      ),
+      orderBy: [desc(stories.createdAt)],
       with: {
         user: true,
       },
@@ -171,9 +177,9 @@ export async function markStoryAsViewed(
       return userResponse
     }
 
-    await db.insert(story_views).values({
-      story_id: storyId,
-      user_id: userResponse.data.id,
+    await db.insert(storyViews).values({
+      storyId: storyId,
+      userId: userResponse.data.id,
     })
 
     return { status: 'success', message: 'Marked as viewed', data: true }
@@ -200,10 +206,10 @@ export async function getMyStories(): Promise<
 
     const myStories = await db.query.stories.findMany({
       where: and(
-        eq(stories.user_id, userResponse.data.id),
-        gt(stories.expires_at, now),
+        eq(stories.userId, userResponse.data.id),
+        gt(stories.expiresAt.getSQL(), now),
       ),
-      orderBy: [desc(stories.created_at)],
+      orderBy: [desc(stories.createdAt)],
     })
 
     return {
@@ -236,7 +242,7 @@ export async function deleteStory(
       return { status: 'error', message: 'Story not found' }
     }
 
-    if (story.user_id !== userResponse.data.id) {
+    if (story.userId !== userResponse.data.id) {
       return { status: 'error', message: 'Not authorized to delete this story' }
     }
 

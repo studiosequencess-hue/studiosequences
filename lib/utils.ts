@@ -15,9 +15,9 @@ export function cn(...inputs: ClassValue[]) {
 export function getUserGeneralInfo(user: DBUser): UserGeneralInfo {
   return {
     id: user.id,
-    first_name: user.first_name,
-    last_name: user.last_name,
-    company_name: user.company_name,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    companyName: user.companyName,
     role: user.role,
     email: user.email,
     avatar: user.avatar,
@@ -86,7 +86,7 @@ export function getProjectMembersCount(project: Project): number {
 
 export function getUserFullName(user: UserGeneralInfo): string {
   return (
-    [user.first_name, user.last_name]
+    [user.firstName, user.lastName]
       .filter((i) => i)
       .join(' ')
       .trim() ||
@@ -157,6 +157,6 @@ export function sortExperiences(
   experiences: UserExperience[],
 ): UserExperience[] {
   return experiences.sort((a, b) => {
-    return new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+    return new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
   })
 }

@@ -204,7 +204,7 @@ export default function InstagramStories() {
 
   const STORY_DURATION = 5000 // 5 seconds per story
 
-  const closeViewer = () => {
+  const closeViewer = React.useCallback(() => {
     setActiveUserId(null)
     setActiveStoryIndex(0)
     setProgress(0)
@@ -216,7 +216,7 @@ export default function InstagramStories() {
         ),
       )
     }
-  }
+  }, [currentStory])
 
   const handleNext = React.useCallback(() => {
     if (!activeGroup) return

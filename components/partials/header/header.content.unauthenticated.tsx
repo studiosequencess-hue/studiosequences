@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { IoGlobeOutline, IoSearch } from 'react-icons/io5'
+import { IoGlobeOutline } from 'react-icons/io5'
 import { Button } from '@/components/ui/button'
 import { BsBriefcaseFill } from 'react-icons/bs'
 import HeaderSearchbar from '@/components/partials/header/header.searchbar'

@@ -3,9 +3,8 @@
 import React, { useState, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Paperclip, Send, Loader2 } from 'lucide-react'
+import { Send, Loader2 } from 'lucide-react'
 import { uploadMessageFile, sendMessage } from '@/lib/actions.messaging'
-import FilePreview from '@/components/partials/messaging/file.preview'
 import { MAX_FILE_SIZE } from '@/lib/constants'
 import { useConversationsStore } from '@/store'
 import { Message, MessageAttachment } from '@/lib/models'
@@ -20,7 +19,7 @@ const ConversationsMessageInput: React.FC<Props> = ({ onSent }) => {
   const [attachments, setAttachments] = useState<MessageAttachment[]>([])
   const [uploadingFiles, setUploadingFiles] = useState<string[]>([]) // Track which files are uploading
   const [isSending, setIsSending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [_, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

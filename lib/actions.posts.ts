@@ -15,7 +15,7 @@ import {
   postFiles,
   postProjects,
   userPostBookmarks,
-} from '@/db/schema'
+} from '@/drizzle/schema'
 import { eq, desc, and, inArray, sql } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase.server'
 
@@ -46,13 +46,13 @@ export async function getPosts(
     // Build where clause
     const whereClause =
       props.type === POSTS_LIST_TYPE.PERSONAL
-        ? eq(posts.user_id, props.userId!)
+        ? eq(posts.userId, props.userId!)
         : eq(posts.visibility, POST_VISIBILITY.PUBLIC)
 
     // Get posts
     const postsData = await db.query.posts.findMany({
       where: whereClause,
-      orderBy: [desc(posts.created_at)],
+      orderBy: [desc(posts.createdAt)],
       limit,
       offset,
       with: {
@@ -78,12 +78,12 @@ export async function getPosts(
 
     if (currentUserId && postIds.length > 0) {
       const likes = await db
-        .select({ postId: postLikes.post_id })
+        .select({ postId: postLikes.postId })
         .from(postLikes)
         .where(
           and(
-            inArray(postLikes.post_id, postIds),
-            eq(postLikes.user_id, currentUserId),
+            inArray(postLikes.postId, postIds),
+            eq(postLikes.userId, currentUserId),
           ),
         )
       likedPostIds = new Set(likes.map((l) => l.postId))
@@ -133,12 +133,12 @@ export async function getBookmarks(
       currentUser.status === 'success' ? currentUser.data.id : null
 
     // Build where clause
-    const whereClause = eq(userPostBookmarks.user_id, props.userId!)
+    const whereClause = eq(userPostBookmarks.userId, props.userId!)
 
     // Get posts
     const bookmarksData = await db.query.userPostBookmarks.findMany({
       where: whereClause,
-      orderBy: [desc(userPostBookmarks.created_at)],
+      orderBy: [desc(userPostBookmarks.createdAt)],
       limit,
       offset,
       with: {
@@ -204,7 +204,7 @@ export async function getPostById(
     const post = await db.query.posts.findFirst({
       where: and(
         eq(posts.id, props.id),
-        eq(posts.user_id, userResponse.data.id),
+        eq(posts.userId, userResponse.data.id),
       ),
       with: {
         files: true,
@@ -251,7 +251,7 @@ export async function getPostById(
 
 type CreatePostProps = Pick<Post, 'id' | 'content' | 'visibility'> & {
   files: Pick<PostFile, 'name' | 'type' | 'url'>[]
-  projects: Pick<PostProject, 'project_id'>[]
+  projects: Pick<PostProject, 'projectId'>[]
 }
 export async function upsertPost(
   props: CreatePostProps,
@@ -281,7 +281,7 @@ export async function upsertPost(
             content: props.content,
             visibility: props.visibility,
           })
-          .where(and(eq(posts.id, props.id), eq(posts.user_id, userId)))
+          .where(and(eq(posts.id, props.id), eq(posts.userId, userId)))
           .returning({ id: posts.id })
 
         if (!updatedPost) {
@@ -293,11 +293,11 @@ export async function upsertPost(
         const existingFiles = await tx
           .select({ url: postFiles.url })
           .from(postFiles)
-          .where(eq(postFiles.post_id, postId))
+          .where(eq(postFiles.postId, postId))
 
         // Delete old relations
-        await tx.delete(postFiles).where(eq(postFiles.post_id, postId))
-        await tx.delete(postProjects).where(eq(postProjects.post_id, postId))
+        await tx.delete(postFiles).where(eq(postFiles.postId, postId))
+        await tx.delete(postProjects).where(eq(postProjects.postId, postId))
 
         // Delete files from storage (outside transaction, but after DB delete)
         if (existingFiles.length > 0) {
@@ -318,9 +318,9 @@ export async function upsertPost(
           .values({
             content: props.content,
             visibility: props.visibility,
-            user_id: userId,
-            comments_count: 0,
-            likes_count: 0,
+            userId: userId,
+            commentsCount: 0,
+            likesCount: 0,
           })
           .returning({ id: posts.id })
 
@@ -332,7 +332,7 @@ export async function upsertPost(
         await tx.insert(postFiles).values(
           props.files.map((file) => ({
             name: file.name,
-            post_id: postId,
+            postId: postId,
             url: file.url,
             type: file.type,
           })),
@@ -343,8 +343,8 @@ export async function upsertPost(
       if (props.projects.length > 0) {
         await tx.insert(postProjects).values(
           props.projects.map((project) => ({
-            project_id: project.project_id,
-            post_id: postId,
+            projectId: project.projectId,
+            postId: postId,
           })),
         )
       }
@@ -382,7 +382,7 @@ export async function deletePostById(
     const deletedPost = await db
       .delete(posts)
       .where(
-        and(eq(posts.id, props.id), eq(posts.user_id, userResponse.data.id)),
+        and(eq(posts.id, props.id), eq(posts.userId, userResponse.data.id)),
       )
       .returning()
 
@@ -431,14 +431,14 @@ export async function toggleLikePostById(
         // Like: Insert into post_likes and increment counter
         try {
           await tx.insert(postLikes).values({
-            post_id: postId,
-            user_id: userId,
+            postId: postId,
+            userId: userId,
           })
 
           await tx
             .update(posts)
             .set({
-              likes_count: sql`${posts.likes_count} + 1`,
+              likesCount: sql`${posts.likesCount} + 1`,
             })
             .where(eq(posts.id, postId))
         } catch (e) {
@@ -455,7 +455,7 @@ export async function toggleLikePostById(
         const deleteResult = await tx
           .delete(postLikes)
           .where(
-            and(eq(postLikes.post_id, postId), eq(postLikes.user_id, userId)),
+            and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)),
           )
 
         // Only decrement if a row was actually deleted
@@ -463,7 +463,7 @@ export async function toggleLikePostById(
           await tx
             .update(posts)
             .set({
-              likes_count: sql`GREATEST(${posts.likes_count} - 1, 0)`,
+              likesCount: sql`GREATEST(${posts.likesCount} - 1, 0)`,
             })
             .where(eq(posts.id, postId))
         }
@@ -505,8 +505,8 @@ export async function toggleBookmarkPostById(
         // Like: Insert into userPostBookmarks
         try {
           await tx.insert(userPostBookmarks).values({
-            post_id: postId,
-            user_id: userId,
+            postId: postId,
+            userId: userId,
           })
         } catch (e) {
           // Handle unique constraint violation (already liked)
@@ -526,7 +526,7 @@ export async function toggleBookmarkPostById(
         const deleteResult = await tx
           .delete(postLikes)
           .where(
-            and(eq(postLikes.post_id, postId), eq(postLikes.user_id, userId)),
+            and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)),
           )
 
         // Only decrement if a row was actually deleted
@@ -534,7 +534,7 @@ export async function toggleBookmarkPostById(
           await tx
             .update(posts)
             .set({
-              likes_count: sql`GREATEST(${posts.likes_count} - 1, 0)`,
+              likesCount: sql`GREATEST(${posts.likesCount} - 1, 0)`,
             })
             .where(eq(posts.id, postId))
         }

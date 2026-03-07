@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useEditor, EditorContent, useTiptapState, Tiptap } from '@tiptap/react'
+import { useEditor, Tiptap } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { cn } from '@/lib/utils'
 import {
@@ -12,8 +12,6 @@ import {
   Heading3,
   Heading4,
   Italic,
-  List,
-  ListOrdered,
   Quote,
   Redo,
   Save,
@@ -146,7 +144,7 @@ const TabAbout: React.FC<Props> = (props) => {
                   <Italic size={18} />
                 </MenuButton>
 
-                <div className="mx-1 h-6 w-[1px] bg-slate-200 dark:bg-slate-800" />
+                <div className="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-800" />
 
                 <MenuButton
                   onClick={() =>

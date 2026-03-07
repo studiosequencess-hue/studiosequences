@@ -61,7 +61,7 @@ const projectFormSchema = z.object({
     .max(1000, {
       error: 'Too long',
     }),
-  is_sensitive: z.boolean(),
+  isSensitive: z.boolean(),
 })
 
 const ProjectForm = () => {
@@ -74,7 +74,7 @@ const ProjectForm = () => {
     defaultValues: {
       title: project?.title || '',
       description: project?.description || '',
-      is_sensitive: project?.is_sensitive || false,
+      isSensitive: project?.isSensitive || false,
     },
   })
   const [files, setFiles] = React.useState<ProjectFormFile[]>([])
@@ -249,7 +249,7 @@ const ProjectForm = () => {
 
     projectForm.setValue('title', project?.title || '')
     projectForm.setValue('description', project?.description || '')
-    projectForm.setValue('is_sensitive', project?.is_sensitive || false)
+    projectForm.setValue('isSensitive', project?.isSensitive || false)
 
     setFiles([])
     setFilesLoading(true)
@@ -313,17 +313,17 @@ const ProjectForm = () => {
               />
               <FormField
                 control={projectForm.control}
-                name="is_sensitive"
+                name="isSensitive"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <div className="flex items-center gap-3">
                         <Checkbox
-                          id="is_sensitive"
+                          id="isSensitive"
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
-                        <Label htmlFor="is_sensitive">
+                        <Label htmlFor="isSensitive">
                           Contains Sensitive Content
                         </Label>
                       </div>

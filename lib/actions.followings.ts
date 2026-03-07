@@ -1,11 +1,11 @@
 'use server'
 
 import { db } from '@/db/client'
-import { follows } from '@/db/schema'
+import { follows } from '@/drizzle/schema'
 import { eq, sql, and, ne, not } from 'drizzle-orm'
 import { ServerResponse, DBUser } from '@/lib/models'
 import { ServerRequest } from '@/lib/actions'
-import { users } from '@/db/schema'
+import { users } from '@/drizzle/schema'
 import { getUser } from '@/lib/actions.auth'
 
 type GetFollowingsProps = {
@@ -16,7 +16,7 @@ export async function getFollowings(props: GetFollowingsProps) {
     'getFollowings',
     async (): Promise<ServerResponse<DBUser[]>> => {
       const fetchResponse = await db.query.follows.findMany({
-        where: eq(follows.follower_id, props.followerId),
+        where: eq(follows.followerId, props.followerId),
         with: {
           following: true,
         },
@@ -59,8 +59,8 @@ export async function getFollowSuggestions(props: GetFollowSuggestionsProps) {
               not(
                 sql`EXISTS (
                   SELECT 1 FROM ${follows} 
-                  WHERE ${follows.follower_id} = ${currentUserId} 
-                  AND ${follows.following_id} = ${users.id}
+                  WHERE ${follows.followerId} = ${currentUserId} 
+                  AND ${follows.followingId} = ${users.id}
                 )`,
               ),
             ),
@@ -118,8 +118,8 @@ export async function toggleFollow(props: ToggleFollowProps) {
         // Check if already following
         const existingFollow = await db.query.follows.findFirst({
           where: and(
-            eq(follows.follower_id, followerId),
-            eq(follows.following_id, followingId),
+            eq(follows.followerId, followerId),
+            eq(follows.followingId, followingId),
           ),
         })
 
@@ -129,8 +129,8 @@ export async function toggleFollow(props: ToggleFollowProps) {
             .delete(follows)
             .where(
               and(
-                eq(follows.follower_id, followerId),
-                eq(follows.following_id, followingId),
+                eq(follows.followerId, followerId),
+                eq(follows.followingId, followingId),
               ),
             )
 
@@ -142,8 +142,8 @@ export async function toggleFollow(props: ToggleFollowProps) {
         } else {
           // Follow: Insert new relationship
           await db.insert(follows).values({
-            follower_id: followerId,
-            following_id: followingId,
+            followerId: followerId,
+            followingId: followingId,
           })
 
           return {

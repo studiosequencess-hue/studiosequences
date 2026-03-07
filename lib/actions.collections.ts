@@ -3,7 +3,7 @@
 import { Project, ServerResponse, Collection } from '@/lib/models'
 import { getUser } from '@/lib/actions.auth'
 import { db } from '@/db/client'
-import { collections, collectionProjects } from '@/db/schema'
+import { collections, collectionProjects } from '@/drizzle/schema'
 import { eq, asc } from 'drizzle-orm'
 
 export async function getPersonalCollections(): Promise<
@@ -17,8 +17,8 @@ export async function getPersonalCollections(): Promise<
 
     // Fetch collections with nested relations
     const collectionsData = await db.query.collections.findMany({
-      where: eq(collections.user_id, userResponse.data.id),
-      orderBy: [asc(collections.created_at)],
+      where: eq(collections.userId, userResponse.data.id),
+      orderBy: [asc(collections.createdAt)],
       with: {
         collectionProjects: {
           with: {
@@ -38,7 +38,7 @@ export async function getPersonalCollections(): Promise<
         projects:
           collection.collectionProjects
             ?.map((cp) => cp.project)
-            .filter((p): p is Project => !!p) || [],
+            .filter((p) => !!p) || [],
       }),
     )
 
@@ -71,7 +71,7 @@ export async function createCollection(
       .insert(collections)
       .values({
         name: props.name,
-        user_id: userResponse.data.id,
+        userId: userResponse.data.id,
       })
       .returning()
 
@@ -117,13 +117,13 @@ export async function addProjectsToCollection(
     await db.transaction(async (tx) => {
       await tx
         .delete(collectionProjects)
-        .where(eq(collectionProjects.collection_id, props.collectionId))
+        .where(eq(collectionProjects.collectionId, props.collectionId))
 
       if (props.projectIds.length > 0) {
         await tx.insert(collectionProjects).values(
           props.projectIds.map((projectId) => ({
-            project_id: projectId,
-            collection_id: props.collectionId,
+            projectId,
+            collectionId: props.collectionId,
           })),
         )
       }

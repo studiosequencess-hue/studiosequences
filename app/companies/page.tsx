@@ -18,7 +18,7 @@ const CompaniesPage = () => {
 
   const filteredCompanies = React.useMemo(() => {
     return companies.filter((company) => {
-      const matchesSearch = company.company_name
+      const matchesSearch = company.lastName
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase())
       const matchesFilter =
@@ -118,12 +118,12 @@ function CompanyCard({ company }: CompanyCardProps) {
       className="group bg-foreground flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200"
     >
       <div className="relative aspect-square h-20 overflow-hidden bg-slate-100">
-        {(company.background_top || company.background_bottom) && (
+        {(company.backgroundTop || company.backgroundBottom) && (
           <Image
-            src={company.background_top || company.background_bottom || ''}
+            src={company.backgroundTop || company.backgroundBottom || ''}
             fill
             className="object-cover opacity-80 transition-transform duration-500 group-hover:scale-105"
-            alt={`${company.company_name} cover`}
+            alt={`${company.lastName} cover`}
           />
         )}
         <div className="absolute inset-0 bg-linear-to-t from-white/10 to-transparent"></div>
@@ -133,14 +133,14 @@ function CompanyCard({ company }: CompanyCardProps) {
         <div className="relative z-10 -mt-10 mb-2 h-12 w-12 overflow-hidden rounded-xl border-2 border-white bg-white shadow-sm">
           <Image
             src={company.avatar || Placeholder}
-            alt={company.company_name || `company-${company.id}-avatar`}
+            alt={company.lastName || `company-${company.id}-avatar`}
             fill
             className="h-full w-full object-cover"
           />
         </div>
 
         <h3 className="line-clamp-1 text-sm leading-tight font-bold text-slate-400">
-          {company.company_name || 'No name'}
+          {company.lastName || 'No name'}
         </h3>
         <p className="mt-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
           {company.occupation || 'No occupation'}

@@ -9,7 +9,7 @@ import {
 } from '@/lib/models'
 import { db } from '@/db/client'
 import { eq, sql, asc } from 'drizzle-orm'
-import { projects, projectFiles, projectMembers } from '@/db/schema'
+import { projects, projectFiles, projectMembers } from '@/drizzle/schema'
 import { getUser } from '@/lib/actions.auth'
 
 export async function getPersonalProjects(): Promise<
@@ -23,7 +23,7 @@ export async function getPersonalProjects(): Promise<
 
     // Fetch projects with files relation
     const projectsData = await db.query.projects.findMany({
-      where: eq(projects.user_id, userResponse.data.id),
+      where: eq(projects.userId, userResponse.data.id),
       orderBy: [asc(projects.position), asc(projects.id)],
       with: {
         files: true,
@@ -39,7 +39,7 @@ export async function getPersonalProjects(): Promise<
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(projects)
-      .where(eq(projects.user_id, userResponse.data.id))
+      .where(eq(projects.userId, userResponse.data.id))
 
     const total = countResult[0]?.count || 0
 
@@ -77,7 +77,7 @@ export async function getAllProjectsByUserId(
     const offset = props.pageIndex * props.pageSize
 
     const projectsData = await db.query.projects.findMany({
-      where: eq(projects.user_id, props.userId),
+      where: eq(projects.userId, props.userId),
       orderBy: [asc(projects.position), asc(projects.id)],
       limit: props.pageSize,
       offset: offset,
@@ -94,7 +94,7 @@ export async function getAllProjectsByUserId(
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(projects)
-      .where(eq(projects.user_id, props.userId))
+      .where(eq(projects.userId, props.userId))
 
     const total = countResult[0]?.count || 0
 
@@ -133,7 +133,7 @@ export async function getProjectFilesById(
     const files = await db
       .select()
       .from(projectFiles)
-      .where(eq(projectFiles.project_id, props.id))
+      .where(eq(projectFiles.projectId, props.id))
 
     return {
       status: 'success',
@@ -157,7 +157,7 @@ export async function getProjectMembersById(
 ): Promise<ServerResponse<ProjectMember[]>> {
   try {
     const members = await db.query.projectMembers.findMany({
-      where: eq(projectMembers.project_id, props.id),
+      where: eq(projectMembers.projectId, props.id),
       with: {
         user: true,
       },
@@ -179,10 +179,10 @@ export async function getProjectMembersById(
 
 type CreateProjectProps = Pick<
   Project,
-  'title' | 'description' | 'is_sensitive'
+  'title' | 'description' | 'isSensitive'
 > & {
   files: Pick<ProjectFile, 'name' | 'type' | 'title' | 'description' | 'url'>[]
-  members: Pick<ProjectMember, 'department' | 'user_id'>[]
+  members: Pick<ProjectMember, 'department' | 'userId'>[]
 }
 export async function createProject(
   props: CreateProjectProps,
@@ -203,9 +203,9 @@ export async function createProject(
         {
           title: props.title,
           description: props.description,
-          is_sensitive: props.is_sensitive,
+          isSensitive: props.isSensitive,
           position: -1,
-          user_id: currentUserResponse.data.id,
+          userId: currentUserResponse.data.id,
         },
       ])
       .returning()
@@ -230,7 +230,7 @@ export async function createProject(
                 title: file.title,
                 description: file.description,
                 url: file.url,
-                project_id: projectId,
+                projectId: projectId,
                 name: file.name,
                 type: file.type,
               })),
@@ -247,8 +247,8 @@ export async function createProject(
             .values(
               props.members.map((member) => ({
                 department: member.department,
-                user_id: member.user_id,
-                project_id: projectId,
+                userId: member.userId,
+                projectId: projectId,
               })),
             )
             .returning()
@@ -294,10 +294,10 @@ export async function createProject(
 
 type UpdateProjectProps = Pick<
   Project,
-  'id' | 'title' | 'description' | 'is_sensitive'
+  'id' | 'title' | 'description' | 'isSensitive'
 > & {
   files: Pick<ProjectFile, 'name' | 'type' | 'title' | 'description' | 'url'>[]
-  members: Pick<ProjectMember, 'department' | 'user_id'>[]
+  members: Pick<ProjectMember, 'department' | 'userId'>[]
 }
 export async function updateProject(
   props: UpdateProjectProps,
@@ -314,7 +314,7 @@ export async function updateProject(
       .set({
         title: props.title,
         description: props.description,
-        is_sensitive: props.is_sensitive,
+        isSensitive: props.isSensitive,
       })
       .where(eq(projects.id, props.id))
       .returning()
@@ -328,8 +328,8 @@ export async function updateProject(
 
     // Delete old files and members (manual cleanup before re-inserting)
     await Promise.all([
-      db.delete(projectFiles).where(eq(projectFiles.project_id, props.id)),
-      db.delete(projectMembers).where(eq(projectMembers.project_id, props.id)),
+      db.delete(projectFiles).where(eq(projectFiles.projectId, props.id)),
+      db.delete(projectMembers).where(eq(projectMembers.projectId, props.id)),
     ])
 
     // Insert new files and members
@@ -341,7 +341,7 @@ export async function updateProject(
             title: file.title,
             description: file.description,
             url: file.url,
-            project_id: props.id,
+            projectId: props.id,
             name: file.name,
             type: file.type,
           })),
@@ -352,8 +352,8 @@ export async function updateProject(
         .values(
           props.members.map((member) => ({
             department: member.department,
-            user_id: member.user_id,
-            project_id: props.id,
+            userId: member.userId,
+            projectId: props.id,
           })),
         )
         .returning(),

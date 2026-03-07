@@ -23,12 +23,12 @@ const ProfileOpenToWork: React.FC<Props> = ({ editable }) => {
 
     setUser({
       ...user,
-      is_open_to_work: value,
+      isOpenToWork: value,
     })
 
     const response = await updateUserInfo({
       user_id: user.id,
-      is_open_to_work: value,
+      isOpenToWork: value,
     })
 
     if (response.status == 'success') {
@@ -44,10 +44,10 @@ const ProfileOpenToWork: React.FC<Props> = ({ editable }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <Label htmlFor="is_open_to_work">Is Open to Work</Label>
+      <Label htmlFor="isOpenToWork">Is Open to Work</Label>
       <Checkbox
-        id="is_open_to_work"
-        checked={user?.is_open_to_work || false}
+        id="isOpenToWork"
+        checked={user?.isOpenToWork || false}
         onCheckedChange={(v) => handleSubmit(!!v)}
       />
     </div>

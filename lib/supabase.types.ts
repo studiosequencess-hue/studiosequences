@@ -617,12 +617,12 @@ export type Database = {
           contact: string | null
           email: string
           facebook: string | null
-          first_name: string | null
+          firstName: string | null
           id: string
           instagram: string | null
           is_open_to_work: boolean
           is_verified: boolean | null
-          last_name: string | null
+          lastName: string | null
           linkedin: string | null
           location: string | null
           occupation: string | null
@@ -640,12 +640,12 @@ export type Database = {
           contact?: string | null
           email: string
           facebook?: string | null
-          first_name?: string | null
+          firstName?: string | null
           id: string
           instagram?: string | null
           is_open_to_work: boolean
           is_verified?: boolean | null
-          last_name?: string | null
+          lastName?: string | null
           linkedin?: string | null
           location?: string | null
           occupation?: string | null
@@ -663,12 +663,12 @@ export type Database = {
           contact?: string | null
           email?: string
           facebook?: string | null
-          first_name?: string | null
+          firstName?: string | null
           id?: string
           instagram?: string | null
           is_open_to_work?: boolean
           is_verified?: boolean | null
-          last_name?: string | null
+          lastName?: string | null
           linkedin?: string | null
           location?: string | null
           occupation?: string | null
@@ -695,12 +695,12 @@ export type Database = {
           contact: string | null
           email: string
           facebook: string | null
-          first_name: string | null
+          firstName: string | null
           id: string
           instagram: string | null
           is_open_to_work: boolean
           is_verified: boolean | null
-          last_name: string | null
+          lastName: string | null
           linkedin: string | null
           location: string | null
           occupation: string | null
@@ -727,12 +727,12 @@ export type Database = {
           contact: string | null
           email: string
           facebook: string | null
-          first_name: string | null
+          firstName: string | null
           id: string
           instagram: string | null
           is_open_to_work: boolean
           is_verified: boolean | null
-          last_name: string | null
+          lastName: string | null
           linkedin: string | null
           location: string | null
           occupation: string | null

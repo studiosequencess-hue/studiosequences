@@ -18,7 +18,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { updateUserInfo } from '@/lib/actions.user'
 import { toast } from 'sonner'

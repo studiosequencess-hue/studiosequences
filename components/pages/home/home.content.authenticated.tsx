@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import StoriesSlider from '@/components/pages/home/partials/stories.slider'
 import FollowSuggestionsBlock from '@/components/pages/home/partials/follow.suggestions.block'
 import LatestNewsBlock from '@/components/pages/home/partials/latest.news.block'
 import UpcomingEventsBlock from '@/components/pages/home/partials/upcoming.events.block'

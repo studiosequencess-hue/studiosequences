@@ -114,7 +114,7 @@ const HeaderSearchbar = () => {
                       }
                     >
                       <span>
-                        {[item.first_name, item.last_name].join(' ').trim() ||
+                        {[item.firstName, item.lastName].join(' ').trim() ||
                           item.email}
                       </span>
                       {item.username && (
@@ -141,7 +141,7 @@ const HeaderSearchbar = () => {
                   >
                     <div className={'flex flex-col gap-0.5 text-xs/none'}>
                       <span>
-                        {[item.company_name].join(' ').trim() || item.email}
+                        {[item.lastName].join(' ').trim() || item.email}
                       </span>
                       {item.username && (
                         <span className={'text-muted-foreground'}>

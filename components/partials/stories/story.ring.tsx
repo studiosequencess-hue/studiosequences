@@ -98,7 +98,7 @@ export function StoryRing() {
             className="group relative cursor-pointer"
             onClick={() =>
               myStories.length > 0
-                ? openViewer(myStories[0].user_id, -1)
+                ? openViewer(myStories[0].userId, -1)
                 : setShowCreator(true)
             }
           >
@@ -143,16 +143,16 @@ export function StoryRing() {
                 <UserAvatar
                   src={story.user.avatar}
                   fallback={getUserInitials(
-                    story.user.first_name,
-                    story.user.last_name,
-                    story.user.company_name,
+                    story.user.firstName,
+                    story.user.lastName,
+                    story.user.lastName,
                   )}
                   rootClassName={'size-16'}
                 />
               </div>
             </div>
             <span className="w-16 truncate text-center text-xs font-medium">
-              {story.user.first_name || story.user.username}
+              {story.user.firstName || story.user.username}
             </span>
           </button>
         ))}

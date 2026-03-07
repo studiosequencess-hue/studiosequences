@@ -32,13 +32,13 @@ type Props = {
 }
 
 const formSchema = z.object({
-  first_name: z.string().max(255, {
+  firstName: z.string().max(255, {
     error: 'Too long',
   }),
-  last_name: z.string().max(255, {
+  lastName: z.string().max(255, {
     error: 'Too long',
   }),
-  company_name: z.string().max(255, { error: 'Too long' }),
+  companyName: z.string().max(255, { error: 'Too long' }),
 })
 
 const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
@@ -46,9 +46,9 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: currentUser?.first_name || '',
-      last_name: currentUser?.last_name || '',
-      company_name: currentUser?.company_name || '',
+      firstName: currentUser?.firstName || '',
+      lastName: currentUser?.lastName || '',
+      companyName: currentUser?.companyName || '',
     },
   })
   const [open, setOpen] = React.useState<boolean>(false)
@@ -60,9 +60,9 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
 
     if (
       currentUser.role == UserRole.User.toString() &&
-      values.first_name.trim().length <= 0
+      values.firstName.trim().length <= 0
     ) {
-      form.setError('first_name', {
+      form.setError('firstName', {
         message: 'Too short',
       })
       return
@@ -70,9 +70,9 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
 
     if (
       currentUser.role == UserRole.Company.toString() &&
-      values.company_name.trim().length <= 0
+      values.lastName.trim().length <= 0
     ) {
-      form.setError('company_name', {
+      form.setError('companyName', {
         message: 'Too short',
       })
       return
@@ -82,18 +82,18 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
 
     const response = await updateUserInfo({
       user_id: currentUser.id,
-      first_name: values.first_name,
-      last_name: values.last_name,
-      company_name: values.company_name,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      companyName: values.companyName,
     })
 
     if (response.status == 'success') {
       toast.success(response.message)
       setUser({
         ...currentUser,
-        first_name: values.first_name,
-        last_name: values.last_name,
-        company_name: values.company_name,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        companyName: values.companyName,
       })
       setOpen(false)
     } else {
@@ -107,17 +107,17 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
     if (!currentUser || loading) return
 
     form.reset()
-    form.setValue('first_name', currentUser.first_name || '')
-    form.setValue('last_name', currentUser.last_name || '')
-    form.setValue('company_name', currentUser.company_name || '')
+    form.setValue('firstName', currentUser.firstName || '')
+    form.setValue('lastName', currentUser.lastName || '')
+    form.setValue('companyName', currentUser.companyName || '')
   }, [form, currentUser, loading])
 
   if (!editable) {
     return (
       <span className={'text-foreground text-xl/none capitalize'}>
         {(user?.role == UserRole.Company.toString()
-          ? [user?.company_name]
-          : [user?.first_name, user?.last_name]
+          ? [user?.companyName]
+          : [user?.firstName, user?.lastName]
         )
           .join(' ')
           .toLowerCase()
@@ -135,8 +135,8 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
           }
         >
           {(currentUser?.role == UserRole.Company.toString()
-            ? [currentUser?.company_name]
-            : [currentUser?.first_name, currentUser?.last_name]
+            ? [currentUser?.companyName]
+            : [currentUser?.firstName, currentUser?.lastName]
           )
             .join(' ')
             .toLowerCase()
@@ -154,7 +154,7 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
                 <React.Fragment>
                   <FormField
                     control={form.control}
-                    name="first_name"
+                    name="firstName"
                     render={({ field }) => (
                       <FormItem className={'w-40'}>
                         <FormLabel className={'text-xs/none'}>
@@ -169,7 +169,7 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
                   />
                   <FormField
                     control={form.control}
-                    name="last_name"
+                    name="lastName"
                     render={({ field }) => (
                       <FormItem className={'w-40'}>
                         <FormLabel className={'text-xs/none'}>
@@ -190,7 +190,7 @@ const ProfileDisplayName: React.FC<Props> = ({ user, editable }) => {
               {currentUser?.role == UserRole.Company.toString() && (
                 <FormField
                   control={form.control}
-                  name="company_name"
+                  name="companyName"
                   render={({ field }) => (
                     <FormItem className={'w-40'}>
                       <FormLabel className={'text-xs/none'}>

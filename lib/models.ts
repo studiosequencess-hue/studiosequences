@@ -17,7 +17,9 @@ import {
   conversations,
   messages,
   userExperiences,
-} from '@/db/schema'
+  experienceMedia,
+  experienceProjects,
+} from '@/drizzle/schema'
 import { InferSelectModel } from 'drizzle-orm'
 
 export interface UserImage {
@@ -71,11 +73,11 @@ export type UserGeneralInfo = Pick<
   DBUser,
   | 'id'
   | 'username'
-  | 'first_name'
-  | 'last_name'
+  | 'firstName'
+  | 'lastName'
   | 'avatar'
   | 'role'
-  | 'company_name'
+  | 'companyName'
   | 'email'
 >
 
@@ -104,8 +106,8 @@ export type PasswordResetData = {
 
 export type SignUpData = {
   role: string
-  first_name: string
-  last_name: string
+  firstName: string
+  lastName: string
   pronoun: string
   username: string
   email: string
@@ -168,7 +170,7 @@ export type CompanyEvent = InferSelectModel<typeof events> & {
 }
 export type FormCompanyEvent = Omit<
   CompanyEvent,
-  'id' | 'created_at' | 'user_id' | 'user'
+  'id' | 'createdAt' | 'userId' | 'user' | 'updatedAt'
 >
 
 export type Story = InferSelectModel<typeof stories>
@@ -176,27 +178,27 @@ export type Story = InferSelectModel<typeof stories>
 export type StoryWithUser = Story & {
   user: Pick<
     DBUser,
-    'id' | 'first_name' | 'last_name' | 'username' | 'avatar' | 'company_name'
+    'id' | 'firstName' | 'lastName' | 'username' | 'avatar' | 'companyName'
   >
   has_unseen: boolean
 }
 
 export type Conversation = InferSelectModel<typeof conversations> & {
   participants: Array<{
-    user_id: string
+    userId: string
     user: Pick<
       DBUser,
       | 'id'
       | 'username'
-      | 'first_name'
-      | 'last_name'
-      | 'company_name'
+      | 'firstName'
+      | 'lastName'
+      | 'companyName'
       | 'avatar'
       | 'role'
       | 'email'
     >
   }>
-  last_message?: Pick<Message, 'content' | 'created_at' | 'sender_id'>
+  last_message?: Pick<Message, 'content' | 'createdAt' | 'senderId'>
   unread_count?: number
 }
 
@@ -213,3 +215,7 @@ export type MessageAttachment = {
 }
 
 export type UserExperience = InferSelectModel<typeof userExperiences>
+
+export type UserExperienceMedia = InferSelectModel<typeof experienceMedia>
+
+export type UserExperienceProjects = InferSelectModel<typeof experienceProjects>

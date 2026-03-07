@@ -253,20 +253,20 @@ const StoryViewerDialog = ({
                   src={currentStory?.user.avatar}
                   rootClassName={'size-8'}
                   fallback={getUserInitials(
-                    currentStory?.user.first_name,
-                    currentStory?.user.last_name,
-                    currentStory?.user.company_name,
+                    currentStory?.user.firstName,
+                    currentStory?.user.lastName,
+                    currentStory?.user.lastName,
                   )}
                   fallbackClassName={'text-xs/none'}
                 />
                 <div className="flex flex-col">
                   <div className="text-sm leading-tight font-semibold">
-                    {currentStory?.user?.first_name ||
+                    {currentStory?.user?.firstName ||
                       currentStory?.user?.username}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {currentStory?.created_at &&
-                      new Date(currentStory.created_at).toLocaleTimeString([], {
+                    {currentStory?.createdAt &&
+                      new Date(currentStory.createdAt).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}

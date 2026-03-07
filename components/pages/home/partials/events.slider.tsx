@@ -2,10 +2,10 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6'
-import { Calendar, MapPin, Ticket } from 'lucide-react'
+import { Calendar, MapPin } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/lib/constants'
 import { getEvents } from '@/lib/actions.events'
@@ -24,18 +24,8 @@ type ShowScrollButtonsType = {
   right: boolean
 }
 
-interface ArtEvent {
-  id: number
-  title: string
-  date: string
-  location: string
-  type: string
-  thumbnail: string
-}
-
 const EventsSlider = () => {
   const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const eventsCount = 20
   const eventWidth = 150
   const eventGapWidth = 10
   const [showScrollButtons, setShowScrollButtons] =
@@ -126,9 +116,9 @@ const EventsSlider = () => {
               onClick={() => setPreviewOpen(true, event)}
             >
               <div className="relative h-28 overflow-hidden">
-                {event.background_url ? (
+                {event.backgroundUrl ? (
                   <Image
-                    src={event.background_url}
+                    src={event.backgroundUrl}
                     alt={event.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -152,13 +142,13 @@ const EventsSlider = () => {
                   <div className="text-background flex items-center gap-1.5 text-[10px]">
                     <Calendar size={12} className="text-blue-500" />
                     <span className={'truncate'}>
-                      {format(event.start_date, 'MMM dd, yyyy')}
+                      {format(event.startDate, 'MMM dd, yyyy')}
                     </span>
                   </div>
                   <div className="text-background flex items-center gap-1.5 text-[10px]">
                     <Calendar size={12} className="text-blue-500" />
                     <span className={'truncate'}>
-                      {format(event.end_date, 'MMM dd, yyyy')}
+                      {format(event.endDate, 'MMM dd, yyyy')}
                     </span>
                   </div>
                   <div className="text-background flex items-center gap-1.5 text-[10px]">

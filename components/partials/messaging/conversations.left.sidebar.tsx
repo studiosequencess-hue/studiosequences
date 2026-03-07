@@ -73,7 +73,7 @@ const ConversationLeftSidebar = () => {
         ) : (
           conversations.map((conv) => {
             const other = conv.participants?.find(
-              (p) => p.user_id !== user.id,
+              (p) => p.userId !== user.id,
             )?.user
             const isSelected = conversation?.id === conv.id
 
@@ -88,9 +88,9 @@ const ConversationLeftSidebar = () => {
                 <UserAvatar
                   src={other?.avatar}
                   fallback={getUserInitials(
-                    other?.first_name || null,
-                    other?.last_name || null,
-                    other?.company_name || null,
+                    other?.firstName || null,
+                    other?.lastName || null,
+                    other?.lastName || null,
                   )}
                   rootClassName={'size-8'}
                   fallbackClassName={'text-xs/none'}

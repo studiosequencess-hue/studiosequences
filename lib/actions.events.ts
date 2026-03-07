@@ -4,7 +4,7 @@ import { ServerResponse, CompanyEvent, FormCompanyEvent } from '@/lib/models'
 import { ServerRequest } from '@/lib/actions'
 import { getUser } from '@/lib/actions.auth'
 import { db } from '@/db/client'
-import { events } from '@/db/schema'
+import { events } from '@/drizzle/schema'
 import { gt, asc, eq, and } from 'drizzle-orm'
 
 export async function getEvents(): Promise<ServerResponse<CompanyEvent[]>> {
@@ -12,8 +12,8 @@ export async function getEvents(): Promise<ServerResponse<CompanyEvent[]>> {
     const now = new Date()
 
     const eventsData = await db.query.events.findMany({
-      where: gt(events.end_date, now),
-      orderBy: [asc(events.start_date)],
+      where: gt(events.endDate.getSQL(), now),
+      orderBy: [asc(events.startDate)],
       with: {
         user: true,
       },
@@ -54,10 +54,10 @@ export async function upsertEvent(props: CreateEventProps) {
 
       const eventResult = await db
         .insert(events)
-        .values({ ...props.event, user_id: userResponse.data.id })
+        .values({ ...props.event, userId: userResponse.data.id })
         .onConflictDoUpdate({
           target: events.id,
-          set: { ...eventData, user_id: userResponse.data.id },
+          set: { ...eventData, userId: userResponse.data.id },
         })
         .returning()
 
@@ -134,7 +134,7 @@ export async function deleteEvent(props: DeleteEventProps) {
         .where(
           and(
             eq(events.id, props.event_id),
-            eq(events.user_id, userResponse.data.id),
+            eq(events.userId, userResponse.data.id),
           ),
         )
 

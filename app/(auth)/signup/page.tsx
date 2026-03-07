@@ -49,10 +49,10 @@ const formSchema = z
       .max(255, {
         error: 'Too long',
       }),
-    first_name: z.string().max(255, {
+    firstName: z.string().max(255, {
       error: 'Too long',
     }),
-    last_name: z.string().max(255, {
+    lastName: z.string().max(255, {
       error: 'Too long',
     }),
     pronoun: z.string().max(255, {
@@ -98,8 +98,8 @@ const SignupPage = () => {
     defaultValues: {
       role: 'user',
       username: '',
-      first_name: '',
-      last_name: '',
+      firstName: '',
+      lastName: '',
       pronoun: '',
       email: '',
       contact: '',
@@ -114,13 +114,13 @@ const SignupPage = () => {
   const role = form.watch('role')
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (values.role == 'user' && values.first_name.trim().length <= 0) {
-      form.setError('first_name', {
+    if (values.role == 'user' && values.firstName.trim().length <= 0) {
+      form.setError('firstName', {
         message: 'Too short',
       })
       return
     }
-    if (values.role == 'company' && values.company_name.trim().length <= 0) {
+    if (values.role == 'company' && values.lastName.trim().length <= 0) {
       form.setError('company_name', {
         message: 'Too short',
       })
@@ -194,7 +194,7 @@ const SignupPage = () => {
                   <div className={'grid grid-cols-2 items-start gap-4'}>
                     <FormField
                       control={form.control}
-                      name="first_name"
+                      name="firstName"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>First Name</FormLabel>
@@ -211,7 +211,7 @@ const SignupPage = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="last_name"
+                      name="lastName"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel

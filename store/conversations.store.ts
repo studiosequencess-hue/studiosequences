@@ -1,4 +1,4 @@
-import { CompanyEvent, Conversation } from '@/lib/models'
+import { Conversation } from '@/lib/models'
 import { create } from 'zustand'
 
 interface ConversationsState {

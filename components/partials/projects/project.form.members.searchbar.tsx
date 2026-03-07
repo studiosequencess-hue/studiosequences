@@ -30,7 +30,7 @@ import deepmerge from 'deepmerge'
 import { DEFAULT_PROJECT_MEMBER } from '@/lib/defaults'
 
 type Props = {
-  memberIds: ProjectMember['user_id'][]
+  memberIds: ProjectMember['userId'][]
   onSelect: (user: ProjectMember) => void
 }
 
@@ -119,7 +119,7 @@ const ProjectFormMembersSearchbar: React.FC<Props> = (props) => {
                       props.onSelect(
                         deepmerge(DEFAULT_PROJECT_MEMBER, {
                           user: item,
-                          user_id: item.id,
+                          userId: item.id,
                         }),
                       )
                     }}

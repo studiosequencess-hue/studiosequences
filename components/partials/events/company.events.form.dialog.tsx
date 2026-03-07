@@ -59,8 +59,8 @@ const formSchema = z.object({
   description: z.string().min(10, 'Too short').max(MAX_DESCRIPTION, 'Too long'),
   location: z.string().min(1, 'Too short').max(255, 'Too long'),
   tag: z.string().min(1, 'Too short').max(50, 'Too long'),
-  start_date: z.date(),
-  end_date: z.date(),
+  startDate: z.date(),
+  endDate: z.date(),
 })
 
 const CompanyEventsFormDialog = () => {
@@ -73,8 +73,8 @@ const CompanyEventsFormDialog = () => {
       description: '',
       location: '',
       tag: '',
-      start_date: new Date(),
-      end_date: new Date(),
+      startDate: new Date(),
+      endDate: new Date(),
     },
   })
   const [startDateOpen, setStartDateOpen] = React.useState<boolean>(false)
@@ -115,7 +115,7 @@ const CompanyEventsFormDialog = () => {
           const updateInfoResponse = await updateEvent({
             event_id: eventResponse.data.id,
             event: {
-              background_url: uploadResponse.data,
+              backgroundUrl: uploadResponse.data,
             },
           })
 
@@ -173,9 +173,9 @@ const CompanyEventsFormDialog = () => {
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     createEventMutation.mutate({
       ...data,
-      background_url: '',
-      start_date: data.start_date,
-      end_date: data.end_date,
+      backgroundUrl: '',
+      startDate: data.startDate.toISOString(),
+      endDate: data.endDate.toISOString(),
     })
   }
 
@@ -187,14 +187,14 @@ const CompanyEventsFormDialog = () => {
       form.setValue('location', selectedEvent?.location || '')
       form.setValue('tag', selectedEvent?.tag || '')
       form.setValue(
-        'start_date',
-        selectedEvent?.start_date
-          ? new Date(selectedEvent.start_date)
+        'startDate',
+        selectedEvent?.startDate
+          ? new Date(selectedEvent.startDate)
           : new Date(),
       )
       form.setValue(
-        'end_date',
-        selectedEvent?.end_date ? new Date(selectedEvent.end_date) : new Date(),
+        'endDate',
+        selectedEvent?.endDate ? new Date(selectedEvent.endDate) : new Date(),
       )
     }
   }, [formOpen])
@@ -214,7 +214,7 @@ const CompanyEventsFormDialog = () => {
                   src={
                     backgroundFile
                       ? URL.createObjectURL(backgroundFile)
-                      : selectedEvent?.background_url || Placeholder
+                      : selectedEvent?.backgroundUrl || Placeholder
                   }
                   alt="event-image"
                   fill
@@ -324,7 +324,7 @@ const CompanyEventsFormDialog = () => {
                 )}
               />
               <Controller
-                name="start_date"
+                name="startDate"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <div className={'flex flex-col gap-2'}>
@@ -413,7 +413,7 @@ const CompanyEventsFormDialog = () => {
                 )}
               />
               <Controller
-                name="end_date"
+                name="endDate"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <div className={'flex flex-col gap-2'}>

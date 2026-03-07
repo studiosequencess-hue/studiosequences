@@ -9,7 +9,7 @@ type Props = {
 }
 
 const ProjectsGridPreviewBackground: React.FC<Props> = ({ project }) => {
-  const isCensored = project.is_sensitive && !project.is_revealed
+  const isCensored = project.isSensitive && !project.is_revealed
 
   if (!project.files || project.files.length == 0) {
     return (

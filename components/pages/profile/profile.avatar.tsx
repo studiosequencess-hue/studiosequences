@@ -73,7 +73,7 @@ const ProfileAvatar: React.FC<Props> = ({ user }) => {
 
     const [deleteResponse, updateInfoResponse] = await Promise.all([
       deleteFile({
-        user_id: user.id,
+        userId: user.id,
         bucket: StorageBucketType.Images,
         publicUrl: user.avatar,
       }),
@@ -107,18 +107,14 @@ const ProfileAvatar: React.FC<Props> = ({ user }) => {
     <UserAvatar
       src={user.avatar || ''}
       alt={getUserFullName(user)}
-      fallback={getUserInitials(
-        user.first_name,
-        user.last_name,
-        user.company_name,
-      )}
+      fallback={getUserInitials(user.firstName, user.lastName, user.lastName)}
       rootClassName={cn(
         'group absolute top-44 left-20 z-20 size-40 -translate-y-1/2',
       )}
       fallbackClassName={cn('text-5xl/none')}
     >
       <React.Fragment>
-        {user?.is_open_to_work && (
+        {user?.isOpenToWork && (
           <div
             className={
               'bg-accent-blue absolute bottom-0 left-1/2 flex w-96 -translate-x-[42%] -translate-y-[70%] -rotate-30 items-center justify-center py-2 text-xs/none'

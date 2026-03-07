@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/db/client'
-import { posts, postComments } from '@/db/schema'
+import { posts, postComments } from '@/drizzle/schema'
 import { eq, and, desc, sql } from 'drizzle-orm'
 import { getUser } from '@/lib/actions.auth'
 import type { PostComment, ServerResponse } from '@/lib/models'
@@ -24,8 +24,8 @@ export async function addComment(
       const [comment] = await tx
         .insert(postComments)
         .values({
-          post_id: postId,
-          user_id: userId,
+          postId: postId,
+          userId: userId,
           content,
         })
         .returning()
@@ -34,8 +34,8 @@ export async function addComment(
       await tx
         .update(posts)
         .set({
-          comments_count: sql`${posts.comments_count} + 1`,
-          updated_at: new Date(),
+          commentsCount: sql`${posts.commentsCount} + 1`,
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(posts.id, postId))
 
@@ -72,8 +72,8 @@ export async function getComments({
 }: GetCommentsProps): Promise<ServerResponse<PostComment[]>> {
   try {
     const comments = await db.query.postComments.findMany({
-      where: eq(postComments.post_id, postId),
-      orderBy: [desc(postComments.created_at)],
+      where: eq(postComments.postId, postId),
+      orderBy: [desc(postComments.createdAt)],
       limit: pageSize,
       offset: pageIndex * pageSize,
       with: {
@@ -81,9 +81,9 @@ export async function getComments({
           columns: {
             id: true,
             username: true,
-            first_name: true,
-            last_name: true,
-            company_name: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
             avatar: true,
             email: true,
             role: true,
@@ -125,8 +125,8 @@ export async function deleteComment(
         .where(
           and(
             eq(postComments.id, commentId),
-            eq(postComments.user_id, userId),
-            eq(postComments.post_id, postId),
+            eq(postComments.userId, userId),
+            eq(postComments.postId, postId),
           ),
         )
         .returning()
@@ -139,8 +139,8 @@ export async function deleteComment(
       await tx
         .update(posts)
         .set({
-          comments_count: sql`GREATEST(${posts.comments_count} - 1, 0)`,
-          updated_at: new Date(),
+          commentsCount: sql`GREATEST(${posts.commentsCount} - 1, 0)`,
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(posts.id, postId))
     })
@@ -167,10 +167,10 @@ export async function updateComment(
       .update(postComments)
       .set({
         content,
-        updated_at: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(
-        and(eq(postComments.id, commentId), eq(postComments.user_id, userId)),
+        and(eq(postComments.id, commentId), eq(postComments.userId, userId)),
       )
       .returning()
 

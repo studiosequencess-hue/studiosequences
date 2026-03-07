@@ -85,7 +85,7 @@ const ProfileFollowings: React.FC<Props> = (props) => {
         context?.previousSuggestions,
       )
     },
-    onSettled: (data, error, variables) => {
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.FOLLOWINGS, props.user.id],
       })
@@ -102,8 +102,8 @@ const ProfileFollowings: React.FC<Props> = (props) => {
   const filteredFollowings = React.useMemo(() => {
     return (followingsQuery.data || []).filter(
       (user) =>
-        user.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.username.toLowerCase().includes(searchQuery.toLowerCase()),
     )
   }, [followingsQuery, searchQuery])

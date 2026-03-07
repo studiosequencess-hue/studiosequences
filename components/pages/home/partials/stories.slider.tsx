@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Skeleton } from '@/components/ui/skeleton'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6'
 import { Plus } from 'lucide-react'
@@ -27,7 +26,6 @@ type ShowScrollButtonsType = {
 
 const StoriesSlider = () => {
   const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const eventsCount = 20
   const eventWidth = 60
   const eventGapWidth = 10
   const [showScrollButtons, setShowScrollButtons] =
@@ -244,17 +242,17 @@ const StoriesSlider = () => {
           {stories.map((story) => (
             <div
               key={story.id}
-              className="group flex flex-shrink-0 cursor-pointer flex-col items-center gap-1"
+              className="group flex shrink-0 cursor-pointer flex-col items-center gap-1"
             >
               <div className="relative">
                 <div
-                  className={`rounded-full p-[2px] ${
+                  className={`rounded-full p-0.5 ${
                     story.isUnread
-                      ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600'
+                      ? 'bg-linear-to-tr from-yellow-400 via-red-500 to-purple-600'
                       : 'border border-zinc-200 dark:border-zinc-800'
                   }`}
                 >
-                  <div className="rounded-full bg-white p-[2px] dark:bg-black">
+                  <div className="rounded-full bg-white p-0.5 dark:bg-black">
                     <img
                       src={story.avatar}
                       alt={story.name}
@@ -268,7 +266,7 @@ const StoriesSlider = () => {
                   </div>
                 )}
               </div>
-              <span className="max-w-[64px] truncate text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="max-w-16 truncate text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
                 {story.name}
               </span>
             </div>

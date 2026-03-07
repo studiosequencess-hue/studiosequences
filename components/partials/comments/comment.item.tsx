@@ -30,7 +30,7 @@ const CommentItem: React.FC<Props> = ({ comment }) => {
   const isOwner = comment.user.id === user?.id
 
   const deleteMutation = useMutation({
-    mutationKey: [QUERY_KEYS.COMMENTS_DELETE, comment.id, comment.user_id],
+    mutationKey: [QUERY_KEYS.COMMENTS_DELETE, comment.id, comment.userId],
     mutationFn: async () => {
       if (!post) return
 
@@ -41,7 +41,7 @@ const CommentItem: React.FC<Props> = ({ comment }) => {
   })
 
   const updateMutation = useMutation({
-    mutationKey: [QUERY_KEYS.COMMENTS_UPDATE, comment.id, comment.user_id],
+    mutationKey: [QUERY_KEYS.COMMENTS_UPDATE, comment.id, comment.userId],
     mutationFn: async () => {
       if (!post) return
 
@@ -82,8 +82,8 @@ const CommentItem: React.FC<Props> = ({ comment }) => {
   }, [isEditing])
 
   const isEdited =
-    comment.updated_at &&
-    new Date(comment.updated_at) > new Date(comment.created_at)
+    comment.updatedAt &&
+    new Date(comment.updatedAt) > new Date(comment.createdAt)
 
   if (isEditing) {
     return (
@@ -126,9 +126,9 @@ const CommentItem: React.FC<Props> = ({ comment }) => {
           src={comment.user.avatar}
           rootClassName={'size-8 group-hover:hidden'}
           fallbackClassName={getUserInitials(
-            comment.user.first_name || '',
-            comment.user.last_name || '',
-            comment.user.company_name || '',
+            comment.user.firstName || '',
+            comment.user.lastName || '',
+            comment.user.lastName || '',
           )}
         />
 
@@ -170,7 +170,7 @@ const CommentItem: React.FC<Props> = ({ comment }) => {
               {getUserFullName(comment.user)}
             </span>
             <span className="text-xs text-gray-400">
-              {new Date(comment.created_at).toLocaleDateString()}
+              {new Date(comment.createdAt).toLocaleDateString()}
             </span>
             {isEdited && (
               <span className="text-xs text-gray-400">(edited)</span>

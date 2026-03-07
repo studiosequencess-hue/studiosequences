@@ -205,9 +205,9 @@ const CommentsListDialog = () => {
               src={user?.avatar}
               rootClassName={'size-8'}
               fallbackClassName={getUserInitials(
-                user?.first_name || '',
-                user?.last_name || '',
-                user?.company_name || '',
+                user?.firstName || '',
+                user?.lastName || '',
+                user?.lastName || '',
               )}
             />
 

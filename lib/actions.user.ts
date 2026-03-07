@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/db/client'
-import { users } from '@/db/schema'
+import { users } from '@/drizzle/schema'
 import { eq, or, and, sql } from 'drizzle-orm'
 import { ServerResponse, User, DBUser } from '@/lib/models'
 import { DEFAULT_USER_INFO } from '@/lib/defaults'
@@ -99,9 +99,9 @@ export async function searchAllUsers(
         or(
           sql`lower(${users.email}) like lower(${searchPattern})`,
           sql`lower(${users.username}) like lower(${searchPattern})`,
-          sql`lower(${users.company_name}) like lower(${searchPattern})`,
-          sql`lower(${users.first_name}) like lower(${searchPattern})`,
-          sql`lower(${users.last_name}) like lower(${searchPattern})`,
+          sql`lower(${users.lastName}) like lower(${searchPattern})`,
+          sql`lower(${users.firstName}) like lower(${searchPattern})`,
+          sql`lower(${users.lastName}) like lower(${searchPattern})`,
         ),
       )
       .limit(10)

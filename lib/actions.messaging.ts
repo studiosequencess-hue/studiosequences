@@ -3,12 +3,12 @@
 import { db } from '@/db/client'
 import {
   conversations,
-  conversation_participants,
+  conversationParticipants,
   messages,
-  message_attachments,
-  conversation_requests,
+  messageAttachments,
+  conversationRequests,
   users,
-} from '@/db/schema'
+} from '@/drizzle/schema'
 import { eq, and, or, desc, asc, inArray, ne, like } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase.server'
 import { getUser } from '@/lib/actions.auth'
@@ -34,20 +34,20 @@ export async function getOrCreateConversation(
   // Check if conversation exists
   const existingConv = await db.query.conversations.findFirst({
     where: and(
-      eq(conversations.is_group, false),
+      eq(conversations.isGroup, false),
       inArray(
         conversations.id,
         db
-          .select({ id: conversation_participants.conversation_id })
-          .from(conversation_participants)
-          .where(eq(conversation_participants.user_id, currentUserId)),
+          .select({ id: conversationParticipants.conversationId })
+          .from(conversationParticipants)
+          .where(eq(conversationParticipants.userId, currentUserId)),
       ),
       inArray(
         conversations.id,
         db
-          .select({ id: conversation_participants.conversation_id })
-          .from(conversation_participants)
-          .where(eq(conversation_participants.user_id, otherUserId)),
+          .select({ id: conversationParticipants.conversationId })
+          .from(conversationParticipants)
+          .where(eq(conversationParticipants.userId, otherUserId)),
       ),
     ),
     with: {
@@ -57,9 +57,9 @@ export async function getOrCreateConversation(
             columns: {
               id: true,
               username: true,
-              first_name: true,
-              company_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
+              companyName: true,
               avatar: true,
               role: true,
               email: true,
@@ -82,7 +82,7 @@ export async function getOrCreateConversation(
   const newConv = await db
     .insert(conversations)
     .values({
-      is_group: false,
+      isGroup: false,
       name: null,
     })
     .returning()
@@ -92,9 +92,9 @@ export async function getOrCreateConversation(
   }
 
   // Add participants
-  await db.insert(conversation_participants).values([
-    { conversation_id: newConv[0].id, user_id: currentUserId, role: 'admin' },
-    { conversation_id: newConv[0].id, user_id: otherUserId, role: 'member' },
+  await db.insert(conversationParticipants).values([
+    { conversationId: newConv[0].id, userId: currentUserId, role: 'admin' },
+    { conversationId: newConv[0].id, userId: otherUserId, role: 'member' },
   ])
 
   const fullConv = await db.query.conversations.findFirst({
@@ -106,9 +106,9 @@ export async function getOrCreateConversation(
             columns: {
               id: true,
               username: true,
-              first_name: true,
-              last_name: true,
-              company_name: true,
+              firstName: true,
+              lastName: true,
+              companyName: true,
               avatar: true,
               role: true,
               email: true,
@@ -145,10 +145,10 @@ export async function sendMessage(
   const senderId = userRes.data.id
 
   // Verify participant
-  const participant = await db.query.conversation_participants.findFirst({
+  const participant = await db.query.conversationParticipants.findFirst({
     where: and(
-      eq(conversation_participants.conversation_id, conversationId),
-      eq(conversation_participants.user_id, senderId),
+      eq(conversationParticipants.conversationId, conversationId),
+      eq(conversationParticipants.userId, senderId),
     ),
   })
 
@@ -160,8 +160,8 @@ export async function sendMessage(
   const message = await db
     .insert(messages)
     .values({
-      conversation_id: conversationId,
-      sender_id: senderId,
+      conversationId: conversationId,
+      senderId: senderId,
       content,
     })
     .returning()
@@ -172,9 +172,9 @@ export async function sendMessage(
 
   // Insert attachments
   if (attachments.length > 0) {
-    await db.insert(message_attachments).values(
+    await db.insert(messageAttachments).values(
       attachments.map((att) => ({
-        message_id: message[0].id,
+        messageId: message[0].id,
         url: att.url,
         name: att.name,
         type: att.type,
@@ -186,7 +186,7 @@ export async function sendMessage(
   // Update conversation timestamp
   await db
     .update(conversations)
-    .set({ updated_at: new Date() })
+    .set({ updatedAt: new Date().toISOString() })
     .where(eq(conversations.id, conversationId))
 
   return {
@@ -212,10 +212,10 @@ export async function getMessages(
   const currentUserId = userRes.data.id
 
   // Verify access
-  const access = await db.query.conversation_participants.findFirst({
+  const access = await db.query.conversationParticipants.findFirst({
     where: and(
-      eq(conversation_participants.conversation_id, conversationId),
-      eq(conversation_participants.user_id, currentUserId),
+      eq(conversationParticipants.conversationId, conversationId),
+      eq(conversationParticipants.userId, currentUserId),
     ),
   })
 
@@ -225,10 +225,10 @@ export async function getMessages(
 
   const msgs = await db.query.messages.findMany({
     where: and(
-      eq(messages.conversation_id, conversationId),
-      eq(messages.is_deleted, false),
+      eq(messages.conversationId, conversationId),
+      eq(messages.isDeleted, false),
     ),
-    orderBy: [asc(messages.created_at)],
+    orderBy: [asc(messages.createdAt)],
     limit,
     offset,
     with: {
@@ -236,11 +236,11 @@ export async function getMessages(
         columns: {
           id: true,
           username: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
           avatar: true,
           email: true,
-          company_name: true,
+          companyName: true,
           role: true,
         },
       },
@@ -268,9 +268,9 @@ export async function getMessageById(
         columns: {
           id: true,
           username: true,
-          first_name: true,
-          last_name: true,
-          company_name: true,
+          firstName: true,
+          lastName: true,
+          companyName: true,
           avatar: true,
           email: true,
           role: true,
@@ -285,10 +285,10 @@ export async function getMessageById(
   }
 
   // Verify user has access to this conversation
-  const participant = await db.query.conversation_participants.findFirst({
+  const participant = await db.query.conversationParticipants.findFirst({
     where: and(
-      eq(conversation_participants.conversation_id, message.conversation_id),
-      eq(conversation_participants.user_id, userRes.data.id),
+      eq(conversationParticipants.conversationId, message.conversationId),
+      eq(conversationParticipants.userId, userRes.data.id),
     ),
   })
 
@@ -320,8 +320,8 @@ export async function getUserConversations(): Promise<
 
   const userId = userRes.data.id
 
-  const participants = await db.query.conversation_participants.findMany({
-    where: eq(conversation_participants.user_id, userId),
+  const participants = await db.query.conversationParticipants.findMany({
+    where: eq(conversationParticipants.userId, userId),
     with: {
       conversation: {
         with: {
@@ -331,9 +331,9 @@ export async function getUserConversations(): Promise<
                 columns: {
                   id: true,
                   username: true,
-                  first_name: true,
-                  last_name: true,
-                  company_name: true,
+                  firstName: true,
+                  lastName: true,
+                  companyName: true,
                   avatar: true,
                   role: true,
                   email: true,
@@ -342,8 +342,8 @@ export async function getUserConversations(): Promise<
             },
           },
           messages: {
-            where: eq(messages.is_deleted, false),
-            orderBy: [desc(messages.created_at)],
+            where: eq(messages.isDeleted, false),
+            orderBy: [desc(messages.createdAt)],
             limit: 1,
             with: {
               sender: {
@@ -354,7 +354,7 @@ export async function getUserConversations(): Promise<
         },
       },
     },
-    orderBy: [desc(conversation_participants.joined_at)],
+    orderBy: [desc(conversationParticipants.joinedAt)],
   })
 
   const formatted = participants.map((p) => ({
@@ -386,9 +386,9 @@ export async function searchUsers(
     or(
       like(users.username, searchPattern),
       like(users.email, searchPattern),
-      like(users.first_name, searchPattern),
-      like(users.last_name, searchPattern),
-      like(users.company_name, searchPattern),
+      like(users.firstName, searchPattern),
+      like(users.lastName, searchPattern),
+      like(users.companyName, searchPattern),
     ),
   ]
 
@@ -400,11 +400,11 @@ export async function searchUsers(
     .select({
       id: users.id,
       username: users.username,
-      first_name: users.first_name,
-      last_name: users.last_name,
+      firstName: users.firstName,
+      lastName: users.lastName,
       avatar: users.avatar,
       role: users.role,
-      company_name: users.company_name,
+      companyName: users.companyName,
       email: users.email,
     })
     .from(users)
@@ -416,20 +416,20 @@ export async function searchUsers(
   // Check for pending requests (user -> company)
   const requests = await db
     .select({
-      company_id: conversation_requests.company_id,
-      status: conversation_requests.status,
+      companyId: conversationRequests.companyId,
+      status: conversationRequests.status,
     })
-    .from(conversation_requests)
+    .from(conversationRequests)
     .where(
       and(
-        eq(conversation_requests.user_id, currentUserId),
-        inArray(conversation_requests.company_id, userIds),
-        eq(conversation_requests.status, 'pending'),
+        eq(conversationRequests.userId, currentUserId),
+        inArray(conversationRequests.companyId, userIds),
+        eq(conversationRequests.status, 'pending'),
       ),
     )
 
-  const existingConvs = await db.query.conversation_participants.findMany({
-    where: and(eq(conversation_participants.user_id, currentUserId)),
+  const existingConvs = await db.query.conversationParticipants.findMany({
+    where: and(eq(conversationParticipants.userId, currentUserId)),
     with: {
       conversation: {
         with: {
@@ -442,14 +442,14 @@ export async function searchUsers(
   const userHasConversationWith = new Set(
     existingConvs.flatMap((cp) =>
       cp.conversation.participants
-        .filter((p) => p.user_id !== currentUserId)
-        .map((p) => p.user_id),
+        .filter((p) => p.userId !== currentUserId)
+        .map((p) => p.userId),
     ),
   )
 
   // Map results
   const mappedResults = results.map((user) => {
-    const pendingRequest = requests.find((r) => r.company_id === user.id)
+    const pendingRequest = requests.find((r) => r.companyId === user.id)
 
     return {
       ...user,
@@ -476,11 +476,11 @@ export async function requestConversation(
   const userId = userRes.data.id
 
   // Check if already exists
-  const existing = await db.query.conversation_requests.findFirst({
+  const existing = await db.query.conversationRequests.findFirst({
     where: and(
-      eq(conversation_requests.user_id, userId),
-      eq(conversation_requests.company_id, companyId),
-      eq(conversation_requests.status, 'pending'),
+      eq(conversationRequests.userId, userId),
+      eq(conversationRequests.companyId, companyId),
+      eq(conversationRequests.status, 'pending'),
     ),
   })
 
@@ -488,9 +488,9 @@ export async function requestConversation(
     return { status: 'error', message: 'Request already pending' }
   }
 
-  await db.insert(conversation_requests).values({
-    user_id: userId,
-    company_id: companyId,
+  await db.insert(conversationRequests).values({
+    userId: userId,
+    companyId: companyId,
     message: initialMessage,
     status: 'pending',
   })
@@ -508,10 +508,10 @@ export async function handleRequest(
 
   const companyId = userRes.data.id
 
-  const request = await db.query.conversation_requests.findFirst({
+  const request = await db.query.conversationRequests.findFirst({
     where: and(
-      eq(conversation_requests.id, requestId),
-      eq(conversation_requests.company_id, companyId),
+      eq(conversationRequests.id, requestId),
+      eq(conversationRequests.companyId, companyId),
     ),
   })
 
@@ -520,16 +520,16 @@ export async function handleRequest(
   }
 
   await db
-    .update(conversation_requests)
+    .update(conversationRequests)
     .set({
       status: action === 'approve' ? 'approved' : 'rejected',
-      updated_at: new Date(),
+      updatedAt: new Date().toISOString(),
     })
-    .where(eq(conversation_requests.id, requestId))
+    .where(eq(conversationRequests.id, requestId))
 
   if (action === 'approve') {
     // Create conversation
-    const result = await getOrCreateConversation(request.user_id)
+    const result = await getOrCreateConversation(request.userId)
     return result
   }
 
@@ -548,23 +548,26 @@ export async function getPendingRequests() {
     return { status: 'success', data: [] }
   }
 
-  const requests = await db.query.conversation_requests.findMany({
+  const requests = await db.query.conversationRequests.findMany({
     where: and(
-      eq(conversation_requests.company_id, companyId),
-      eq(conversation_requests.status, 'pending'),
+      eq(conversationRequests.companyId, companyId),
+      eq(conversationRequests.status, 'pending'),
     ),
     with: {
       user: {
         columns: {
           id: true,
           username: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
           avatar: true,
+          companyName: true,
+          role: true,
+          email: true,
         },
       },
     },
-    orderBy: [desc(conversation_requests.created_at)],
+    orderBy: [desc(conversationRequests.createdAt)],
   })
 
   return { status: 'success', data: requests }

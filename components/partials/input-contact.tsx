@@ -8,7 +8,7 @@ type Props = {
   onChange: (value: string) => void
 }
 
-type CustomInputProps = {}
+type CustomInputProps = React.ComponentProps<typeof Input>
 
 const CustomInput = React.forwardRef<HTMLInputElement, CustomInputProps>(
   (props, ref) => {

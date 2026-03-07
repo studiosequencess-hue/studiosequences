@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import Placeholder from '@/public/images/placeholder.svg'
 import { Badge } from '@/components/ui/badge'
@@ -22,8 +21,8 @@ const CompanyEventsPreviewDialog = () => {
 
   if (!selectedEvent) return null
 
-  const startDate = new Date(selectedEvent.start_date)
-  const endDate = new Date(selectedEvent.end_date)
+  const startDate = new Date(selectedEvent.startDate)
+  const endDate = new Date(selectedEvent.endDate)
   const sameDay =
     format(startDate, 'yyyy-MM-dd') === format(endDate, 'yyyy-MM-dd')
 
@@ -34,7 +33,7 @@ const CompanyEventsPreviewDialog = () => {
           <DialogTitle className={'hidden'} />
           <DialogDescription className={'hidden'} />
           <Image
-            src={selectedEvent.background_url || Placeholder}
+            src={selectedEvent.backgroundUrl || Placeholder}
             alt={selectedEvent.title}
             fill
             className={'object-cover'}

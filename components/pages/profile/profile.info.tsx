@@ -35,7 +35,7 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
           <HoverCard
             trigger={
               <span className={'text-xl/none'}>
-                {user.is_verified ? (
+                {user.isVerified ? (
                   <HiBadgeCheck className={'text-accent-blue'} />
                 ) : (
                   <HiOutlineBadgeCheck className={'text-muted-foreground'} />
@@ -43,7 +43,7 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
               </span>
             }
             content={
-              user.is_verified
+              user.isVerified
                 ? 'Account verified'
                 : 'Contact support to obtain verification'
             }
@@ -64,9 +64,9 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
         <UserAvatar
           src={user.avatar}
           fallback={getUserInitials(
-            user.first_name,
-            user.last_name,
-            user.company_name,
+            user.firstName,
+            user.lastName,
+            user.lastName,
           )}
           rootClassName={
             'group absolute top-44 left-20 z-20 size-40 -translate-y-1/2'

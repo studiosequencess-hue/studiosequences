@@ -58,6 +58,7 @@ const ProfilePortfolio: React.FC<Props> = ({ user, editable }) => {
     fetchAllTriggerValue,
     setFetching,
     setProjects,
+    user.id,
   ])
 
   return (

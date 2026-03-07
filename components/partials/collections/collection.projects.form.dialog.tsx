@@ -12,13 +12,9 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldContent, FieldLabel } from '@/components/ui/field'
 import { Collection, Project } from '@/lib/models'
-import * as z from 'zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/lib/constants'
-import {
-  addProjectsToCollection,
-  createCollection,
-} from '@/lib/actions.collections'
+import { addProjectsToCollection } from '@/lib/actions.collections'
 import { toast } from 'sonner'
 import Loader from '@/components/partials/loader'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'

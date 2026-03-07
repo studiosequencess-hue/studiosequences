@@ -1,5 +1,6 @@
 import React from 'react'
-import { Newspaper, Clock } from 'lucide-react'
+import Image from 'next/image'
+import { Clock } from 'lucide-react'
 
 interface NewsItem {
   id: number
@@ -45,11 +46,14 @@ const LatestNewsBlock: React.FC = () => {
             key={item.id}
             className="group flex cursor-pointer gap-3 rounded-lg p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
           >
-            <img
-              src={item.image}
-              alt={item.title}
-              className="h-16 w-16 flex-shrink-0 rounded-md object-cover grayscale-[20%] transition-all group-hover:grayscale-0"
-            />
+            <div className={'relative size-16 shrink-0 rounded-md'}>
+              <Image
+                src={item.image}
+                alt={item.title}
+                fill
+                className="object-cover grayscale-20 transition-all group-hover:grayscale-0"
+              />
+            </div>
             <div className="flex min-w-0 flex-col justify-center">
               <span className="mb-1 text-[10px] font-bold tracking-tight text-blue-600 uppercase dark:text-blue-400">
                 {item.category}

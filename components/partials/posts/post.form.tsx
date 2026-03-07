@@ -16,7 +16,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Field,
   FieldError,
@@ -94,7 +93,7 @@ const PostForm: React.FC<Props> = (props) => {
       content: string
       visibility: POST_VISIBILITY
       files: Pick<PostFile, 'url' | 'type' | 'name'>[]
-      projects: Pick<PostProject, 'project_id'>[]
+      projects: Pick<PostProject, 'projectId'>[]
     }) => {
       return upsertPost({
         ...data,
@@ -220,7 +219,7 @@ const PostForm: React.FC<Props> = (props) => {
         url: f.url,
       })),
       projects: projects.map((p) => ({
-        project_id: p.id,
+        projectId: p.id,
       })),
     })
   }

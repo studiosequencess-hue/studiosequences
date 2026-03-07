@@ -91,7 +91,7 @@ export async function uploadFile(
 }
 
 type DeleteFileProps = {
-  user_id: string
+  userId: string
   bucket: StorageBucketType
   publicUrl: string
 }
@@ -110,7 +110,7 @@ export async function deleteFile(
       }
     }
 
-    if (currentUserResponse.data.user.id != props.user_id) {
+    if (currentUserResponse.data.user.id != props.userId) {
       return {
         status: 'error',
         message: 'Invalid access permission. Please try again later.',

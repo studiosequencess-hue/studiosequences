@@ -81,7 +81,7 @@ const ProjectsGrid: React.FC<Props> = (props) => {
         </div>
       )}
       {projects.map((project) => {
-        const isCensored = project.is_sensitive && !project.is_revealed
+        const isCensored = project.isSensitive && !project.is_revealed
 
         return (
           <div

@@ -16,7 +16,7 @@ import { getBaseURL, prepareData } from '@/lib/utils'
 import { getUserById, getUserByUsername } from '@/lib/actions.user'
 import { UserRole } from '@/lib/constants'
 import { db } from '@/db/client'
-import { users } from '@/db/schema'
+import { users } from '@/drizzle/schema'
 
 export async function getUser(): Promise<ServerResponse<DBUser>> {
   try {
@@ -153,11 +153,11 @@ export async function signUpWithEmailPassword(
         role: signUpData.role || UserRole.User.toString(),
         email: data.user?.email || '',
         username: signUpData.username,
-        first_name: signUpData.first_name,
-        last_name: signUpData.last_name,
+        firstName: signUpData.firstName,
+        lastName: signUpData.lastName,
         pronoun: signUpData.pronoun,
         contact: signUpData.contact,
-        company_name: signUpData.company_name,
+        company_name: signUpData.lastName,
       }),
     )
 

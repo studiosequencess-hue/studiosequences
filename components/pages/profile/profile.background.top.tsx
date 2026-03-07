@@ -45,7 +45,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
 
       const updateInfoResponse = await updateUserInfo({
         user_id: currentUser.id,
-        background_top: `${url}?t=${new Date().getTime()}`,
+        backgroundTop: `${url}?t=${new Date().getTime()}`,
       })
 
       if (updateInfoResponse.status == 'error') {
@@ -54,7 +54,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
         toast.success(updateInfoResponse.message)
         setUser({
           ...currentUser,
-          background_top: url,
+          backgroundTop: url,
         })
       }
     }
@@ -69,19 +69,19 @@ const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
   const handleDelete = async () => {
     if (editing) return
     if (!currentUser) return
-    if (!currentUser.background_top) return
+    if (!currentUser.backgroundTop) return
 
     setEditing(true)
 
     const [deleteResponse, updateInfoResponse] = await Promise.all([
       deleteFile({
-        user_id: currentUser.id,
+        userId: currentUser.id,
         bucket: StorageBucketType.Images,
-        publicUrl: currentUser.background_top,
+        publicUrl: currentUser.backgroundTop,
       }),
       updateUserInfo({
         user_id: currentUser.id,
-        background_top: '',
+        backgroundTop: '',
       }),
     ])
 
@@ -98,7 +98,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
       toast.success('Background deleted successfully')
       setUser({
         ...currentUser,
-        background_top: '',
+        backgroundTop: '',
       })
     }
 
@@ -107,10 +107,10 @@ const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
 
   return (
     <div className={'absolute inset-0 h-full w-full grow'}>
-      {user?.background_top && (
+      {user?.backgroundTop && (
         <div className={'absolute inset-0'}>
           <Image
-            src={user.background_top}
+            src={user.backgroundTop}
             alt={'background-image-top'}
             layout="fill"
             objectFit="cover"
@@ -144,7 +144,7 @@ const ProfileBackgroundTop: React.FC<Props> = ({ user, editable }) => {
                 change
               </Button>
 
-              {currentUser?.background_top && (
+              {currentUser?.backgroundTop && (
                 <Button
                   size={'sm'}
                   variant={'destructive'}

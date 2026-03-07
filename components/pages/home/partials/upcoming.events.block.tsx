@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Calendar, MapPin, Plus } from 'lucide-react'
+import { Calendar, MapPin } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CompanyEvent } from '@/lib/models'
 import { QUERY_KEYS, UserRole } from '@/lib/constants'
@@ -52,7 +52,7 @@ const UpcomingEventsBlock: React.FC = () => {
               if (userLoading || !user) return
               if (
                 user.role == UserRole.Admin.toString() ||
-                event.user_id == user.id
+                event.userId == user.id
               ) {
                 setFormOpen(true, event)
               } else {
@@ -64,7 +64,7 @@ const UpcomingEventsBlock: React.FC = () => {
               <span className="truncate font-bold">{event.tag}</span>
               <div className="text-accent-blue group-hover:text-foreground flex items-center justify-end gap-1 text-[10px] font-bold">
                 <Calendar size={10} />
-                <span>{format(event.start_date, 'MMM dd, yyyy')}</span>
+                <span>{format(event.startDate, 'MMM dd, yyyy')}</span>
               </div>
             </div>
             <h3 className="line-clamp-2 text-xs/none font-semibold">

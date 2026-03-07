@@ -34,7 +34,7 @@ const ProjectFormMembers: React.FC<Props> = ({
   return (
     <div className={'flex w-full flex-col gap-2'}>
       <ProjectFormMembersSearchbar
-        memberIds={members.map((item) => item.user_id)}
+        memberIds={members.map((item) => item.userId)}
         onSelect={(member) => setMembers([...members, member])}
       />
       {membersLoading ? (
@@ -82,7 +82,7 @@ const ProjectFormMembers: React.FC<Props> = ({
 
                     <div className={'flex w-64 flex-col gap-2 text-xs/none'}>
                       <span className={'text-muted-foreground truncate'}>
-                        {[member.user?.first_name, member.user?.last_name]
+                        {[member.user?.firstName, member.user?.lastName]
                           .join(' ')
                           .toLowerCase()
                           .trim() || 'No name'}

@@ -14,78 +14,45 @@ import {
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 
-export const users = pgTable(
-  'users',
+export const projectMembers = pgTable(
+  'project_members',
   {
-    id: text().primaryKey().notNull(),
-    role: varchar({ length: 50 }).default('user').notNull(),
-    pronoun: text(),
-    avatar: text(),
-    backgroundTop: text('background_top'),
-    backgroundBottom: text('background_bottom'),
-    occupation: text(),
-    isOpenToWork: boolean('is_open_to_work').default(false),
-    location: text(),
-    isVerified: boolean('is_verified').default(false),
-    firstName: text('first_name'),
-    lastName: text('last_name'),
-    username: text().notNull(),
-    email: text().notNull(),
-    contact: text(),
-    instagram: text(),
-    twitter: text(),
-    facebook: text(),
-    linkedin: text(),
-    companyName: text('company_name'),
-    about: text(),
-  },
-  (table) => [
-    index('users_email_idx').using(
-      'btree',
-      table.email.asc().nullsLast().op('text_ops'),
-    ),
-    index('users_username_idx').using(
-      'btree',
-      table.username.asc().nullsLast().op('text_ops'),
-    ),
-    unique('users_username_unique').on(table.username),
-    unique('users_email_unique').on(table.email),
-  ],
-)
-
-export const follows = pgTable(
-  'follows',
-  {
-    followerId: text('follower_id').notNull(),
-    followingId: text('following_id').notNull(),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
+      name: 'project_members_id_seq',
+    }),
+    userId: text('user_id').notNull(),
+    department: text(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    projectId: bigint('project_id', { mode: 'number' }).notNull(),
     updatedAt: timestamp('updated_at', {
       withTimezone: true,
       mode: 'string',
     }).defaultNow(),
   },
   (table) => [
-    index('follows_follower_id_idx').using(
+    index('project_members_project_id_idx').using(
       'btree',
-      table.followerId.asc().nullsLast().op('text_ops'),
+      table.projectId.asc().nullsLast().op('int8_ops'),
     ),
-    index('follows_following_id_idx').using(
+    index('project_members_user_id_idx').using(
       'btree',
-      table.followingId.asc().nullsLast().op('text_ops'),
+      table.userId.asc().nullsLast().op('text_ops'),
     ),
     foreignKey({
-      columns: [table.followerId],
-      foreignColumns: [users.id],
-      name: 'follows_follower_id_users_id_fk',
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'project_members_project_id_projects_id_fk',
     }).onDelete('cascade'),
     foreignKey({
-      columns: [table.followingId],
+      columns: [table.userId],
       foreignColumns: [users.id],
-      name: 'follows_following_id_users_id_fk',
+      name: 'project_members_user_id_users_id_fk',
     }).onDelete('cascade'),
-    unique('unique_follow').on(table.followerId, table.followingId),
+    unique('unique_project_member').on(table.userId, table.projectId),
   ],
 )
 
@@ -95,11 +62,6 @@ export const collections = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'collections_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     name: text().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
@@ -134,11 +96,6 @@ export const collectionProjects = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'collection_projects_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     collectionId: bigint('collection_id', { mode: 'number' }),
@@ -181,15 +138,10 @@ export const userExperiences = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'user_experiences_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id').notNull(),
     title: text().notNull(),
-    lastName: text('company_name').notNull(),
+    companyName: text('company_name').notNull(),
     employmentType: text('employment_type').notNull(),
     startDate: timestamp('start_date', {
       withTimezone: true,
@@ -205,6 +157,7 @@ export const userExperiences = pgTable(
       withTimezone: true,
       mode: 'string',
     }).defaultNow(),
+    location: text(),
   },
   (table) => [
     index('user_experiences_start_date_idx').using(
@@ -227,17 +180,80 @@ export const userExperiences = pgTable(
   ],
 )
 
+export const experienceProjects = pgTable(
+  'experience_projects',
+  {
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
+      name: 'experience_projects_id_seq',
+    }),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    experienceId: bigint('experience_id', { mode: 'number' }).notNull(),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    projectId: bigint('project_id', { mode: 'number' }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.experienceId],
+      foreignColumns: [userExperiences.id],
+      name: 'experience_projects_experience_id_user_experiences_id_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'experience_projects_project_id_projects_id_fk',
+    }).onDelete('cascade'),
+    unique('experience_projects_experience_id_project_id_unique').on(
+      table.experienceId,
+      table.projectId,
+    ),
+  ],
+)
+
+export const experienceFiles = pgTable(
+  'experience_files',
+  {
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
+      name: 'experience_files_id_seq',
+    }),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    experienceId: bigint('experience_id', { mode: 'number' }).notNull(),
+    url: text().notNull(),
+    name: text().notNull(),
+    type: text().notNull(),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    size: bigint({ mode: 'number' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'string',
+    }).defaultNow(),
+  },
+  (table) => [
+    index('experience_files_experience_id_idx').using(
+      'btree',
+      table.experienceId.asc().nullsLast().op('int8_ops'),
+    ),
+    foreignKey({
+      columns: [table.experienceId],
+      foreignColumns: [userExperiences.id],
+      name: 'experience_files_experience_id_user_experiences_id_fk',
+    }).onDelete('cascade'),
+  ],
+)
+
 export const postProjects = pgTable(
   'post_projects',
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'post_projects_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     projectId: bigint('project_id', { mode: 'number' }).notNull(),
@@ -274,47 +290,12 @@ export const postProjects = pgTable(
   ],
 )
 
-export const conversations = pgTable(
-  'conversations',
-  {
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
-      name: 'conversations_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
-    }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp('updated_at', {
-      withTimezone: true,
-      mode: 'string',
-    }).defaultNow(),
-    isGroup: boolean('is_group').default(false),
-    name: text(),
-  },
-  (table) => [
-    index('conversations_updated_at_idx').using(
-      'btree',
-      table.updatedAt.asc().nullsLast().op('timestamptz_ops'),
-    ),
-  ],
-)
-
 export const conversationParticipants = pgTable(
   'conversation_participants',
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'conversation_participants_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     conversationId: bigint('conversation_id', { mode: 'number' }).notNull(),
@@ -360,11 +341,6 @@ export const messageAttachments = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'message_attachments_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     messageId: bigint('message_id', { mode: 'number' }).notNull(),
@@ -393,22 +369,13 @@ export const messageAttachments = pgTable(
   ],
 )
 
-export const messages = pgTable(
-  'messages',
+export const conversations = pgTable(
+  'conversations',
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
-      name: 'messages_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
+      name: 'conversations_id_seq',
     }),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    conversationId: bigint('conversation_id', { mode: 'number' }).notNull(),
-    senderId: text('sender_id').notNull(),
-    content: text(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),
@@ -416,31 +383,14 @@ export const messages = pgTable(
       withTimezone: true,
       mode: 'string',
     }).defaultNow(),
-    isDeleted: boolean('is_deleted').default(false),
+    isGroup: boolean('is_group').default(false),
+    name: text(),
   },
   (table) => [
-    index('messages_conversation_id_idx').using(
+    index('conversations_updated_at_idx').using(
       'btree',
-      table.conversationId.asc().nullsLast().op('int8_ops'),
+      table.updatedAt.asc().nullsLast().op('timestamptz_ops'),
     ),
-    index('messages_created_at_idx').using(
-      'btree',
-      table.createdAt.asc().nullsLast().op('timestamptz_ops'),
-    ),
-    index('messages_sender_id_idx').using(
-      'btree',
-      table.senderId.asc().nullsLast().op('text_ops'),
-    ),
-    foreignKey({
-      columns: [table.conversationId],
-      foreignColumns: [conversations.id],
-      name: 'messages_conversation_id_conversations_id_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.senderId],
-      foreignColumns: [users.id],
-      name: 'messages_sender_id_users_id_fk',
-    }).onDelete('cascade'),
   ],
 )
 
@@ -450,11 +400,6 @@ export const events = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'events_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     title: text().notNull(),
     description: text().notNull(),
@@ -505,11 +450,6 @@ export const postReposts = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'post_reposts_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     postId: bigint('post_id', { mode: 'number' }).notNull(),
@@ -542,17 +482,48 @@ export const postReposts = pgTable(
   ],
 )
 
+export const follows = pgTable(
+  'follows',
+  {
+    followerId: text('follower_id').notNull(),
+    followingId: text('following_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'string',
+    }).defaultNow(),
+  },
+  (table) => [
+    index('follows_follower_id_idx').using(
+      'btree',
+      table.followerId.asc().nullsLast().op('text_ops'),
+    ),
+    index('follows_following_id_idx').using(
+      'btree',
+      table.followingId.asc().nullsLast().op('text_ops'),
+    ),
+    foreignKey({
+      columns: [table.followerId],
+      foreignColumns: [users.id],
+      name: 'follows_follower_id_users_id_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.followingId],
+      foreignColumns: [users.id],
+      name: 'follows_following_id_users_id_fk',
+    }).onDelete('cascade'),
+    unique('unique_follow').on(table.followerId, table.followingId),
+  ],
+)
+
 export const conversationRequests = pgTable(
   'conversation_requests',
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'conversation_requests_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id').notNull(),
     companyId: text('company_id').notNull(),
@@ -593,17 +564,58 @@ export const conversationRequests = pgTable(
   ],
 )
 
+export const messages = pgTable(
+  'messages',
+  {
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
+      name: 'messages_id_seq',
+    }),
+    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+    conversationId: bigint('conversation_id', { mode: 'number' }).notNull(),
+    senderId: text('sender_id').notNull(),
+    content: text(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'string',
+    }).defaultNow(),
+    isDeleted: boolean('is_deleted').default(false),
+  },
+  (table) => [
+    index('messages_conversation_id_idx').using(
+      'btree',
+      table.conversationId.asc().nullsLast().op('int8_ops'),
+    ),
+    index('messages_created_at_idx').using(
+      'btree',
+      table.createdAt.asc().nullsLast().op('timestamptz_ops'),
+    ),
+    index('messages_sender_id_idx').using(
+      'btree',
+      table.senderId.asc().nullsLast().op('text_ops'),
+    ),
+    foreignKey({
+      columns: [table.conversationId],
+      foreignColumns: [conversations.id],
+      name: 'messages_conversation_id_conversations_id_fk',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.senderId],
+      foreignColumns: [users.id],
+      name: 'messages_sender_id_users_id_fk',
+    }).onDelete('cascade'),
+  ],
+)
+
 export const posts = pgTable(
   'posts',
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'posts_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id').notNull(),
     content: text().notNull(),
@@ -649,11 +661,6 @@ export const userPostBookmarks = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'user_post_bookmarks_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id').notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -689,55 +696,12 @@ export const userPostBookmarks = pgTable(
   ],
 )
 
-export const experienceProjects = pgTable(
-  'experience_projects',
-  {
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
-      name: 'experience_projects_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
-    }),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    experienceId: bigint('experience_id', { mode: 'number' }).notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    projectId: bigint('project_id', { mode: 'number' }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.experienceId],
-      foreignColumns: [userExperiences.id],
-      name: 'experience_projects_experience_id_user_experiences_id_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.projectId],
-      foreignColumns: [projects.id],
-      name: 'experience_projects_project_id_projects_id_fk',
-    }).onDelete('cascade'),
-    unique('experience_projects_experience_id_project_id_unique').on(
-      table.experienceId,
-      table.projectId,
-    ),
-  ],
-)
-
 export const stories = pgTable(
   'stories',
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'stories_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id').notNull(),
     url: text().notNull(),
@@ -771,57 +735,12 @@ export const stories = pgTable(
   ],
 )
 
-export const experienceMedia = pgTable(
-  'experience_media',
-  {
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
-      name: 'experience_media_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
-    }),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    experienceId: bigint('experience_id', { mode: 'number' }).notNull(),
-    url: text().notNull(),
-    name: text().notNull(),
-    type: text().notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    size: bigint({ mode: 'number' }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp('updated_at', {
-      withTimezone: true,
-      mode: 'string',
-    }).defaultNow(),
-  },
-  (table) => [
-    index('experience_media_experience_id_idx').using(
-      'btree',
-      table.experienceId.asc().nullsLast().op('int8_ops'),
-    ),
-    foreignKey({
-      columns: [table.experienceId],
-      foreignColumns: [userExperiences.id],
-      name: 'experience_media_experience_id_user_experiences_id_fk',
-    }).onDelete('cascade'),
-  ],
-)
-
 export const postLikes = pgTable(
   'post_likes',
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'post_likes_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id').notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -863,11 +782,6 @@ export const postComments = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'post_comments_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id').notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -909,11 +823,6 @@ export const projects = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'projects_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     userId: text('user_id'),
     title: text().notNull(),
@@ -945,50 +854,42 @@ export const projects = pgTable(
   ],
 )
 
-export const projectMembers = pgTable(
-  'project_members',
+export const users = pgTable(
+  'users',
   {
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
-      name: 'project_members_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
-    }),
-    userId: text('user_id').notNull(),
-    department: text(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
-      .defaultNow()
-      .notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    projectId: bigint('project_id', { mode: 'number' }).notNull(),
-    updatedAt: timestamp('updated_at', {
-      withTimezone: true,
-      mode: 'string',
-    }).defaultNow(),
+    id: text().primaryKey().notNull(),
+    role: varchar({ length: 50 }).default('user').notNull(),
+    pronoun: text(),
+    avatar: text(),
+    backgroundTop: text('background_top'),
+    backgroundBottom: text('background_bottom'),
+    occupation: text(),
+    isOpenToWork: boolean('is_open_to_work').default(false),
+    location: text(),
+    isVerified: boolean('is_verified').default(false),
+    firstName: text('first_name'),
+    lastName: text('last_name'),
+    username: text().notNull(),
+    email: text().notNull(),
+    contact: text(),
+    instagram: text(),
+    twitter: text(),
+    facebook: text(),
+    linkedin: text(),
+    companyName: text('company_name'),
+    about: text(),
   },
   (table) => [
-    index('project_members_project_id_idx').using(
+    index('users_email_idx').using(
       'btree',
-      table.projectId.asc().nullsLast().op('int8_ops'),
+      table.email.asc().nullsLast().op('text_ops'),
     ),
-    index('project_members_user_id_idx').using(
+    index('users_username_idx').using(
       'btree',
-      table.userId.asc().nullsLast().op('text_ops'),
+      table.username.asc().nullsLast().op('text_ops'),
     ),
-    foreignKey({
-      columns: [table.projectId],
-      foreignColumns: [projects.id],
-      name: 'project_members_project_id_projects_id_fk',
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.userId],
-      foreignColumns: [users.id],
-      name: 'project_members_user_id_users_id_fk',
-    }).onDelete('cascade'),
-    unique('unique_project_member').on(table.userId, table.projectId),
+    unique('users_username_unique').on(table.username),
+    unique('users_email_unique').on(table.email),
   ],
 )
 
@@ -998,11 +899,6 @@ export const projectFiles = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'project_images_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     title: text(),
     description: text(),
@@ -1038,11 +934,6 @@ export const postFiles = pgTable(
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity({
       name: 'post_files_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
     }),
     url: text().notNull(),
     name: text().notNull(),
@@ -1286,3 +1177,15 @@ export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
     references: [projects.id],
   }),
 }))
+
+export const experienceRelations = relations(
+  userExperiences,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [userExperiences.userId],
+      references: [users.id],
+    }),
+    files: many(experienceFiles),
+    projects: many(experienceProjects),
+  }),
+)

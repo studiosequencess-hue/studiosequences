@@ -17,7 +17,7 @@ import {
   conversations,
   messages,
   userExperiences,
-  experienceMedia,
+  experienceFiles,
   experienceProjects,
 } from '@/drizzle/schema'
 import { InferSelectModel } from 'drizzle-orm'
@@ -214,8 +214,16 @@ export type MessageAttachment = {
   size: number | null
 }
 
-export type UserExperience = InferSelectModel<typeof userExperiences>
+export type UserExperience = InferSelectModel<typeof userExperiences> & {
+  files: UserExperienceFiles[]
+  projects: UserExperienceProjects[]
+}
 
-export type UserExperienceMedia = InferSelectModel<typeof experienceMedia>
+export type FormExperience = Omit<
+  UserExperience,
+  'userId' | 'createdAt' | 'updatedAt'
+>
+
+export type UserExperienceFiles = InferSelectModel<typeof experienceFiles>
 
 export type UserExperienceProjects = InferSelectModel<typeof experienceProjects>

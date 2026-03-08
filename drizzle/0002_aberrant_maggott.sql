@@ -1,0 +1,22 @@
+ALTER TABLE "collection_projects" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "collections" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "conversation_participants" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "conversation_requests" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "conversations" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "events" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "experience_media" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "experience_projects" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "message_attachments" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "messages" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "post_comments" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "post_files" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "post_likes" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "post_projects" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "post_reposts" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "posts" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "project_files" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "project_members" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "projects" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "stories" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "user_experiences" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;--> statement-breakpoint
+ALTER TABLE "user_post_bookmarks" ALTER COLUMN "id" SET MAXVALUE 9223372036854775807;

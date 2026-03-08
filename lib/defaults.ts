@@ -1,5 +1,5 @@
-import { ProjectMember, User, DBUser } from '@/lib/models'
-import { UserRole } from '@/lib/constants'
+import { ProjectMember, User, DBUser, FormExperience } from '@/lib/models'
+import { EMPLOYMENT_TYPE, UserRole } from '@/lib/constants'
 
 export const PLACEHOLDER_IMAGES: string[] = [
   'https://images.unsplash.com/photo-1765476608471-c30c09564def?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -69,3 +69,26 @@ export const POSTS_PER_PAGE = 10
 export const FOLLOW_SUGGESTIONS_LIMIT = 10
 
 export const COMMENTS_PER_POST = 50
+
+export const DEFAULT_EXPERIENCE: FormExperience = {
+  id: -1,
+  title: '',
+  companyName: '',
+  description: '',
+  location: '',
+  skills: '',
+  startDate: new Date().toISOString(),
+  endDate: new Date().toISOString(),
+  employmentType: EMPLOYMENT_TYPE.FULL_TIME,
+  files: [],
+  projects: [],
+}
+
+export const EMPLOYMENT_TYPES: EMPLOYMENT_TYPE[] = [
+  EMPLOYMENT_TYPE.FULL_TIME,
+  EMPLOYMENT_TYPE.PART_TIME,
+  EMPLOYMENT_TYPE.CONTRACT,
+  EMPLOYMENT_TYPE.FREELANCE,
+  EMPLOYMENT_TYPE.INTERNSHIP,
+  EMPLOYMENT_TYPE.SELF_EMPLOYED,
+]

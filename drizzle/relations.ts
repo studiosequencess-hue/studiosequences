@@ -19,7 +19,7 @@ import {
   userPostBookmarks,
   experienceProjects,
   stories,
-  experienceMedia,
+  experienceFiles,
   postLikes,
   postComments,
   projectFiles,
@@ -108,7 +108,7 @@ export const userExperiencesRelations = relations(
       references: [users.id],
     }),
     experienceProjects: many(experienceProjects),
-    experienceMedias: many(experienceMedia),
+    experienceMedias: many(experienceFiles),
   }),
 )
 
@@ -268,10 +268,10 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
 }))
 
 export const experienceMediaRelations = relations(
-  experienceMedia,
+  experienceFiles,
   ({ one }) => ({
     userExperience: one(userExperiences, {
-      fields: [experienceMedia.experienceId],
+      fields: [experienceFiles.experienceId],
       references: [userExperiences.id],
     }),
   }),

@@ -31,40 +31,71 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@/components/ui/combobox'
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { EMPLOYMENT_TYPES } from '@/lib/defaults'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { beautifyEmploymentType } from '@/lib/utils'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { EMPLOYMENT_TYPE, QUERY_KEYS } from '@/lib/constants'
+import {
+  deleteUserExperience,
+  upsertExperience,
+} from '@/lib/actions.experiences'
+import { toast } from 'sonner'
+import { Spinner } from '@/components/ui/spinner'
 
 const formSchema = z.object({
-  title: z.string().min(1, 'Too short'),
-  companyName: z.string().min(1, 'Too short.'),
+  title: z
+    .string()
+    .min(1, {
+      error: 'Too short',
+    })
+    .max(255, {
+      error: 'Too long',
+    }),
+  companyName: z
+    .string()
+    .min(1, {
+      error: 'Too short',
+    })
+    .max(255, {
+      error: 'Too long',
+    }),
   employmentType: z.enum(EMPLOYMENT_TYPES),
   startDate: z.date(),
   endDate: z.date().optional(),
-  location: z.string(),
-  description: z.string(),
-  skills: z.string(),
+  location: z.string().max(255, {
+    error: 'Too long',
+  }),
+  description: z.string().max(500, {
+    error: 'Too long',
+  }),
+  skills: z.string().max(255, {
+    error: 'Too long',
+  }),
 })
 
 type Props = {
   experience: FormExperience | null
   onClose: () => void
-  onDelete?: () => void
-  onSave?: (exp: FormExperience) => void
 }
 
 const ExperiencesFormDialog: React.FC<Props> = (props) => {
+  const queryClient = useQueryClient()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: props.experience?.title || '',
       companyName: props.experience?.companyName || '',
+      employmentType:
+        (props.experience?.employmentType as EMPLOYMENT_TYPE) ||
+        EMPLOYMENT_TYPE.FULL_TIME,
       startDate: props.experience
         ? new Date(props.experience.startDate)
         : new Date(),
@@ -79,10 +110,101 @@ const ExperiencesFormDialog: React.FC<Props> = (props) => {
   const [startDateOpen, setStartDateOpen] = React.useState<boolean>(false)
   const [endDateOpen, setEndDateOpen] = React.useState<boolean>(false)
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    // Do something with the form values.
-    console.log(data)
+  const saveMutation = useMutation({
+    mutationKey: [QUERY_KEYS.EXPERIENCES_SAVE, props.experience?.id],
+    mutationFn: async (experience: FormExperience) => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.EXPERIENCES] })
+
+      const response = await upsertExperience({ experience })
+
+      if (response.status == 'success') {
+        toast.success(response.message)
+        return response.data
+      } else {
+        toast.error(response.message)
+        return null
+      }
+    },
+    onSettled: () => {
+      props.onClose()
+      form.reset()
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.EXPERIENCES],
+        exact: false,
+        refetchType: 'active',
+      })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationKey: [QUERY_KEYS.EXPERIENCES_DELETE, props.experience?.id],
+    mutationFn: async () => {
+      if (!props.experience || props.experience.id == -1) return
+
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.EXPERIENCES] })
+
+      const response = await deleteUserExperience({
+        experienceId: props.experience.id,
+      })
+
+      if (response.status == 'success') {
+        toast.success(response.message)
+        return response.data
+      } else {
+        toast.error(response.message)
+        return null
+      }
+    },
+    onSettled: () => {
+      props.onClose()
+      form.reset()
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.EXPERIENCES],
+        exact: false,
+        refetchType: 'active',
+      })
+    },
+  })
+
+  const handleSave = (values: z.infer<typeof formSchema>) => {
+    saveMutation.mutate({
+      ...values,
+      id: props.experience?.id || -1,
+      files: [],
+      projects: [],
+      startDate: values.startDate.toISOString(),
+      endDate: values.endDate?.toISOString() || null,
+    })
   }
+
+  const handleDelete = () => {
+    deleteMutation.mutate()
+  }
+
+  React.useEffect(() => {
+    form.setValue('title', props.experience?.title || '')
+    form.setValue('companyName', props.experience?.companyName || '')
+    form.setValue(
+      'employmentType',
+      (props.experience?.employmentType as EMPLOYMENT_TYPE) ||
+        EMPLOYMENT_TYPE.FULL_TIME,
+    )
+    form.setValue(
+      'startDate',
+      props.experience ? new Date(props.experience.startDate) : new Date(),
+    )
+    form.setValue(
+      'endDate',
+      props.experience?.endDate
+        ? new Date(props.experience.endDate)
+        : new Date(),
+    )
+    form.setValue('location', props.experience?.location || '')
+    form.setValue('description', props.experience?.description || '')
+    form.setValue('skills', props.experience?.skills || '')
+  }, [props.experience])
 
   return (
     <Dialog
@@ -91,7 +213,7 @@ const ExperiencesFormDialog: React.FC<Props> = (props) => {
         if (!state) props.onClose()
       }}
     >
-      <DialogContent className={'gap-0 p-0'}>
+      <DialogContent className={'w-96 gap-0 p-0'}>
         <DialogHeader>
           <div className="flex items-center justify-between border-b px-6 py-4">
             <DialogTitle className="text-lg font-bold">
@@ -148,23 +270,28 @@ const ExperiencesFormDialog: React.FC<Props> = (props) => {
                     <FieldLabel htmlFor="companyName">
                       Employment Type
                     </FieldLabel>
-                    <Combobox
+                    <Select
                       defaultValue={field.value}
-                      items={EMPLOYMENT_TYPES}
                       onValueChange={field.onChange}
                     >
-                      <ComboboxInput placeholder="Select" />
-                      <ComboboxContent>
-                        <ComboboxEmpty>Empty</ComboboxEmpty>
-                        <ComboboxList>
-                          {(item) => (
-                            <ComboboxItem key={item} value={item}>
-                              {item}
-                            </ComboboxItem>
-                          )}
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {EMPLOYMENT_TYPES.map((type, index) => {
+                            return (
+                              <SelectItem
+                                key={`employment-type-${index}`}
+                                value={type}
+                              >
+                                {beautifyEmploymentType(type)}
+                              </SelectItem>
+                            )
+                          })}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -338,42 +465,50 @@ const ExperiencesFormDialog: React.FC<Props> = (props) => {
         </ScrollArea>
 
         <DialogFooter
-          className={'flex items-center justify-between border-t px-6 py-4'}
+          className={'flex items-center justify-between border-t px-4 py-4'}
         >
-          {props.experience ? (
-            <button
-              type="button"
-              onClick={() => props.onDelete?.()}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"
+          {props.experience?.id != -1 ? (
+            <Button
+              size={'sm'}
+              variant={'destructive'}
+              disabled={saveMutation.isPending || deleteMutation.isPending}
+              onClick={handleDelete}
+              className={'w-20'}
             >
-              <Trash2 size={16} /> Delete
-            </button>
+              {deleteMutation.isPending ? (
+                <Spinner />
+              ) : (
+                <div className={'flex items-center gap-1'}>
+                  <Trash2 size={16} /> Delete
+                </div>
+              )}
+            </Button>
           ) : (
             <div />
           )}
-          <div className="flex gap-3">
-            <button
-              onClick={() => props.onClose()}
-              className="rounded-lg px-4 py-2 font-semibold text-gray-600 transition-colors hover:bg-gray-100"
-            >
+          <div className="flex gap-2">
+            <Button size={'sm'} onClick={() => props.onClose()}>
               Cancel
-            </button>
-            <button
-              onClick={() => {
-                const values = form.getValues()
-                props.onSave?.({
-                  ...values,
-                  id: -1,
-                  files: [],
-                  projects: [],
-                  startDate: values.startDate.toISOString(),
-                  endDate: values.endDate?.toISOString() || null,
-                })
-              }}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
+            </Button>
+            <Button
+              size={'sm'}
+              variant={'accent'}
+              disabled={
+                !form.formState.isValid ||
+                saveMutation.isPending ||
+                deleteMutation.isPending
+              }
+              onClick={form.handleSubmit(handleSave)}
+              className={'w-20'}
             >
-              <Save size={18} /> Save
-            </button>
+              {saveMutation.isPending ? (
+                <Spinner />
+              ) : (
+                <div className={'flex items-center gap-1'}>
+                  <Save size={16} /> Save
+                </div>
+              )}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>

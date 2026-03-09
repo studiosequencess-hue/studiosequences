@@ -21,6 +21,7 @@ export enum StorageBucketType {
   Events = 'events',
   Stories = 'stories',
   Messages = 'messages',
+  Experiences = 'experiences',
 }
 
 export enum POST_VISIBILITY {
@@ -63,6 +64,9 @@ export enum QUERY_KEYS {
   COMMENTS_INSERT = 'comments-insert',
   COMMENTS_UPDATE = 'comments-update',
   COMMENTS_DELETE = 'comments-delete',
+  EXPERIENCES = 'experiences',
+  EXPERIENCES_SAVE = 'experience-save',
+  EXPERIENCES_DELETE = 'experience-delete',
 }
 
 export enum EMPLOYMENT_TYPE {

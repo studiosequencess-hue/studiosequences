@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx'
+import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import {
   DBUser,
@@ -7,9 +7,14 @@ import {
   UserExperience,
   UserGeneralInfo,
 } from '@/lib/models'
+import { EMPLOYMENT_TYPE } from '@/lib/constants'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function capitalize(value: string): string {
+  return value[0].toUpperCase() + value.slice(1).toLowerCase()
 }
 
 export function getUserGeneralInfo(user: DBUser): UserGeneralInfo {
@@ -159,4 +164,23 @@ export function sortExperiences(
   return experiences.sort((a, b) => {
     return new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
   })
+}
+
+export function beautifyEmploymentType(type: EMPLOYMENT_TYPE): string {
+  switch (type) {
+    case EMPLOYMENT_TYPE.FULL_TIME:
+      return 'Full Time'
+    case EMPLOYMENT_TYPE.PART_TIME:
+      return 'Part Time'
+    case EMPLOYMENT_TYPE.SELF_EMPLOYED:
+      return 'Self Employed'
+    case EMPLOYMENT_TYPE.CONTRACT:
+      return 'Contract'
+    case EMPLOYMENT_TYPE.INTERNSHIP:
+      return 'Internship'
+    case EMPLOYMENT_TYPE.FREELANCE:
+      return 'Freelance'
+    default:
+      return capitalize(type)
+  }
 }

@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { format } from 'date-fns'
 
 type Props = {
   experience: FormExperience
@@ -27,44 +28,49 @@ const ExperiencesViewDialog: React.FC<Props> = (props) => {
       <DialogContent>
         <DialogHeader className={'flex items-start gap-1.5'}>
           <div
-            className={`mb-4 flex h-20 w-20 items-center justify-center rounded-xl border-4 border-white text-white shadow-lg`}
+            className={`border-foreground/25 bg-accent-blue mb-4 flex size-16 items-center justify-center rounded-xl border-4`}
           >
-            <Briefcase size={40} />
+            <Briefcase size={28} />
           </div>
           <div className={'flex flex-col gap-1'}>
-            <DialogTitle className="text-2xl font-bold text-gray-900">
+            <DialogTitle className="line-clamp-2 text-xl/none font-bold">
               {props.experience.title}
             </DialogTitle>
-            <DialogDescription className="text-lg font-medium text-gray-600">
+            <DialogDescription className="line-clamp-2 text-sm/none font-medium">
               {props.experience.companyName}
             </DialogDescription>
-            <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
-              <span>
-                {props.experience.startDate} – {props.experience.endDate}
-              </span>
-              <span className="flex items-center gap-1">
-                <MapPin size={14} /> {props.experience.location}
-              </span>
+            <div className="mt-2 flex flex-col gap-1 text-sm/none">
+              <p className="mt-0.5 text-sm">
+                {format(new Date(props.experience.startDate), 'MMM d, yyyy')} –{' '}
+                {props.experience.endDate
+                  ? format(new Date(props.experience.endDate), 'MMM d, yyyy')
+                  : 'Present'}
+              </p>
+              {props.experience.location && (
+                <span className="flex items-center gap-1 text-sm/none">
+                  <MapPin size={14} /> {props.experience.location}
+                </span>
+              )}
             </div>
           </div>
         </DialogHeader>
 
-        <div className="max-h-[70vh] overflow-y-auto px-8 pb-8">
-          <div className="mt-6">
-            <h4 className="mb-2 flex items-center gap-2 font-bold text-gray-900 underline decoration-blue-200">
+        <div className="flex flex-col gap-2">
+          <div className="mt-2">
+            <h4 className="mb-2 flex items-center gap-2 text-sm/none font-bold">
               <Info size={16} /> Description
             </h4>
-            <p className="leading-relaxed text-gray-700">
+            <div className="max-h-24 overflow-y-auto text-sm/none leading-relaxed">
               {props.experience.description || 'No description provided.'}
-            </p>
+            </div>
           </div>
 
-          <div className="mt-6">
-            <h4 className="mb-2 font-bold text-gray-900">Skills</h4>
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold tracking-wider text-blue-700 uppercase">
-                {props.experience.skills}
-              </span>
+          <div className="mt-2">
+            <h4 className="mb-2 flex items-center gap-2 text-sm/none leading-relaxed font-bold">
+              <Info size={16} /> Skills
+            </h4>
+            <div className="flex flex-wrap gap-2 text-sm/none">
+              {props.experience.skills || 'No skills'}
             </div>
           </div>
 

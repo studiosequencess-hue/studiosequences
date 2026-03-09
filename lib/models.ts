@@ -221,9 +221,17 @@ export type UserExperience = InferSelectModel<typeof userExperiences> & {
 
 export type FormExperience = Omit<
   UserExperience,
-  'userId' | 'createdAt' | 'updatedAt'
->
+  'userId' | 'createdAt' | 'updatedAt' | 'files' | 'projects'
+> & {
+  files: UserExperienceFile[]
+  projects: UserExperienceProjects['projectId'][]
+}
 
 export type UserExperienceFiles = InferSelectModel<typeof experienceFiles>
+
+export type UserExperienceFile = Omit<
+  UserExperienceFiles,
+  'experienceId' | 'userId'
+>
 
 export type UserExperienceProjects = InferSelectModel<typeof experienceProjects>

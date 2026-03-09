@@ -1189,3 +1189,39 @@ export const experienceRelations = relations(
     projects: many(experienceProjects),
   }),
 )
+
+export const userExperiencesRelations = relations(
+  userExperiences,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [userExperiences.userId],
+      references: [users.id],
+    }),
+    projects: many(experienceProjects),
+    files: many(experienceFiles),
+  }),
+)
+
+export const experienceProjectsRelations = relations(
+  experienceProjects,
+  ({ one }) => ({
+    experience: one(userExperiences, {
+      fields: [experienceProjects.experienceId],
+      references: [userExperiences.id],
+    }),
+    project: one(projects, {
+      fields: [experienceProjects.projectId],
+      references: [projects.id],
+    }),
+  }),
+)
+
+export const experienceFilesRelations = relations(
+  experienceFiles,
+  ({ one }) => ({
+    experience: one(userExperiences, {
+      fields: [experienceFiles.experienceId],
+      references: [userExperiences.id],
+    }),
+  }),
+)

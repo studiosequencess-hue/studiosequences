@@ -225,8 +225,6 @@ export const experienceFiles = pgTable(
     url: text().notNull(),
     name: text().notNull(),
     type: text().notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    size: bigint({ mode: 'number' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),

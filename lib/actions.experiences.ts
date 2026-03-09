@@ -155,11 +155,15 @@ export async function upsertExperience(
           })
           .returning({ id: userExperiences.id })
 
+        experienceId = newExperience.id
+      }
+
+      if (experienceId != -1) {
         // attach files
         if (props.experience.files.length > 0) {
           await tx.insert(experienceFiles).values(
             props.experience.files.map((item) => ({
-              experienceId: newExperience.id,
+              experienceId: experienceId,
               ...item,
             })),
           )
@@ -167,19 +171,17 @@ export async function upsertExperience(
 
         // link projects
         const existingProjectIds = Array.from(
-          new Set(props.experience.projects),
+          new Set(props.experience.projects.map((p) => p.id)),
         )
 
         const newLinks = existingProjectIds.map((projectId) => ({
-          experienceId: newExperience.id,
+          experienceId: experienceId,
           projectId: projectId,
         }))
 
         if (newLinks.length > 0) {
           await tx.insert(experienceProjects).values(newLinks)
         }
-
-        experienceId = newExperience.id
       }
     })
 
@@ -194,7 +196,15 @@ export async function upsertExperience(
       where: eq(userExperiences.id, experienceId),
       with: {
         files: true,
-        projects: true,
+        projects: {
+          with: {
+            project: {
+              with: {
+                files: true,
+              },
+            },
+          },
+        },
       },
     })
 

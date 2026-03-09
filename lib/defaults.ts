@@ -1,4 +1,10 @@
-import { ProjectMember, User, DBUser, FormExperience } from '@/lib/models'
+import {
+  ProjectMember,
+  User,
+  DBUser,
+  FormExperience,
+  UserExperience,
+} from '@/lib/models'
 import { EMPLOYMENT_TYPE, UserRole } from '@/lib/constants'
 
 export const PLACEHOLDER_IMAGES: string[] = [
@@ -70,7 +76,24 @@ export const FOLLOW_SUGGESTIONS_LIMIT = 10
 
 export const COMMENTS_PER_POST = 50
 
-export const DEFAULT_EXPERIENCE: FormExperience = {
+export const DEFAULT_USER_EXPERIENCE: UserExperience = {
+  userId: '',
+  id: -1,
+  title: '',
+  companyName: '',
+  description: '',
+  location: '',
+  skills: '',
+  startDate: new Date().toISOString(),
+  endDate: new Date().toISOString(),
+  employmentType: EMPLOYMENT_TYPE.FULL_TIME,
+  files: [],
+  projects: [],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+}
+
+export const DEFAULT_FORM_EXPERIENCE: FormExperience = {
   id: -1,
   title: '',
   companyName: '',

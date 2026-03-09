@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react'
 import { Briefcase, Plus } from 'lucide-react'
-import { DBUser, FormExperience, UserExperience } from '@/lib/models'
+import { DBUser, UserExperience } from '@/lib/models'
 import ExperiencesViewDialog from '@/components/partials/experiences/experiences.view.dialog'
 import { QUERY_KEYS } from '@/lib/constants'
 import ExperiencesFormDialog from '@/components/partials/experiences/experiences.form.dialog'
 import ExperiencesItem from '@/components/partials/experiences/experiences.item'
-import { DEFAULT_EXPERIENCE } from '@/lib/defaults'
+import { DEFAULT_USER_EXPERIENCE } from '@/lib/defaults'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { getExperiences } from '@/lib/actions.experiences'
@@ -19,8 +19,10 @@ type Props = {
 }
 
 const ProfileExperience: React.FC<Props> = ({ editable, user }) => {
-  const [editingExp, setEditingExp] = useState<FormExperience | null>(null)
-  const [viewingExp, setViewingExp] = useState<FormExperience | null>(null)
+  const [editingExperience, setEditingExperience] =
+    useState<UserExperience | null>(null)
+  const [viewingExperience, setViewingExperience] =
+    useState<UserExperience | null>(null)
 
   const loadExperiencesQuery = useQuery<UserExperience[]>({
     queryKey: [QUERY_KEYS.EXPERIENCES, user?.id],
@@ -39,15 +41,15 @@ const ProfileExperience: React.FC<Props> = ({ editable, user }) => {
 
   // Actions
   const handleOpenAdd = () => {
-    setEditingExp({ ...DEFAULT_EXPERIENCE })
+    setEditingExperience({ ...DEFAULT_USER_EXPERIENCE })
   }
 
-  const handleOpenEdit = (exp: FormExperience) => {
-    setEditingExp(exp)
+  const handleOpenEdit = (exp: UserExperience) => {
+    setEditingExperience(exp)
   }
 
-  const handleViewDetails = (exp: FormExperience) => {
-    setViewingExp(exp)
+  const handleViewDetails = (exp: UserExperience) => {
+    setViewingExperience(exp)
   }
 
   return (
@@ -81,23 +83,17 @@ const ProfileExperience: React.FC<Props> = ({ editable, user }) => {
           ) : (
             (loadExperiencesQuery.data || []).map(
               (experience, experienceIndex) => {
-                const formExperience = {
-                  ...experience,
-                  files: experience.files.map((file) => ({
-                    ...file,
-                  })),
-                  projects: experience.projects.map(
-                    (project) => project.projectId,
-                  ),
-                }
-
                 return (
                   <ExperiencesItem
                     key={`experience-${experienceIndex}`}
-                    experience={formExperience}
+                    experience={{
+                      ...experience,
+                      files: experience.files,
+                      projects: experience.projects.map((p) => p.project),
+                    }}
                     editable={editable}
-                    onViewExperience={() => handleViewDetails(formExperience)}
-                    onEdit={() => handleOpenEdit(formExperience)}
+                    onViewExperience={() => handleViewDetails(experience)}
+                    onEdit={() => handleOpenEdit(experience)}
                   />
                 )
               },
@@ -107,14 +103,26 @@ const ProfileExperience: React.FC<Props> = ({ editable, user }) => {
       </div>
 
       <ExperiencesFormDialog
-        experience={editingExp}
-        onClose={() => setEditingExp(null)}
+        experience={
+          editingExperience
+            ? {
+                ...editingExperience,
+                files: editingExperience.files,
+                projects: editingExperience.projects.map((p) => p.project),
+              }
+            : null
+        }
+        onClose={() => setEditingExperience(null)}
       />
 
-      {viewingExp && (
+      {viewingExperience && (
         <ExperiencesViewDialog
-          experience={viewingExp}
-          onClose={() => setViewingExp(null)}
+          experience={{
+            ...viewingExperience,
+            files: viewingExperience.files,
+            projects: viewingExperience.projects.map((p) => p.project),
+          }}
+          onClose={() => setViewingExperience(null)}
         />
       )}
     </div>

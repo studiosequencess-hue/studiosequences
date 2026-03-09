@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { format } from 'date-fns'
+import ExperiencesPortfolioGallery from '@/components/partials/experiences/experiences.portfolio.gallery'
 
 type Props = {
   experience: FormExperience
@@ -61,7 +62,11 @@ const ExperiencesViewDialog: React.FC<Props> = (props) => {
               <Info size={16} /> Description
             </h4>
             <div className="max-h-24 overflow-y-auto text-sm/none leading-relaxed">
-              {props.experience.description || 'No description provided.'}
+              {props.experience.description || (
+                <span className={'text-muted-foreground'}>
+                  No description provided.
+                </span>
+              )}
             </div>
           </div>
 
@@ -70,29 +75,18 @@ const ExperiencesViewDialog: React.FC<Props> = (props) => {
               <Info size={16} /> Skills
             </h4>
             <div className="flex flex-wrap gap-2 text-sm/none">
-              {props.experience.skills || 'No skills'}
+              {props.experience.skills || (
+                <span className={'text-muted-foreground'}>No skills</span>
+              )}
             </div>
           </div>
 
-          {/*<div className="mt-8">*/}
-          {/*  <h4 className="mb-3 font-bold text-gray-900">*/}
-          {/*    Portfolio Highlights*/}
-          {/*  </h4>*/}
-          {/*  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">*/}
-          {/*    {props.experience.projects?.map((item) => (*/}
-          {/*      <div*/}
-          {/*        key={item.id}*/}
-          {/*        className="group relative aspect-video overflow-hidden rounded-lg border"*/}
-          {/*      >*/}
-          {/*        <img*/}
-          {/*          src={item.url}*/}
-          {/*          alt="Project"*/}
-          {/*          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"*/}
-          {/*        />*/}
-          {/*      </div>*/}
-          {/*    ))}*/}
-          {/*  </div>*/}
-          {/*</div>*/}
+          <div className="mt-2">
+            <h4 className="mb-2 flex items-center gap-2 text-sm/none leading-relaxed font-bold">
+              <Info size={16} /> Portfolio
+            </h4>
+            <ExperiencesPortfolioGallery experience={props.experience} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

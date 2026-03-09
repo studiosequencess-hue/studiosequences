@@ -4,6 +4,7 @@ import { Briefcase, Pencil } from 'lucide-react'
 import { format } from 'date-fns'
 import { beautifyEmploymentType } from '@/lib/utils'
 import { EMPLOYMENT_TYPE } from '@/lib/constants'
+import ExperiencesPortfolioGallery from '@/components/partials/experiences/experiences.portfolio.gallery'
 
 type Props = {
   editable: boolean
@@ -73,7 +74,7 @@ const ExperiencesItem: React.FC<Props> = (props) => {
             </p>
           )}
 
-          {/*<PortfolioGallery portfolio={props.experience.portfolio} />*/}
+          <ExperiencesPortfolioGallery experience={props.experience} />
         </div>
       </div>
     </div>

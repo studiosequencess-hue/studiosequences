@@ -38,7 +38,7 @@ const ProfilePage: React.FC<Props> = async (props) => {
         <TabsList className="mx-auto w-fit">
           <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
           <TabsTrigger value="experiences">Experiences</TabsTrigger>
-          <TabsTrigger value="activities">Activities</TabsTrigger>
+          {/*<TabsTrigger value="activities">Activities</TabsTrigger>*/}
           <TabsTrigger value="collections">Collections</TabsTrigger>
           <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
@@ -46,11 +46,11 @@ const ProfilePage: React.FC<Props> = async (props) => {
           <ProfilePortfolio user={userResponse.data} editable={editable} />
         </TabsContent>
         <TabsContent value="experiences">
-          <ProfileExperience editable={editable} />
+          <ProfileExperience user={userResponse.data} editable={editable} />
         </TabsContent>
-        <TabsContent value="activities">
-          <ProfileActivities editable={editable} />
-        </TabsContent>
+        {/*<TabsContent value="activities">*/}
+        {/*  <ProfileActivities editable={editable} />*/}
+        {/*</TabsContent>*/}
         <TabsContent value="collections">
           <ProfileCollections editable={editable} />
         </TabsContent>

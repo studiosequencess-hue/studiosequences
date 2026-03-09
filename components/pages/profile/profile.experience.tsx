@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Briefcase, Plus } from 'lucide-react'
-import { FormExperience, UserExperience } from '@/lib/models'
+import { DBUser, FormExperience, UserExperience } from '@/lib/models'
 import ExperiencesViewDialog from '@/components/partials/experiences/experiences.view.dialog'
 import { QUERY_KEYS } from '@/lib/constants'
 import ExperiencesFormDialog from '@/components/partials/experiences/experiences.form.dialog'
@@ -11,16 +11,14 @@ import { DEFAULT_EXPERIENCE } from '@/lib/defaults'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { getExperiences } from '@/lib/actions.experiences'
-import { useAuthStore } from '@/store'
 import Loader from '@/components/partials/loader'
 
 type Props = {
   editable: boolean
+  user: DBUser
 }
 
-const ProfileExperience: React.FC<Props> = ({ editable }) => {
-  const { user } = useAuthStore()
-
+const ProfileExperience: React.FC<Props> = ({ editable, user }) => {
   const [editingExp, setEditingExp] = useState<FormExperience | null>(null)
   const [viewingExp, setViewingExp] = useState<FormExperience | null>(null)
 

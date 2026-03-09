@@ -16,7 +16,7 @@ const ExperiencesItem: React.FC<Props> = (props) => {
   return (
     <div
       key={props.experience.id}
-      onClick={() => props.editable && props.onViewExperience?.()}
+      onClick={() => props.onViewExperience?.()}
       className="group relative cursor-pointer p-4 transition-colors"
     >
       <div className="flex flex-col gap-4 sm:flex-row">

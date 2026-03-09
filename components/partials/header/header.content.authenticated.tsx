@@ -24,14 +24,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import HeaderSearchbar from '@/components/partials/header/header.searchbar'
 import { Plus } from 'lucide-react'
-import { usePostsDialogStore } from '@/store/post.dialog.store'
 import UserAvatar from '@/components/partials/user-avatar'
 import { UserRole } from '@/lib/constants'
 
 const HeaderContentAuthenticated = () => {
   const { user, setLoading, setUser } = useAuthStore()
   const { show: projectDialogShow } = useProjectsDialogStore()
-  const { show: postDialogShow } = usePostsDialogStore()
   const { setFormOpen: companyEventFormOpen } = useCompanyEventsStore()
   const router = useRouter()
   const [profileDropdownOpen, setProfileDropdownOpen] = React.useState(false)
@@ -161,12 +159,12 @@ const HeaderContentAuthenticated = () => {
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent side={'bottom'} align={'end'}>
-            <DropdownMenuItem
-              disabled={!user}
-              onSelect={() => user && postDialogShow(null, true)}
-            >
-              New post
-            </DropdownMenuItem>
+            {/*<DropdownMenuItem*/}
+            {/*  disabled={!user}*/}
+            {/*  onSelect={() => user && postDialogShow(null, true)}*/}
+            {/*>*/}
+            {/*  New post*/}
+            {/*</DropdownMenuItem>*/}
             {user && user.role != UserRole.User && (
               <DropdownMenuItem
                 disabled={!user}

@@ -21,13 +21,14 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { UserRole } from '@/lib/constants'
+import { QUERY_KEYS, UserRole } from '@/lib/constants'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { cn } from '@/lib/utils'
 
 const HeaderSearchbar = () => {
+  const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const searchInputRef = React.useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -37,7 +38,7 @@ const HeaderSearchbar = () => {
   })
 
   const searchQuery = useQuery({
-    queryKey: ['search-users', debouncedSearchValue],
+    queryKey: [QUERY_KEYS.SEARCH_USERS, debouncedSearchValue],
     queryFn: async () => {
       if (!debouncedSearchValue) return []
 
@@ -49,8 +50,8 @@ const HeaderSearchbar = () => {
   })
 
   const users = React.useMemo(() => {
-    return (searchQuery.data || []).filter(
-      (item) => item.role == UserRole.User.toString(),
+    return (searchQuery.data || []).filter((item) =>
+      [UserRole.User.toString(), UserRole.Admin.toString()].includes(item.role),
     )
   }, [searchQuery.data])
 
@@ -64,10 +65,12 @@ const HeaderSearchbar = () => {
     ;(searchQuery.data || []).forEach((item) => {
       router.prefetch(`/users/${item.id}`)
     })
+
+    setOpen((searchQuery.data || []).length > 0)
   }, [searchQuery.data, router])
 
   return (
-    <Popover open={(searchQuery.data || []).length > 0}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <InputGroup className={'w-96'}>
           <InputGroupInput
@@ -106,6 +109,7 @@ const HeaderSearchbar = () => {
                       if (searchInputRef.current) {
                         searchInputRef.current.value = ''
                       }
+                      setOpen(false)
                     }}
                   >
                     <div
@@ -137,6 +141,7 @@ const HeaderSearchbar = () => {
                       if (searchInputRef.current) {
                         searchInputRef.current.value = ''
                       }
+                      setOpen(false)
                     }}
                   >
                     <div className={'flex flex-col gap-0.5 text-xs/none'}>

@@ -74,7 +74,6 @@ const ProfileInfo: React.FC<Props> = ({ user, editable }) => {
           fallbackClassName={'text-5xl/none'}
         />
       )}
-      )
     </div>
   )
 }

@@ -101,7 +101,7 @@ export async function searchAllUsers(
           sql`lower(${users.username}) like lower(${searchPattern})`,
           sql`lower(${users.lastName}) like lower(${searchPattern})`,
           sql`lower(${users.firstName}) like lower(${searchPattern})`,
-          sql`lower(${users.lastName}) like lower(${searchPattern})`,
+          sql`lower(${users.companyName}) like lower(${searchPattern})`,
         ),
       )
       .limit(10)
